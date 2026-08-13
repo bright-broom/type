@@ -1,0 +1,42 @@
+# TypeLoop
+
+1日60秒で正確さとリズムを育てる、日本語ローマ字タイピング練習アプリです。
+
+## Features
+
+- Incremental Japanese romanization matching
+- Deterministic score, WPM, CPM, accuracy, miss, and combo calculation
+- Drift-resistant 60-second session timer with pause and resume
+- Local-first personal best, history, weak-key analysis, and settings
+- Keyboard-first operation, IME protection, reduced motion, and optional sound
+
+## Development
+
+Node.js 22.13以降が必要です。
+
+```bash
+npm ci
+npm run dev
+```
+
+ローカルでは `http://localhost:3000/` を開きます。
+
+## Quality gates
+
+```bash
+npm run typecheck
+npm run lint
+npm test
+```
+
+設計判断は [`docs/adr`](docs/adr) に記録しています。
+
+## Architecture
+
+```text
+Presentation → Application → Domain
+                      ↑
+       Infrastructure implements ports
+```
+
+Domain層はReact、ブラウザAPI、永続化実装に依存しません。セッション履歴と設定は端末内にのみ保存されます。
