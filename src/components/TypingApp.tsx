@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import type { CompletedSession } from "../application/session/session-types.ts";
 import { useKeyboardInput } from "../hooks/useKeyboardInput.ts";
 import { useTypingSession } from "../hooks/useTypingSession.ts";
@@ -11,27 +11,34 @@ import { GameScreen } from "./game/GameScreen.tsx";
 import { PauseDialog } from "./game/PauseDialog.tsx";
 import { ResultScreen } from "./result/ResultScreen.tsx";
 import { HistoryScreen } from "./history/HistoryScreen.tsx";
+import type { TrainingSet } from "../hooks/useTypingSession.ts";
+
+const ConsultingPlaybook = lazy(() =>
+  import("./consulting/ConsultingPlaybook.tsx").then((module) => ({ default: module.ConsultingPlaybook })),
+);
 
 export function TypingApp() {
   const session = useTypingSession();
   const [showHistory, setShowHistory] = useState(false);
+  const [showPlaybook, setShowPlaybook] = useState(false);
   const [previousBest, setPreviousBest] = useState<CompletedSession | null>(null);
 
-  const start = () => {
-    setPreviousBest(session.best);
+  const start = (trainingSet: TrainingSet = "japanese") => {
+    setPreviousBest(session.bests[trainingSet]);
     setShowHistory(false);
-    session.start();
+    setShowPlaybook(false);
+    session.start(trainingSet);
   };
 
   useKeyboardInput({
     onKey: session.typeKey,
     onEnter: () => {
-      if (showHistory) { setShowHistory(false); return; }
-      if (["idle", "finished", "aborted"].includes(session.clock.status)) start();
+      if (showHistory || showPlaybook) { setShowHistory(false); setShowPlaybook(false); return; }
+      if (["idle", "finished", "aborted"].includes(session.clock.status)) start(session.trainingSet);
       else session.enter();
     },
     onEscape: () => {
-      if (showHistory) setShowHistory(false);
+      if (showHistory || showPlaybook) { setShowHistory(false); setShowPlaybook(false); }
       else session.escape();
     },
   });
@@ -43,10 +50,14 @@ export function TypingApp() {
         compact={active}
         soundEnabled={session.settings.soundEnabled}
         onToggleSound={session.toggleSound}
-        onShowHome={active ? undefined : () => { setShowHistory(false); session.home(); }}
+        onShowHome={active ? undefined : () => { setShowHistory(false); setShowPlaybook(false); session.home(); }}
       />
 
-      {showHistory ? (
+      {showPlaybook ? (
+        <Suspense fallback={<main className="playbook-loading" role="status">実務辞典を読み込んでいます…</main>}>
+          <ConsultingPlaybook onBack={() => setShowPlaybook(false)} onStart={() => start("consulting")} />
+        </Suspense>
+      ) : showHistory ? (
         <HistoryScreen sessions={session.history} onBack={() => setShowHistory(false)} />
       ) : session.clock.status === "countdown" ? (
         <CountdownScreen value={session.countdown} />
@@ -69,15 +80,17 @@ export function TypingApp() {
         <ResultScreen
           result={session.result}
           previousBest={previousBest}
-          onRetry={start}
+          onRetry={() => start(session.trainingSet)}
           onHistory={() => setShowHistory(true)}
           onHome={() => { setShowHistory(false); session.home(); }}
         />
       ) : (
         <HomeScreen
-          best={session.best}
+          best={session.bests.japanese}
           history={session.history}
           onStart={start}
+          onStartConsulting={() => start("consulting")}
+          onShowPlaybook={() => setShowPlaybook(true)}
           onShowHistory={() => setShowHistory(true)}
           aborted={session.clock.status === "aborted"}
         />

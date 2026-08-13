@@ -32,15 +32,16 @@ export function GameScreen(props: GameScreenProps) {
 
       <section className="prompt-stage" aria-labelledby="current-prompt">
         <div className="prompt-index"><span>{String(props.completedPrompts + 1).padStart(2, "0")}</span> / SESSION</div>
-        <p className="prompt-reading">{props.prompt.reading}</p>
+        <p className="prompt-reading">{props.prompt.category === "consulting" ? "CONSULTING TERM" : props.prompt.reading}</p>
         <h1 id="current-prompt">{props.prompt.displayText}</h1>
+        {props.prompt.description && <p className="prompt-description">{props.prompt.description}</p>}
         <div className="roman-line" aria-label={`入力: ${props.guide.full}`}>
           <span className="roman-typed">{props.guide.typed}</span>
           <span className="roman-caret" aria-hidden="true" />
           <span className="roman-remaining">{props.guide.remaining}</span>
         </div>
         <div className="feedback-line" aria-live="polite">
-          {props.feedback === "miss" ? "MISS — 正しいキーで続けよう" : props.combo >= 10 ? `${props.combo} COMBO` : "ローマ字で入力"}
+          {props.feedback === "miss" ? "MISS — 正しいキーで続けよう" : props.combo >= 10 ? `${props.combo} COMBO` : props.prompt.category === "consulting" ? "英字で入力" : "ローマ字で入力"}
         </div>
       </section>
 

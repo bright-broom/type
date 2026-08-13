@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 :root {
+  --font-geist-sans: "Helvetica Neue", "Hiragino Sans", "Yu Gothic", Arial, sans-serif;
+  --font-geist-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   --ink: #132a3a;
   --ink-deep: #0b202e;
   --paper: #f3f0e8;
@@ -73,6 +75,11 @@ kbd { font-family: var(--font-geist-mono), monospace; }
 .text-button { border: 0; background: none; padding: 10px 2px; color: var(--ink); font-size: 0.85rem; font-weight: 730; cursor: pointer; border-bottom: 1px solid transparent; }
 .text-button:hover { border-bottom-color: currentColor; }
 .text-button span { margin-left: 5px; }
+.secondary-button { min-height: 58px; border: 1px solid var(--ink-deep); border-radius: var(--radius-sm); padding: 8px 20px; background: transparent; font-weight: 750; cursor: pointer; }
+.secondary-button:hover { background: rgb(11 32 46 / 6%); }
+.playbook-link { width: 100%; margin-top: 20px; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 14px 16px; display: flex; align-items: center; gap: 10px; background: rgb(250 248 242 / 72%); cursor: pointer; font-size: 0.76rem; font-weight: 750; text-align: left; }
+.playbook-link span { padding: 3px 5px; border-radius: 3px; color: var(--ink-deep); background: var(--cyan); font: 800 0.5rem var(--font-geist-mono), monospace; }
+.playbook-link i { margin-left: auto; color: var(--muted); font-style: normal; font-size: 0.65rem; }
 
 .home-card { min-height: 480px; position: relative; border-radius: var(--radius-lg); padding: 34px; color: white; background: var(--ink-deep); box-shadow: var(--shadow); overflow: hidden; transform: rotate(1deg); }
 .home-card::before { content: ""; position: absolute; width: 330px; height: 330px; border: 1px solid rgb(86 216 208 / 22%); border-radius: 50%; top: 62px; left: 50%; transform: translateX(-50%); box-shadow: 0 0 0 44px rgb(86 216 208 / 4%), 0 0 0 88px rgb(86 216 208 / 3%); }
@@ -118,6 +125,7 @@ kbd { font-family: var(--font-geist-mono), monospace; }
 .prompt-index span { color: var(--cyan-dark); }
 .prompt-reading { margin: 0 0 12px; color: var(--muted); font-size: 0.82rem; letter-spacing: 0.15em; }
 .prompt-stage h1 { margin: 0; color: var(--ink-deep); font-size: clamp(2.2rem, 5.2vw, 4.3rem); letter-spacing: -0.055em; line-height: 1.25; }
+.prompt-description { max-width: 780px; margin: 10px auto -10px; color: var(--muted); font-size: 0.73rem; line-height: 1.6; }
 .roman-line { min-height: 58px; margin-top: 28px; display: flex; align-items: center; font: 660 clamp(1.25rem, 2.4vw, 1.85rem) var(--font-geist-mono), monospace; letter-spacing: 0.09em; }
 .roman-typed { color: var(--cyan-dark); }
 .roman-remaining { color: #9da6a8; }
@@ -182,13 +190,41 @@ kbd { font-family: var(--font-geist-mono), monospace; }
 .history-row strong { font-size: 1.3rem; }
 .history-labels { min-height: 38px; color: var(--muted); font: 680 0.56rem var(--font-geist-mono), monospace; letter-spacing: 0.12em; }
 .empty-state { padding: 80px 0; text-align: center; color: var(--muted); }
+.playbook-shell { flex: 1; width: min(1320px, calc(100% - 64px)); margin: 0 auto; padding: 42px 0 70px; }
+.playbook-loading { flex: 1; min-height: 500px; display: grid; place-items: center; color: var(--muted); font-size: 0.8rem; }
+.playbook-heading { display: grid; grid-template-columns: 130px 1fr auto; gap: 30px; align-items: center; padding-bottom: 30px; border-bottom: 1px solid var(--line); }
+.playbook-heading .text-button { justify-self: start; }
+.playbook-heading h1 { margin: 7px 0 5px; font-size: clamp(2.5rem, 4.5vw, 4.2rem); letter-spacing: -0.065em; }
+.playbook-heading p { margin: 0; color: var(--muted); }
+.playbook-controls { min-height: 90px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.playbook-controls label { flex: 1; max-width: 620px; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 16px; }
+.playbook-controls label > span, .playbook-controls > span { color: var(--muted); font: 700 0.61rem var(--font-geist-mono), monospace; letter-spacing: 0.09em; }
+.playbook-controls input { width: 100%; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 12px 14px; background: var(--paper-soft); color: var(--ink); }
+.playbook-layout { min-height: 620px; display: grid; grid-template-columns: 240px 1fr; border: 1px solid var(--line); border-radius: var(--radius-md); background: rgb(250 248 242 / 72%); overflow: hidden; box-shadow: var(--shadow); }
+.playbook-nav { padding: 14px; border-right: 1px solid var(--line); background: rgb(19 42 58 / 3%); overflow-y: auto; max-height: 660px; }
+.playbook-nav button { width: 100%; min-height: 42px; border: 0; border-radius: 6px; padding: 7px 9px; display: grid; grid-template-columns: 25px 1fr auto; align-items: center; gap: 5px; background: transparent; cursor: pointer; color: var(--muted); text-align: left; }
+.playbook-nav button:hover, .playbook-nav button.active { color: var(--ink-deep); background: white; }
+.playbook-nav button.active { box-shadow: inset 3px 0 0 var(--cyan-dark); }
+.playbook-nav i { color: var(--cyan-dark); font: normal 650 0.55rem var(--font-geist-mono), monospace; }
+.playbook-nav span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.72rem; font-weight: 680; }
+.playbook-nav small { font-size: 0.55rem; }
+.playbook-content { min-width: 0; }
+.playbook-content > header { height: 56px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+.playbook-content > header span { font-size: 0.78rem; font-weight: 760; }
+.playbook-content > header strong { color: var(--muted); font: 650 0.58rem var(--font-geist-mono), monospace; }
+.playbook-rows { height: 604px; padding: 0 24px; overflow-y: auto; }
+.playbook-rows article { padding: 17px 0; display: grid; grid-template-columns: 48px 1fr; border-bottom: 1px solid var(--line); }
+.row-number { color: var(--cyan-dark); font: 650 0.58rem var(--font-geist-mono), monospace; padding-top: 4px; }
+.playbook-rows article div { display: flex; flex-wrap: wrap; gap: 7px 18px; }
+.playbook-rows article p { margin: 0; color: #4d616d; font-size: 0.75rem; line-height: 1.65; }
+.playbook-rows article p:first-child { width: 100%; color: var(--ink-deep); font-size: 0.9rem; font-weight: 750; }
 .error-shell { min-height: 100svh; display: grid; place-content: center; justify-items: center; text-align: center; padding: 30px; }
 .error-shell > span { color: var(--cyan-dark); font: 800 0.7rem var(--font-geist-mono), monospace; letter-spacing: 0.15em; }
 .error-shell h1 { margin: 18px 0 8px; font-size: clamp(2rem, 5vw, 4rem); letter-spacing: -0.06em; }
 .error-shell p { color: var(--muted); margin: 0 0 28px; }
 
 @media (max-width: 900px) {
-  .app-header, .site-footer, .home-shell, .game-shell, .result-shell, .history-shell { width: min(100% - 36px, 720px); }
+  .app-header, .site-footer, .home-shell, .game-shell, .result-shell, .history-shell, .playbook-shell { width: min(100% - 36px, 720px); }
   .home-shell { grid-template-columns: 1fr; padding-top: 40px; }
   .hero { padding-bottom: 0; }
   .home-card { min-height: 420px; transform: none; }
@@ -196,6 +232,10 @@ kbd { font-family: var(--font-geist-mono), monospace; }
   .metric-grid { grid-template-columns: repeat(2, 1fr); gap: 24px 0; }
   .metric-grid > div:nth-child(3) { border-left: 0; padding-left: 0; }
   .live-stats > div { padding: 0 15px; }
+  .playbook-heading { grid-template-columns: 1fr; }
+  .playbook-heading .primary-button { justify-self: start; }
+  .playbook-layout { grid-template-columns: 1fr; }
+  .playbook-nav { max-height: 170px; border-right: 0; border-bottom: 1px solid var(--line); }
 }
 
 @media (max-width: 600px) {
@@ -203,6 +243,8 @@ kbd { font-family: var(--font-geist-mono), monospace; }
   .icon-button > span:last-child, .site-footer span:last-child, .desktop-only { display: none; }
   .icon-button { padding-right: 9px; }
   .hero h1 { font-size: 3.7rem; }
+  .hero-actions { align-items: stretch; flex-direction: column; }
+  .primary-button, .secondary-button { justify-content: space-between; }
   .home-card { padding: 26px; }
   .game-meta { grid-template-columns: 90px 1fr; gap: 14px; }
   .pause-button { display: none; }
@@ -218,6 +260,9 @@ kbd { font-family: var(--font-geist-mono), monospace; }
   .history-heading { grid-template-columns: 1fr; }
   .history-row { grid-template-columns: 1.5fr repeat(3, 0.8fr); font-size: 0.75rem; }
   .history-row > span:first-child { gap: 8px; flex-direction: column; }
+  .playbook-controls label { grid-template-columns: 1fr; }
+  .playbook-controls > span { display: none; }
+  .playbook-rows { padding: 0 15px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

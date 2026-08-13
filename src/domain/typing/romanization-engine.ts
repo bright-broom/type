@@ -57,6 +57,10 @@ export function segmentReading(reading: string): ReadonlyArray<RomanSegment> {
   const segments: RomanSegment[] = [];
   for (let index = 0; index < reading.length; index += 1) {
     const char = reading[index] ?? "";
+    if (/^[a-z0-9 ' -]$/i.test(char)) {
+      segments.push([char.toLowerCase()]);
+      continue;
+    }
     const pair = reading.slice(index, index + 2);
     if (DIGRAPHS[pair]) {
       segments.push(DIGRAPHS[pair]);
@@ -156,7 +160,7 @@ export function validateInput(
   if (
     reading !== currentState.reading ||
     (currentState.completed && !hasLongerMatch) ||
-    !/^[a-z'-]$/i.test(key)
+    !/^[a-z0-9 ' -]$/i.test(key)
   ) {
     return { accepted: false, completed: currentState.completed, nextState: currentState };
   }

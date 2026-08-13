@@ -4,7 +4,8 @@ export type PromptCategory =
   | "sokuon"
   | "contracted"
   | "n-rule"
-  | "phrase";
+  | "phrase"
+  | "consulting";
 
 export type TypingPrompt = {
   id: string;
@@ -13,4 +14,5 @@ export type TypingPrompt = {
   category: PromptCategory;
   difficulty: number;
   tags?: ReadonlyArray<string>;
+  description?: string;
 };

@@ -4,11 +4,13 @@ type HomeScreenProps = {
   best: CompletedSession | null;
   history: ReadonlyArray<CompletedSession>;
   onStart: () => void;
+  onStartConsulting: () => void;
+  onShowPlaybook: () => void;
   onShowHistory: () => void;
   aborted: boolean;
 };
 
-export function HomeScreen({ best, history, onStart, onShowHistory, aborted }: HomeScreenProps) {
+export function HomeScreen({ best, history, onStart, onStartConsulting, onShowPlaybook, onShowHistory, aborted }: HomeScreenProps) {
   return (
     <main className="home-shell">
       <section className="hero" aria-labelledby="hero-title">
@@ -20,10 +22,12 @@ export function HomeScreen({ best, history, onStart, onShowHistory, aborted }: H
           <button className="primary-button" type="button" onClick={onStart}>
             <span>60秒トレーニング</span><kbd>Enter</kbd>
           </button>
+          <button className="secondary-button" type="button" onClick={onStartConsulting}>コンサル用語モード</button>
           {history.length > 0 && (
             <button className="text-button" type="button" onClick={onShowHistory}>練習履歴を見る <span aria-hidden="true">→</span></button>
           )}
         </div>
+        <button className="playbook-link" type="button" onClick={onShowPlaybook}><span>NEW</span> コンサル実務辞典を開く <i>327語を練習</i></button>
       </section>
 
       <aside className="home-card" aria-label="トレーニング概要">

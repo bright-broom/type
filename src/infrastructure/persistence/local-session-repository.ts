@@ -57,8 +57,10 @@ export class LocalSessionRepository implements SessionRepository {
     return readStorage().sessions.slice(0, Math.max(0, limit));
   }
 
-  async getBest(): Promise<CompletedSession | null> {
-    return readStorage().sessions.reduce<CompletedSession | null>(
+  async getBest(trainingSet: "japanese" | "consulting" = "japanese"): Promise<CompletedSession | null> {
+    return readStorage().sessions
+      .filter((session) => (session.trainingSet ?? "japanese") === trainingSet)
+      .reduce<CompletedSession | null>(
       (best, session) => (!best || session.score > best.score ? session : best),
       null,
     );

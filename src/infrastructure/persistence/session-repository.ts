@@ -3,7 +3,7 @@ import type { AppSettings, CompletedSession } from "../../application/session/se
 export interface SessionRepository {
   save(session: CompletedSession): Promise<void>;
   getRecent(limit: number): Promise<CompletedSession[]>;
-  getBest(): Promise<CompletedSession | null>;
+  getBest(trainingSet?: "japanese" | "consulting"): Promise<CompletedSession | null>;
   getSettings(): Promise<AppSettings>;
   saveSettings(settings: AppSettings): Promise<void>;
 }

@@ -22,6 +22,7 @@ export type PromptAttempt = {
 export type CompletedSession = {
   id: string;
   mode: "60s";
+  trainingSet?: "japanese" | "consulting";
   startedAt: number;
   endedAt: number;
   prompts: ReadonlyArray<PromptAttempt>;

@@ -56,3 +56,8 @@ test("prompt completion is stable", () => {
   assert.equal(complete.completed, true);
   assert.equal(validateInput("すし", complete, "x").accepted, false);
 });
+
+test("ASCII consulting terms are matched case-insensitively with spaces and digits", () => {
+  assert.equal(type("mece", "MECE").completed, true);
+  assert.equal(type("b2b strategy", "b2b strategy").completed, true);
+});

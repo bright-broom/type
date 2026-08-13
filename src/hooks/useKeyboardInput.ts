@@ -29,7 +29,7 @@ export function useKeyboardInput(options: KeyboardInputOptions) {
       if (event.key === "Enter") { event.preventDefault(); handlers.current.onEnter(); return; }
       if (event.key === "Escape") { event.preventDefault(); handlers.current.onEscape(); return; }
       if (IGNORED_KEYS.has(event.key) || event.key.startsWith("F") || event.key.length !== 1) return;
-      if (/^[a-z'-]$/i.test(event.key)) {
+      if (/^[a-z0-9 ' -]$/i.test(event.key)) {
         event.preventDefault();
         handlers.current.onKey(event.key.toLowerCase());
       }
