@@ -37,6 +37,17 @@ npm run check:ci
 
 `check:quick` は開発中の typecheck・lint・unit test、`check` はそれらに production build を加えた最終確認です。CIはさらにHigh以上の依存脆弱性を検査する `check:ci` を使用します。設計判断は [`docs/adr`](docs/adr) に記録しています。
 
+## Review workflow
+
+PRレビューはCodeRabbitなどの外部レビューボットに依存しません。実装後は次の順序で確認します。
+
+1. `npm run check` で機械的な品質ゲートを通す
+2. Codexの `/review` で `main` との差分を専用レビュアーに確認させる
+3. [`AGENTS.md`](AGENTS.md) のCode Review Rulesに沿って、互換性・依存境界・local-first制約を確認する
+4. GitHubへpushしてPRを作成し、CI成功と人間の最終判断を経てマージする
+
+AIレビューは、CIで判定できないリポジトリ固有のリスクを補完するために使います。自動生成された指摘だけをマージ判断の根拠にはしません。
+
 ## Deployment
 
 This is a standard Next.js App Router application and can be deployed to Vercel with the framework preset set to **Next.js**. No output directory override is required.
