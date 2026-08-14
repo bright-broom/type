@@ -1,5 +1,5 @@
 import type { AppSettings, CompletedSession, TrainingSet } from "../../application/session/session-types.ts";
-import type { SessionRepository } from "./session-repository.ts";
+import type { SessionRepository } from "../../application/ports/session-repository.ts";
 
 const STORAGE_KEY = "typeloop:data";
 const MAX_SESSIONS = 50;

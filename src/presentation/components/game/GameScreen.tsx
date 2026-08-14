@@ -1,6 +1,6 @@
-import type { TypingPrompt } from "../../domain/prompts/prompt-types.ts";
-import type { TypingGuide } from "../../domain/typing/typing-types.ts";
-import type { SessionMetrics } from "../../domain/scoring/metrics.ts";
+import type { TypingPrompt } from "../../../domain/prompts/prompt-types.ts";
+import type { TypingGuide } from "../../../domain/typing/typing-types.ts";
+import type { SessionMetrics } from "../../../domain/scoring/metrics.ts";
 
 type GameScreenProps = {
   prompt: TypingPrompt;

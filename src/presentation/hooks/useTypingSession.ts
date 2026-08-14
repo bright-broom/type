@@ -1,36 +1,35 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { analyzeWeakKeys } from "../domain/analytics/weak-key-analyzer.ts";
-import { createPromptSelector } from "../domain/prompts/prompt-selector.ts";
-import type { TypingPrompt } from "../domain/prompts/prompt-types.ts";
-import { calculateMetrics } from "../domain/scoring/metrics.ts";
-import { calculateScore } from "../domain/scoring/scoring-engine.ts";
-import { createTypingState, getTypingGuide, validateInput } from "../domain/typing/romanization-engine.ts";
-import type { TypingState } from "../domain/typing/typing-types.ts";
-import { JAPANESE_PROMPTS } from "../data/prompts/japanese-prompts.ts";
-import { CONSULTING_PROMPTS } from "../data/prompts/consulting-prompts.ts";
-import { TAKKEN_PROMPTS } from "../data/prompts/takken-prompts.ts";
-import { LocalSessionRepository } from "../infrastructure/persistence/local-session-repository.ts";
-import { WebAudioService } from "../infrastructure/audio/audio-service.ts";
+import { analyzeWeakKeys } from "../../domain/analytics/weak-key-analyzer.ts";
+import { createPromptSelector } from "../../domain/prompts/prompt-selector.ts";
+import type { TypingPrompt } from "../../domain/prompts/prompt-types.ts";
+import { calculateMetrics } from "../../domain/scoring/metrics.ts";
+import { calculateScore } from "../../domain/scoring/scoring-engine.ts";
+import { createTypingState, getTypingGuide, validateInput } from "../../domain/typing/romanization-engine.ts";
+import type { TypingState } from "../../domain/typing/typing-types.ts";
+import { JAPANESE_PROMPTS } from "../../content/prompts/japanese-prompts.ts";
+import { CONSULTING_PROMPTS } from "../../content/prompts/consulting-prompts.ts";
+import { TAKKEN_PROMPTS } from "../../content/prompts/takken-prompts.ts";
+import { LocalSessionRepository } from "../../infrastructure/persistence/local-session-repository.ts";
+import { WebAudioService } from "../../infrastructure/audio/audio-service.ts";
 import {
   createSessionState,
   getCountdownValue,
   getElapsedMs,
   sessionTransition,
-} from "../application/session/session-reducer.ts";
+} from "../../application/session/session-reducer.ts";
 import type {
   AppSettings,
   CompletedSession,
   KeystrokeEvent,
   PromptAttempt,
   TrainingSet,
-} from "../application/session/session-types.ts";
+} from "../../application/session/session-types.ts";
 
 const repository = new LocalSessionRepository();
 
 type AttemptDraft = PromptAttempt & { completedAt?: number };
-export type { TrainingSet } from "../application/session/session-types.ts";
 
 function newId(): string {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;

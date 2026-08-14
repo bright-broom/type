@@ -1,4 +1,4 @@
-import type { CompletedSession } from "../../application/session/session-types.ts";
+import type { CompletedSession } from "../../../application/session/session-types.ts";
 
 type HomeScreenProps = {
   best: CompletedSession | null;

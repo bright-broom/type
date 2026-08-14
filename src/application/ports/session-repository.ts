@@ -1,4 +1,4 @@
-import type { AppSettings, CompletedSession, TrainingSet } from "../../application/session/session-types.ts";
+import type { AppSettings, CompletedSession, TrainingSet } from "../session/session-types.ts";
 
 export interface SessionRepository {
   save(session: CompletedSession): Promise<void>;

@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import playbookJson from "../../data/consulting/consulting-playbook.json";
-import type { ConsultingPlaybook as ConsultingPlaybookData, PlaybookRow } from "../../data/consulting/consulting-playbook-types.ts";
+import playbookJson from "../../../content/consulting/consulting-playbook.json";
+import type { ConsultingPlaybook as ConsultingPlaybookData, PlaybookRow } from "../../../content/consulting/consulting-playbook-types.ts";
 
 const playbook = playbookJson as ConsultingPlaybookData;
 

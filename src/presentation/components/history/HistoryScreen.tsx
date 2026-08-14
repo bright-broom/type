@@ -1,4 +1,4 @@
-import type { CompletedSession } from "../../application/session/session-types.ts";
+import type { CompletedSession } from "../../../application/session/session-types.ts";
 
 export function HistoryScreen({ sessions, onBack }: { sessions: ReadonlyArray<CompletedSession>; onBack: () => void }) {
   return (

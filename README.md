@@ -40,12 +40,16 @@ This is a standard Next.js App Router application and can be deployed to Vercel 
 ## Architecture
 
 ```text
-Presentation → Application → Domain
-                      ↑
-       Infrastructure implements ports
+app/                         Next.js routes and metadata
+src/
+├── presentation/            React components and browser-facing hooks
+├── application/             Session orchestration, state, and ports
+├── domain/                  Pure typing, scoring, prompt, and analytics rules
+├── infrastructure/          Browser adapters for audio and persistence
+└── content/                 Versioned learning content and prompt datasets
 ```
 
-Domain層はReact、ブラウザAPI、永続化実装に依存しません。セッション履歴と設定は端末内にのみ保存されます。
+依存方向は `presentation → application → domain` を基本とし、`infrastructure` は `application/ports` を実装します。`content` は教材データとプロンプト生成だけを担当します。Domain層はReact、ブラウザAPI、永続化実装に依存しません。境界違反は `tests/architecture-boundaries.test.mjs` で検出します。セッション履歴と設定は端末内にのみ保存されます。
 
 ## Consulting Playbook import
 

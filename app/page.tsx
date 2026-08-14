@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { TypingApp } from "@/src/components/TypingApp";
+import { TypingApp } from "@/src/presentation/components/TypingApp";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();

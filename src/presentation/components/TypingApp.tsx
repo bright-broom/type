@@ -1,7 +1,7 @@
 "use client";
 
 import { lazy, Suspense, useState } from "react";
-import type { CompletedSession } from "../application/session/session-types.ts";
+import type { CompletedSession, TrainingSet } from "../../application/session/session-types.ts";
 import { useKeyboardInput } from "../hooks/useKeyboardInput.ts";
 import { useTypingSession } from "../hooks/useTypingSession.ts";
 import { AppHeader } from "./shared/AppHeader.tsx";
@@ -11,7 +11,6 @@ import { GameScreen } from "./game/GameScreen.tsx";
 import { PauseDialog } from "./game/PauseDialog.tsx";
 import { ResultScreen } from "./result/ResultScreen.tsx";
 import { HistoryScreen } from "./history/HistoryScreen.tsx";
-import type { TrainingSet } from "../hooks/useTypingSession.ts";
 
 const ConsultingPlaybook = lazy(() =>
   import("./consulting/ConsultingPlaybook.tsx").then((module) => ({ default: module.ConsultingPlaybook })),

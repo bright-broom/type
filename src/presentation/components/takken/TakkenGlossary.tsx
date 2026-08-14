@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import glossaryJson from "../../data/takken/takken-glossary.json";
-import { filterTakkenGlossary } from "../../data/takken/filter-takken-glossary.ts";
-import type { TakkenGlossary as TakkenGlossaryData } from "../../data/takken/takken-glossary-types.ts";
+import glossaryJson from "../../../content/takken/takken-glossary.json";
+import { filterTakkenGlossary } from "../../../content/takken/filter-takken-glossary.ts";
+import type { TakkenGlossary as TakkenGlossaryData } from "../../../content/takken/takken-glossary-types.ts";
 
 const glossary = glossaryJson as TakkenGlossaryData;
 

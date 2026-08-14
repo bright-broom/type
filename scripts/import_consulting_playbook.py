@@ -70,8 +70,8 @@ def main() -> None:
         raise SystemExit("Usage: import_consulting_playbook.py <source.xlsx>")
 
     source = Path(sys.argv[1]).expanduser().resolve()
-    output_json = Path("src/data/consulting/consulting-playbook.json")
-    output_prompts = Path("src/data/prompts/consulting-prompts.ts")
+    output_json = Path("src/content/consulting/consulting-playbook.json")
+    output_prompts = Path("src/content/prompts/consulting-prompts.ts")
     sheets: list[dict[str, object]] = []
 
     with ZipFile(source) as archive:
