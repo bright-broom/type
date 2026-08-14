@@ -4,7 +4,7 @@ import { lazy, Suspense, useState } from "react";
 import type { CompletedSession, TrainingSet } from "../../application/session/session-types.ts";
 import { useKeyboardInput } from "../hooks/useKeyboardInput.ts";
 import { useTypingSession } from "../hooks/useTypingSession.ts";
-import { AppHeader } from "./shared/AppHeader.tsx";
+import { AppHeader } from "./AppHeader.tsx";
 import { HomeScreen } from "./home/HomeScreen.tsx";
 import { CountdownScreen } from "./game/CountdownScreen.tsx";
 import { GameScreen } from "./game/GameScreen.tsx";

@@ -8,7 +8,7 @@ if (!sourcePath) {
 }
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
-const outputPath = resolve(scriptDir, "../src/content/takken/takken-glossary.json");
+const outputPath = resolve(scriptDir, "../src/content/generated/takken-glossary.json");
 const raw = await readFile(resolve(sourcePath), "utf8");
 const lines = raw.split(/\r?\n/);
 

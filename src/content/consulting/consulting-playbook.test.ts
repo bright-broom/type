@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import playbook from "./consulting-playbook.json" with { type: "json" };
+import playbook from "../generated/consulting-playbook.json" with { type: "json" };
 import { CONSULTING_PROMPTS } from "../prompts/consulting-prompts.ts";
 import { validatePrompts } from "../prompts/validate-prompts.ts";
 

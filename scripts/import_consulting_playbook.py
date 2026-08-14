@@ -70,8 +70,8 @@ def main() -> None:
         raise SystemExit("Usage: import_consulting_playbook.py <source.xlsx>")
 
     source = Path(sys.argv[1]).expanduser().resolve()
-    output_json = Path("src/content/consulting/consulting-playbook.json")
-    output_prompts = Path("src/content/prompts/consulting-prompts.ts")
+    output_json = Path("src/content/generated/consulting-playbook.json")
+    output_prompts = Path("src/content/generated/consulting-prompts.json")
     sheets: list[dict[str, object]] = []
 
     with ZipFile(source) as archive:
@@ -187,13 +187,7 @@ def main() -> None:
 
     prompt_json = json.dumps(prompts, ensure_ascii=False, indent=2)
     output_prompts.parent.mkdir(parents=True, exist_ok=True)
-    output_prompts.write_text(
-        'import type { TypingPrompt } from "../../domain/prompts/prompt-types.ts";\n\n'
-        + "export const CONSULTING_PROMPTS: ReadonlyArray<TypingPrompt> = "
-        + prompt_json
-        + ";\n",
-        encoding="utf-8",
-    )
+    output_prompts.write_text(prompt_json + "\n", encoding="utf-8")
 
     print(
         json.dumps(

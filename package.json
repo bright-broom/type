@@ -12,10 +12,13 @@
     "test": "npm run build && npm run test:unit",
     "test:unit": "node --experimental-strip-types --test src/domain/**/*.test.ts src/application/**/*.test.ts src/content/**/*.test.ts tests/*.test.mjs",
     "test:domain": "node --experimental-strip-types --test src/domain/**/*.test.ts",
+    "test:architecture": "node --test tests/architecture-boundaries.test.mjs tests/repository-conventions.test.mjs",
     "import:consulting": "python3 scripts/import_consulting_playbook.py",
     "import:takken": "node scripts/import_takken_glossary.mjs",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next"
+    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
+    "check:quick": "npm run typecheck && npm run lint && npm run test:unit",
+    "check": "npm run typecheck && npm run lint && npm run test:unit && npm run build"
   },
   "dependencies": {
     "next": "16.2.6",

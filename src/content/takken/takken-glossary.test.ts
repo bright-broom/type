@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import glossaryJson from "./takken-glossary.json" with { type: "json" };
+import glossaryJson from "../generated/takken-glossary.json" with { type: "json" };
 import type { TakkenGlossary } from "./takken-glossary-types.ts";
 import { TAKKEN_PROMPTS } from "../prompts/takken-prompts.ts";
 import { validatePrompts } from "../prompts/validate-prompts.ts";

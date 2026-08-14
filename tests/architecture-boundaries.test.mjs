@@ -26,6 +26,12 @@ function layerOf(path) {
   return relative(sourceRoot, path).split(sep)[0];
 }
 
+function importedLayer(file, specifier) {
+  if (specifier.startsWith(".")) return layerOf(resolve(dirname(file), specifier));
+  if (specifier.startsWith("@/src/")) return specifier.split("/")[2];
+  return null;
+}
+
 test("source layers only import from allowed inward dependencies", async () => {
   const violations = [];
   for (const file of await sourceFiles(sourceRoot)) {
@@ -36,8 +42,8 @@ test("source layers only import from allowed inward dependencies", async () => {
     const imports = source.matchAll(/(?:from\s+|import\s*\()\s*["']([^"']+)["']/g);
     for (const match of imports) {
       const specifier = match[1];
-      if (!specifier.startsWith(".")) continue;
-      const targetLayer = layerOf(resolve(dirname(file), specifier));
+      const targetLayer = importedLayer(file, specifier);
+      if (!targetLayer) continue;
       if (!allowed.has(targetLayer)) {
         violations.push(`${relative(sourceRoot, file)} -> ${targetLayer} (${specifier})`);
       }

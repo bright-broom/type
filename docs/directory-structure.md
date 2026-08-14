@@ -1,0 +1,59 @@
+# Directory structure
+
+## Canonical tree
+
+```text
+.
+├── AGENTS.md
+├── app/                         Next.js routes, metadata, global CSS
+├── docs/
+│   ├── architecture.md         Runtime and dependency design
+│   ├── directory-structure.md  Placement and naming rules
+│   └── adr/                    Durable design decisions
+├── scripts/                    Repeatable import and maintenance scripts
+├── src/
+│   ├── application/
+│   │   ├── ports/              Interfaces required by the application
+│   │   └── session/            Session state and transitions
+│   ├── content/
+│   │   ├── generated/          Versioned machine-generated JSON
+│   │   ├── consulting/         Consulting types and dataset tests
+│   │   ├── prompts/            Typed prompt loaders and validation
+│   │   └── takken/             Takken types, filters, and tests
+│   ├── domain/                 Pure business rules by capability
+│   ├── infrastructure/         Browser adapters by capability
+│   └── presentation/
+│       ├── components/         React components by screen/capability
+│       └── hooks/              Browser-facing orchestration hooks
+└── tests/                      Cross-layer and repository policy tests
+```
+
+## Placement rules
+
+- Framework entry points stay in `app`; product behavior does not.
+- Pure rules and value calculations belong in `domain`.
+- Session orchestration and capability interfaces belong in `application`.
+- Browser or vendor-specific implementations belong in `infrastructure`.
+- React rendering and browser event composition belong in `presentation`.
+- Learning material and prompt adapters belong in `content`.
+- Cross-layer rules belong in root `tests`; capability tests stay beside their source.
+
+Do not create a generic `shared`, `common`, `utils`, or `helpers` bucket. A module used by several callers still belongs to the layer and capability that owns its responsibility. Rename around purpose before extracting around reuse.
+
+## Naming rules
+
+- React component files: `PascalCase.tsx`.
+- Other source and test files: `kebab-case.ts`, `kebab-case.mjs`, or `kebab-case.py`.
+- Tests: `<subject>.test.<extension>` beside the subject when layer-local.
+- Ports: responsibility names such as `session-repository.ts`; implementations add their mechanism, such as `local-session-repository.ts`.
+- ADRs: `ADR-NNN-short-decision.md` with the next sequential number.
+
+## Generated content
+
+Everything under `src/content/generated` is importer output. Do not edit it manually. Regenerate it with the commands documented in `AGENTS.md` and commit the importer change together with its generated output.
+
+Generated files may be large. Authored TypeScript, JavaScript, and Python files must remain below 300 lines; the repository convention test enforces this ceiling. Size is a review signal, not permission for arbitrary splitting: extract only when a separate responsibility or stable interface exists.
+
+## Adding new files
+
+Before creating a directory, identify its owner, layer, and dependency direction. Prefer an existing capability directory when the responsibility matches. A new top-level source layer or a dependency-direction change requires an ADR and an update to the architecture boundary test.

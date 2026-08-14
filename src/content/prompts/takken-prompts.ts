@@ -1,4 +1,4 @@
-import glossaryJson from "../takken/takken-glossary.json" with { type: "json" };
+import glossaryJson from "../generated/takken-glossary.json" with { type: "json" };
 import type { TypingPrompt } from "../../domain/prompts/prompt-types.ts";
 import type { TakkenGlossary } from "../takken/takken-glossary-types.ts";
 
