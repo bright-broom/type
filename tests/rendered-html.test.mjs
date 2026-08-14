@@ -6,9 +6,9 @@ test("declares an App Router home route and finished TypeLoop shell", async () =
   const [page, layout, app, playbook, takken] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../src/components/TypingApp.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../src/components/consulting/ConsultingPlaybook.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../src/components/takken/TakkenGlossary.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/presentation/components/TypingApp.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/presentation/components/consulting/ConsultingPlaybook.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/presentation/components/takken/TakkenGlossary.tsx", import.meta.url), "utf8"),
   ]);
   assert.match(page, /export default function Home/);
   assert.match(page, /TypingApp/);
