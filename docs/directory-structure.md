@@ -4,6 +4,7 @@
 
 ```text
 .
+├── .agents/skills/             Repo-scoped agent workflows
 ├── AGENTS.md
 ├── app/                         Next.js routes, metadata, global CSS
 ├── docs/
@@ -16,7 +17,7 @@
 │   │   ├── ports/              Interfaces required by the application
 │   │   └── session/            Session state and transitions
 │   ├── content/
-│   │   ├── generated/          Versioned machine-generated JSON
+│   │   ├── generated/          Versioned JSON with scoped agent guidance
 │   │   ├── consulting/         Consulting types and dataset tests
 │   │   ├── prompts/            Typed prompt loaders and validation
 │   │   └── takken/             Takken types, filters, and tests
@@ -57,3 +58,5 @@ Generated files may be large. Authored TypeScript, JavaScript, and Python files 
 ## Adding new files
 
 Before creating a directory, identify its owner, layer, and dependency direction. Prefer an existing capability directory when the responsibility matches. A new top-level source layer or a dependency-direction change requires an ADR and an update to the architecture boundary test.
+
+Keep repository-wide invariants in the root `AGENTS.md`. Put repeatable, task-specific procedures in `.agents/skills` so agents load them only when relevant. Add a nested `AGENTS.md` only when a directory has a consequential local rule that should not consume context for unrelated work.

@@ -7,9 +7,11 @@ const repositoryRoot = resolve(".");
 const requiredDocuments = [
   "AGENTS.md",
   "README.md",
+  ".agents/skills/develop-typeloop/SKILL.md",
   "docs/architecture.md",
   "docs/directory-structure.md",
   "docs/adr/README.md",
+  "src/content/generated/AGENTS.md",
 ];
 const forbiddenDirectoryNames = new Set(["shared", "common", "utils", "helpers"]);
 const authoredExtensions = new Set([".ts", ".tsx", ".mjs", ".py"]);
@@ -28,6 +30,18 @@ async function walk(directory) {
 
 test("agent entry documents are present", async () => {
   await Promise.all(requiredDocuments.map((path) => access(resolve(repositoryRoot, path))));
+});
+
+test("agent instructions stay concise and the repository skill is valid", async () => {
+  const agentGuide = await readFile(resolve(repositoryRoot, "AGENTS.md"), "utf8");
+  assert.ok(agentGuide.split(/\r?\n/).length <= 120, "AGENTS.md must stay below 120 lines");
+
+  const skill = await readFile(
+    resolve(repositoryRoot, ".agents/skills/develop-typeloop/SKILL.md"),
+    "utf8",
+  );
+  assert.match(skill, /^---\nname: develop-typeloop\ndescription: .+\n---\n/);
+  assert.doesNotMatch(skill, /\bTODO\b/);
 });
 
 test("source directories use responsibility-specific names", async () => {

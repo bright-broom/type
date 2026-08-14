@@ -1,0 +1,4 @@
+interface:
+  display_name: "Develop TypeLoop"
+  short_description: "Implement TypeLoop changes with focused validation"
+  default_prompt: "Use $develop-typeloop to implement and verify this TypeLoop change."

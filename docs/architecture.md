@@ -68,5 +68,7 @@ When adding persistence or another external capability, define the required port
 
 - `tests/architecture-boundaries.test.mjs` enforces layer dependencies.
 - `tests/repository-conventions.test.mjs` enforces required documentation, precise directory names, and authored-file size limits.
-- `npm run check` is the canonical local and CI validation command.
+- `npm run check` is the canonical deterministic local validation command; CI adds the network-backed dependency audit with `npm run check:ci`.
+- `.agents/skills/develop-typeloop` provides a reusable, progressively loaded workflow for TypeLoop changes.
+- Root and nested `AGENTS.md` files hold a small number of consequential review invariants; mechanical rules remain in CI.
 - Durable changes to these boundaries require an ADR.

@@ -32,9 +32,10 @@ npm run dev
 ```bash
 npm run check:quick
 npm run check
+npm run check:ci
 ```
 
-`check:quick` は開発中の typecheck・lint・unit test、`check` はそれらに production build を加えた最終確認です。ローカルとCIは同じ `npm run check` を使用します。設計判断は [`docs/adr`](docs/adr) に記録しています。
+`check:quick` は開発中の typecheck・lint・unit test、`check` はそれらに production build を加えた最終確認です。CIはさらにHigh以上の依存脆弱性を検査する `check:ci` を使用します。設計判断は [`docs/adr`](docs/adr) に記録しています。
 
 ## Deployment
 
