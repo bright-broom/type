@@ -1,6 +1,8 @@
 import type { KeyPerformance } from "../../domain/analytics/weak-key-analyzer.ts";
 import type { SessionMetrics } from "../../domain/scoring/metrics.ts";
 
+export type TrainingSet = "japanese" | "consulting" | "takken";
+
 export type KeystrokeEvent = {
   timestamp: number;
   key: string;
@@ -22,7 +24,7 @@ export type PromptAttempt = {
 export type CompletedSession = {
   id: string;
   mode: "60s";
-  trainingSet?: "japanese" | "consulting";
+  trainingSet?: TrainingSet;
   startedAt: number;
   endedAt: number;
   prompts: ReadonlyArray<PromptAttempt>;

@@ -9,6 +9,7 @@
 - Drift-resistant 60-second session timer with pause and resume
 - Local-first personal best, history, weak-key analysis, and settings
 - Excel由来のConsulting Playbook全17セクション検索と327件の用語練習
+- 令和8年度向け宅建用語446語の検索・分野/重要度/出典フィルター・用語練習
 - Keyboard-first operation, IME protection, reduced motion, and optional sound
 
 ## Development
@@ -52,6 +53,7 @@ Domain層はReact、ブラウザAPI、永続化実装に依存しません。セ
 
 ```bash
 npm run import:consulting -- "/path/to/Consulting_Playbook_Dictionary_JA.xlsx"
+npm run import:takken -- "/path/to/takken-glossary.tsv"
 ```
 
 取込データはローカル静的データとして保持され、外部へ送信されません。

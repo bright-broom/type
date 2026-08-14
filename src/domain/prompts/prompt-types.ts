@@ -5,7 +5,8 @@ export type PromptCategory =
   | "contracted"
   | "n-rule"
   | "phrase"
-  | "consulting";
+  | "consulting"
+  | "takken";
 
 export type TypingPrompt = {
   id: string;

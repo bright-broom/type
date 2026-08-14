@@ -1,4 +1,4 @@
-import type { AppSettings, CompletedSession } from "../../application/session/session-types.ts";
+import type { AppSettings, CompletedSession, TrainingSet } from "../../application/session/session-types.ts";
 import type { SessionRepository } from "./session-repository.ts";
 
 const STORAGE_KEY = "typeloop:data";
@@ -57,7 +57,7 @@ export class LocalSessionRepository implements SessionRepository {
     return readStorage().sessions.slice(0, Math.max(0, limit));
   }
 
-  async getBest(trainingSet: "japanese" | "consulting" = "japanese"): Promise<CompletedSession | null> {
+  async getBest(trainingSet: TrainingSet = "japanese"): Promise<CompletedSession | null> {
     return readStorage().sessions
       .filter((session) => (session.trainingSet ?? "japanese") === trainingSet)
       .reduce<CompletedSession | null>(

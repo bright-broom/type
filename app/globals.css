@@ -80,6 +80,8 @@ kbd { font-family: var(--font-geist-mono), monospace; }
 .playbook-link { width: 100%; margin-top: 20px; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 14px 16px; display: flex; align-items: center; gap: 10px; background: rgb(250 248 242 / 72%); cursor: pointer; font-size: 0.76rem; font-weight: 750; text-align: left; }
 .playbook-link span { padding: 3px 5px; border-radius: 3px; color: var(--ink-deep); background: var(--cyan); font: 800 0.5rem var(--font-geist-mono), monospace; }
 .playbook-link i { margin-left: auto; color: var(--muted); font-style: normal; font-size: 0.65rem; }
+.takken-link { margin-top: 10px; }
+.takken-link span { background: var(--coral); color: white; }
 
 .home-card { min-height: 480px; position: relative; border-radius: var(--radius-lg); padding: 34px; color: white; background: var(--ink-deep); box-shadow: var(--shadow); overflow: hidden; transform: rotate(1deg); }
 .home-card::before { content: ""; position: absolute; width: 330px; height: 330px; border: 1px solid rgb(86 216 208 / 22%); border-radius: 50%; top: 62px; left: 50%; transform: translateX(-50%); box-shadow: 0 0 0 44px rgb(86 216 208 / 4%), 0 0 0 88px rgb(86 216 208 / 3%); }
@@ -218,13 +220,42 @@ kbd { font-family: var(--font-geist-mono), monospace; }
 .playbook-rows article div { display: flex; flex-wrap: wrap; gap: 7px 18px; }
 .playbook-rows article p { margin: 0; color: #4d616d; font-size: 0.75rem; line-height: 1.65; }
 .playbook-rows article p:first-child { width: 100%; color: var(--ink-deep); font-size: 0.9rem; font-weight: 750; }
+.takken-shell { flex: 1; width: min(1320px, calc(100% - 64px)); margin: 0 auto; padding: 42px 0 70px; }
+.takken-heading { display: grid; grid-template-columns: 130px 1fr auto; gap: 30px; align-items: center; padding-bottom: 30px; border-bottom: 1px solid var(--line); }
+.takken-heading .text-button { justify-self: start; }
+.takken-heading h1 { margin: 7px 0 5px; font-size: clamp(2.5rem, 4.5vw, 4.2rem); letter-spacing: -0.065em; }
+.takken-heading p { margin: 0; color: var(--muted); }
+.takken-filters { margin-top: 24px; padding: 18px; display: grid; grid-template-columns: minmax(260px, 2fr) repeat(3, minmax(130px, 1fr)) auto; gap: 12px; align-items: end; border: 1px solid var(--line); border-radius: var(--radius-md); background: rgb(250 248 242 / 78%); }
+.takken-filters label { display: grid; gap: 8px; }
+.takken-filters label > span { color: var(--muted); font: 700 0.59rem var(--font-geist-mono), monospace; letter-spacing: 0.09em; }
+.takken-filters input, .takken-filters select { width: 100%; min-height: 44px; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 9px 12px; background: var(--paper-soft); color: var(--ink); font: inherit; }
+.takken-filters input:focus-visible, .takken-filters select:focus-visible { outline: 3px solid var(--cyan-dark); outline-offset: 2px; }
+.filter-clear { min-height: 44px; border: 0; background: transparent; color: var(--cyan-dark); padding: 0 8px; font-size: 0.72rem; font-weight: 750; cursor: pointer; white-space: nowrap; }
+.takken-result-meta { padding: 22px 4px 12px; color: var(--muted); font: 680 0.7rem var(--font-geist-mono), monospace; text-align: right; }
+.takken-result-meta strong { color: var(--cyan-dark); font-size: 1rem; }
+.takken-list { border: 1px solid var(--line); border-radius: var(--radius-md); background: rgb(250 248 242 / 78%); box-shadow: var(--shadow); overflow: hidden; }
+.takken-entry { padding: 24px 28px; display: grid; grid-template-columns: 54px 1fr; border-bottom: 1px solid var(--line); }
+.takken-entry:last-child { border-bottom: 0; }
+.takken-entry-main { min-width: 0; }
+.takken-entry-title { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.takken-entry-title span { color: var(--muted); font-size: 0.68rem; letter-spacing: 0.1em; }
+.takken-entry-title h2 { margin: 3px 0 0; color: var(--ink-deep); font-size: 1.22rem; letter-spacing: -0.025em; }
+.takken-entry-main > p { margin: 13px 0 0; color: #4d616d; font-size: 0.82rem; line-height: 1.75; }
+.takken-entry-main .exam-note { padding: 10px 12px; border-left: 3px solid var(--coral); background: rgb(243 111 86 / 6%); }
+.exam-note strong { margin-right: 12px; color: var(--coral); font-size: 0.68rem; }
+.takken-entry footer { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 7px; }
+.takken-entry footer span { border: 1px solid var(--line); border-radius: 999px; padding: 4px 8px; color: var(--muted); background: var(--paper-soft); font-size: 0.6rem; }
+.importance { flex: none; border-radius: 999px; padding: 6px 9px; font: normal 750 0.6rem var(--font-geist-mono), monospace; }
+.importance-a { color: white; background: var(--coral); }
+.importance-b { color: var(--ink-deep); background: var(--cyan); }
+.importance-c { color: var(--muted); border: 1px solid var(--line); background: var(--paper-soft); }
 .error-shell { min-height: 100svh; display: grid; place-content: center; justify-items: center; text-align: center; padding: 30px; }
 .error-shell > span { color: var(--cyan-dark); font: 800 0.7rem var(--font-geist-mono), monospace; letter-spacing: 0.15em; }
 .error-shell h1 { margin: 18px 0 8px; font-size: clamp(2rem, 5vw, 4rem); letter-spacing: -0.06em; }
 .error-shell p { color: var(--muted); margin: 0 0 28px; }
 
 @media (max-width: 900px) {
-  .app-header, .site-footer, .home-shell, .game-shell, .result-shell, .history-shell, .playbook-shell { width: min(100% - 36px, 720px); }
+  .app-header, .site-footer, .home-shell, .game-shell, .result-shell, .history-shell, .playbook-shell, .takken-shell { width: min(100% - 36px, 720px); }
   .home-shell { grid-template-columns: 1fr; padding-top: 40px; }
   .hero { padding-bottom: 0; }
   .home-card { min-height: 420px; transform: none; }
@@ -234,6 +265,10 @@ kbd { font-family: var(--font-geist-mono), monospace; }
   .live-stats > div { padding: 0 15px; }
   .playbook-heading { grid-template-columns: 1fr; }
   .playbook-heading .primary-button { justify-self: start; }
+  .takken-heading { grid-template-columns: 1fr; }
+  .takken-heading .primary-button { justify-self: start; }
+  .takken-filters { grid-template-columns: 1fr 1fr; }
+  .takken-search { grid-column: 1 / -1; }
   .playbook-layout { grid-template-columns: 1fr; }
   .playbook-nav { max-height: 170px; border-right: 0; border-bottom: 1px solid var(--line); }
 }
@@ -263,6 +298,11 @@ kbd { font-family: var(--font-geist-mono), monospace; }
   .playbook-controls label { grid-template-columns: 1fr; }
   .playbook-controls > span { display: none; }
   .playbook-rows { padding: 0 15px; }
+  .takken-filters { grid-template-columns: 1fr; }
+  .takken-search { grid-column: auto; }
+  .takken-entry { padding: 20px 16px; grid-template-columns: 40px 1fr; }
+  .takken-entry-title { align-items: flex-start; }
+  .takken-entry-main .exam-note { display: grid; gap: 4px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
