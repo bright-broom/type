@@ -17,6 +17,9 @@ type GameScreenProps = {
 export function GameScreen(props: GameScreenProps) {
   const seconds = Math.max(0, Math.ceil(props.remainingMs / 1_000));
   const progress = Math.max(0, Math.min(100, (props.remainingMs / 60_000) * 100));
+  const promptLabel = props.prompt.category === "consulting"
+    ? "CONSULTING TERM"
+    : props.prompt.reading;
   return (
     <main className={`game-shell feedback-${props.feedback ?? "none"}`}>
       <div className="game-meta">
@@ -32,7 +35,7 @@ export function GameScreen(props: GameScreenProps) {
 
       <section className="prompt-stage" aria-labelledby="current-prompt">
         <div className="prompt-index"><span>{String(props.completedPrompts + 1).padStart(2, "0")}</span> / SESSION</div>
-        <p className="prompt-reading">{props.prompt.category === "consulting" ? "CONSULTING TERM" : props.prompt.reading}</p>
+        <p className="prompt-reading">{promptLabel}</p>
         <h1 id="current-prompt">{props.prompt.displayText}</h1>
         {props.prompt.description && <p className="prompt-description">{props.prompt.description}</p>}
         <div className="roman-line" aria-label={`入力: ${props.guide.full}`}>

@@ -16,29 +16,34 @@ import type { TrainingSet } from "../hooks/useTypingSession.ts";
 const ConsultingPlaybook = lazy(() =>
   import("./consulting/ConsultingPlaybook.tsx").then((module) => ({ default: module.ConsultingPlaybook })),
 );
+const TakkenGlossary = lazy(() =>
+  import("./takken/TakkenGlossary.tsx").then((module) => ({ default: module.TakkenGlossary })),
+);
 
 export function TypingApp() {
   const session = useTypingSession();
   const [showHistory, setShowHistory] = useState(false);
   const [showPlaybook, setShowPlaybook] = useState(false);
+  const [showTakkenGlossary, setShowTakkenGlossary] = useState(false);
   const [previousBest, setPreviousBest] = useState<CompletedSession | null>(null);
 
   const start = (trainingSet: TrainingSet = "japanese") => {
     setPreviousBest(session.bests[trainingSet]);
     setShowHistory(false);
     setShowPlaybook(false);
+    setShowTakkenGlossary(false);
     session.start(trainingSet);
   };
 
   useKeyboardInput({
     onKey: session.typeKey,
     onEnter: () => {
-      if (showHistory || showPlaybook) { setShowHistory(false); setShowPlaybook(false); return; }
+      if (showHistory || showPlaybook || showTakkenGlossary) { setShowHistory(false); setShowPlaybook(false); setShowTakkenGlossary(false); return; }
       if (["idle", "finished", "aborted"].includes(session.clock.status)) start(session.trainingSet);
       else session.enter();
     },
     onEscape: () => {
-      if (showHistory || showPlaybook) { setShowHistory(false); setShowPlaybook(false); }
+      if (showHistory || showPlaybook || showTakkenGlossary) { setShowHistory(false); setShowPlaybook(false); setShowTakkenGlossary(false); }
       else session.escape();
     },
   });
@@ -50,10 +55,14 @@ export function TypingApp() {
         compact={active}
         soundEnabled={session.settings.soundEnabled}
         onToggleSound={session.toggleSound}
-        onShowHome={active ? undefined : () => { setShowHistory(false); setShowPlaybook(false); session.home(); }}
+        onShowHome={active ? undefined : () => { setShowHistory(false); setShowPlaybook(false); setShowTakkenGlossary(false); session.home(); }}
       />
 
-      {showPlaybook ? (
+      {showTakkenGlossary ? (
+        <Suspense fallback={<main className="playbook-loading" role="status">宅建用語集を読み込んでいます…</main>}>
+          <TakkenGlossary onBack={() => setShowTakkenGlossary(false)} onStart={() => start("takken")} />
+        </Suspense>
+      ) : showPlaybook ? (
         <Suspense fallback={<main className="playbook-loading" role="status">実務辞典を読み込んでいます…</main>}>
           <ConsultingPlaybook onBack={() => setShowPlaybook(false)} onStart={() => start("consulting")} />
         </Suspense>
@@ -88,9 +97,11 @@ export function TypingApp() {
         <HomeScreen
           best={session.bests.japanese}
           history={session.history}
-          onStart={start}
+          onStart={() => start()}
           onStartConsulting={() => start("consulting")}
+          onStartTakken={() => start("takken")}
           onShowPlaybook={() => setShowPlaybook(true)}
+          onShowTakkenGlossary={() => setShowTakkenGlossary(true)}
           onShowHistory={() => setShowHistory(true)}
           aborted={session.clock.status === "aborted"}
         />

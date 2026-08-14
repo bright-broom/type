@@ -13,6 +13,7 @@
     "test:unit": "node --experimental-strip-types --test src/domain/**/*.test.ts src/application/**/*.test.ts src/data/**/*.test.ts tests/*.test.mjs",
     "test:domain": "node --experimental-strip-types --test src/domain/**/*.test.ts",
     "import:consulting": "python3 scripts/import_consulting_playbook.py",
+    "import:takken": "node scripts/import_takken_glossary.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next"
   },

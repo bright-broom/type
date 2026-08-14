@@ -10,6 +10,7 @@ import { createTypingState, getTypingGuide, validateInput } from "../domain/typi
 import type { TypingState } from "../domain/typing/typing-types.ts";
 import { JAPANESE_PROMPTS } from "../data/prompts/japanese-prompts.ts";
 import { CONSULTING_PROMPTS } from "../data/prompts/consulting-prompts.ts";
+import { TAKKEN_PROMPTS } from "../data/prompts/takken-prompts.ts";
 import { LocalSessionRepository } from "../infrastructure/persistence/local-session-repository.ts";
 import { WebAudioService } from "../infrastructure/audio/audio-service.ts";
 import {
@@ -23,12 +24,13 @@ import type {
   CompletedSession,
   KeystrokeEvent,
   PromptAttempt,
+  TrainingSet,
 } from "../application/session/session-types.ts";
 
 const repository = new LocalSessionRepository();
 
 type AttemptDraft = PromptAttempt & { completedAt?: number };
-export type TrainingSet = "japanese" | "consulting";
+export type { TrainingSet } from "../application/session/session-types.ts";
 
 function newId(): string {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -39,6 +41,7 @@ export function useTypingSession() {
   const [selectors] = useState(() => ({
     japanese: createPromptSelector(JAPANESE_PROMPTS),
     consulting: createPromptSelector(CONSULTING_PROMPTS),
+    takken: createPromptSelector(TAKKEN_PROMPTS),
   }));
   const [trainingSet, setTrainingSet] = useState<TrainingSet>("japanese");
   const firstPrompt = JAPANESE_PROMPTS[0] as TypingPrompt;
@@ -52,7 +55,7 @@ export function useTypingSession() {
   const [feedback, setFeedback] = useState<"correct" | "miss" | "complete" | null>(null);
   const [result, setResult] = useState<CompletedSession | null>(null);
   const [history, setHistory] = useState<CompletedSession[]>([]);
-  const [bests, setBests] = useState<Record<TrainingSet, CompletedSession | null>>({ japanese: null, consulting: null });
+  const [bests, setBests] = useState<Record<TrainingSet, CompletedSession | null>>({ japanese: null, consulting: null, takken: null });
   const [settings, setSettings] = useState<AppSettings>({ soundEnabled: true });
   const [now, setNow] = useState(0);
   const keystrokesRef = useRef<KeystrokeEvent[]>([]);
@@ -62,10 +65,10 @@ export function useTypingSession() {
   const audioRef = useRef(new WebAudioService());
 
   useEffect(() => {
-    Promise.all([repository.getRecent(20), repository.getBest("japanese"), repository.getBest("consulting"), repository.getSettings()])
-      .then(([recent, japaneseBest, consultingBest, storedSettings]) => {
+    Promise.all([repository.getRecent(20), repository.getBest("japanese"), repository.getBest("consulting"), repository.getBest("takken"), repository.getSettings()])
+      .then(([recent, japaneseBest, consultingBest, takkenBest, storedSettings]) => {
         setHistory(recent);
-        setBests({ japanese: japaneseBest, consulting: consultingBest });
+        setBests({ japanese: japaneseBest, consulting: consultingBest, takken: takkenBest });
         setSettings(storedSettings);
         audioRef.current.setEnabled(storedSettings.soundEnabled);
       })
