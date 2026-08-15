@@ -6,43 +6,32 @@ import { createPromptSelector } from "../../domain/prompts/prompt-selector.ts";
 import type { TypingPrompt } from "../../domain/prompts/prompt-types.ts";
 import { calculateMetrics } from "../../domain/scoring/metrics.ts";
 import { calculateScore } from "../../domain/scoring/scoring-engine.ts";
-import { createTypingState, getTypingGuide, validateInput } from "../../domain/typing/romanization-engine.ts";
+import { createTypingState, getTypingGuide } from "../../domain/typing/romanization-engine.ts";
 import type { TypingState } from "../../domain/typing/typing-types.ts";
 import { JAPANESE_PROMPTS } from "../../content/prompts/japanese-prompts.ts";
 import { CONSULTING_PROMPTS } from "../../content/prompts/consulting-prompts.ts";
 import { TAKKEN_PROMPTS } from "../../content/prompts/takken-prompts.ts";
 import { LocalSessionRepository } from "../../infrastructure/persistence/local-session-repository.ts";
 import { WebAudioService } from "../../infrastructure/audio/audio-service.ts";
-import {
-  createSessionState,
-  getCountdownValue,
-  getElapsedMs,
-  sessionTransition,
-} from "../../application/session/session-reducer.ts";
-import type {
-  AppSettings,
-  CompletedSession,
-  KeystrokeEvent,
-  PromptAttempt,
-  TrainingSet,
-} from "../../application/session/session-types.ts";
+import { createSessionId } from "../../infrastructure/identity/browser-session-id.ts";
+import * as sessionClock from "../../application/session/session-reducer.ts";
+import { applyTypingText } from "../../application/session/apply-typing-text.ts";
+import type * as Session from "../../application/session/session-types.ts";
 
 const repository = new LocalSessionRepository();
 
-type AttemptDraft = PromptAttempt & { completedAt?: number };
-
-function newId(): string {
-  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
+type AttemptDraft = Session.PromptAttempt & { completedAt?: number };
 
 export function useTypingSession() {
-  const [clock, dispatch] = useReducer(sessionTransition, undefined, () => createSessionState());
+  const [clock, dispatch] = useReducer(sessionClock.sessionTransition, undefined, () =>
+    sessionClock.createSessionState(),
+  );
   const [selectors] = useState(() => ({
     japanese: createPromptSelector(JAPANESE_PROMPTS),
     consulting: createPromptSelector(CONSULTING_PROMPTS),
     takken: createPromptSelector(TAKKEN_PROMPTS),
   }));
-  const [trainingSet, setTrainingSet] = useState<TrainingSet>("japanese");
+  const [trainingSet, setTrainingSet] = useState<Session.TrainingSet>("japanese");
   const firstPrompt = JAPANESE_PROMPTS[0] as TypingPrompt;
   const [prompt, setPrompt] = useState<TypingPrompt>(firstPrompt);
   const [typing, setTyping] = useState<TypingState>(() => createTypingState(firstPrompt.reading));
@@ -52,19 +41,29 @@ export function useTypingSession() {
   const [maxCombo, setMaxCombo] = useState(0);
   const [completedPrompts, setCompletedPrompts] = useState(0);
   const [feedback, setFeedback] = useState<"correct" | "miss" | "complete" | null>(null);
-  const [result, setResult] = useState<CompletedSession | null>(null);
-  const [history, setHistory] = useState<CompletedSession[]>([]);
-  const [bests, setBests] = useState<Record<TrainingSet, CompletedSession | null>>({ japanese: null, consulting: null, takken: null });
-  const [settings, setSettings] = useState<AppSettings>({ soundEnabled: true });
+  const [result, setResult] = useState<Session.CompletedSession | null>(null);
+  const [history, setHistory] = useState<Session.CompletedSession[]>([]);
+  const [bests, setBests] = useState<Record<Session.TrainingSet, Session.CompletedSession | null>>({
+    japanese: null,
+    consulting: null,
+    takken: null,
+  });
+  const [settings, setSettings] = useState<Session.AppSettings>({ soundEnabled: true });
   const [now, setNow] = useState(0);
-  const keystrokesRef = useRef<KeystrokeEvent[]>([]);
-  const attemptsRef = useRef<PromptAttempt[]>([]);
+  const keystrokesRef = useRef<Session.KeystrokeEvent[]>([]);
+  const attemptsRef = useRef<Session.PromptAttempt[]>([]);
   const attemptRef = useRef<AttemptDraft | null>(null);
   const savedRef = useRef(false);
   const audioRef = useRef(new WebAudioService());
 
   useEffect(() => {
-    Promise.all([repository.getRecent(20), repository.getBest("japanese"), repository.getBest("consulting"), repository.getBest("takken"), repository.getSettings()])
+    Promise.all([
+      repository.getRecent(20),
+      repository.getBest("japanese"),
+      repository.getBest("consulting"),
+      repository.getBest("takken"),
+      repository.getSettings(),
+    ])
       .then(([recent, japaneseBest, consultingBest, takkenBest, storedSettings]) => {
         setHistory(recent);
         setBests({ japanese: japaneseBest, consulting: consultingBest, takken: takkenBest });
@@ -98,58 +97,73 @@ export function useTypingSession() {
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, []);
 
-  const start = useCallback((requestedSet: TrainingSet = "japanese") => {
-    const selector = selectors[requestedSet];
-    selector.reset();
-    const next = selector.next();
-    const time = performance.now();
-    setPrompt(next);
-    setTrainingSet(requestedSet);
-    setTyping(createTypingState(next.reading));
-    setCorrect(0);
-    setMisses(0);
-    setCombo(0);
-    setMaxCombo(0);
-    setCompletedPrompts(0);
-    setFeedback(null);
-    setResult(null);
-    keystrokesRef.current = [];
-    attemptsRef.current = [];
-    attemptRef.current = {
-      promptId: next.id,
-      startedAt: time,
-      input: "",
-      correctKeystrokes: 0,
-      incorrectKeystrokes: 0,
-    };
-    savedRef.current = false;
-    setNow(time);
-    dispatch({ type: "START", now: time });
-  }, [selectors]);
+  const start = useCallback(
+    (requestedSet: Session.TrainingSet = "japanese") => {
+      const selector = selectors[requestedSet];
+      selector.reset();
+      const next = selector.next();
+      const time = performance.now();
+      setPrompt(next);
+      setTrainingSet(requestedSet);
+      setTyping(createTypingState(next.reading));
+      setCorrect(0);
+      setMisses(0);
+      setCombo(0);
+      setMaxCombo(0);
+      setCompletedPrompts(0);
+      setFeedback(null);
+      setResult(null);
+      keystrokesRef.current = [];
+      attemptsRef.current = [];
+      attemptRef.current = {
+        promptId: next.id,
+        startedAt: time,
+        input: "",
+        correctKeystrokes: 0,
+        incorrectKeystrokes: 0,
+      };
+      savedRef.current = false;
+      setNow(time);
+      dispatch({ type: "START", now: time });
+    },
+    [selectors],
+  );
 
   useEffect(() => {
     if (clock.status !== "finished" || savedRef.current) return;
     savedRef.current = true;
     const endedAt = Date.now();
     const startedAt = endedAt - clock.durationMs;
-    if (attemptRef.current && (attemptRef.current.correctKeystrokes > 0 || attemptRef.current.incorrectKeystrokes > 0)) {
+    if (
+      attemptRef.current &&
+      (attemptRef.current.correctKeystrokes > 0 || attemptRef.current.incorrectKeystrokes > 0)
+    ) {
       attemptsRef.current.push({ ...attemptRef.current });
     }
     const metrics = calculateMetrics({ correct, incorrect: misses, elapsedMs: clock.durationMs });
-    const weakKeys = analyzeWeakKeys(keystrokesRef.current.map((event) => ({ key: event.normalizedKey, correct: event.correct })));
-    const session: CompletedSession = {
-      id: newId(), mode: "60s", trainingSet, startedAt, endedAt,
-      prompts: [...attemptsRef.current], keystrokes: [...keystrokesRef.current], metrics,
+    const weakKeys = analyzeWeakKeys(
+      keystrokesRef.current.map((event) => ({ key: event.normalizedKey, correct: event.correct })),
+    );
+    const session: Session.CompletedSession = {
+      id: createSessionId(),
+      mode: "60s",
+      trainingSet,
+      startedAt,
+      endedAt,
+      prompts: [...attemptsRef.current],
+      keystrokes: [...keystrokesRef.current],
+      metrics,
       score: calculateScore({ ...metrics, completedPrompts, maxCombo }),
-      completedPrompts, maxCombo, weakKeys,
+      completedPrompts,
+      maxCombo,
+      weakKeys,
     };
     setResult(session);
     setHistory((current) => [session, ...current].slice(0, 20));
     setBests((current) => ({
       ...current,
-      [trainingSet]: !current[trainingSet] || session.score > current[trainingSet].score
-        ? session
-        : current[trainingSet],
+      [trainingSet]:
+        !current[trainingSet] || session.score > current[trainingSet].score ? session : current[trainingSet],
     }));
     void repository.save(session);
   }, [clock.status, clock.durationMs, completedPrompts, correct, maxCombo, misses, trainingSet]);
@@ -160,54 +174,71 @@ export function useTypingSession() {
     }
   }, [clock.startedAt, clock.status]);
 
-  const typeKey = useCallback((key: string) => {
-    if (clock.status !== "playing") return;
-    const time = performance.now();
-    const outcome = validateInput(prompt.reading, typing, key);
-    const event: KeystrokeEvent = {
-      timestamp: time,
-      key,
-      normalizedKey: key.toLowerCase(),
-      correct: outcome.accepted,
-      promptId: prompt.id,
-      position: typing.input.length,
-    };
-    keystrokesRef.current.push(event);
-    if (!attemptRef.current) return;
-    if (!outcome.accepted) {
-      attemptRef.current.incorrectKeystrokes += 1;
-      setMisses((value) => value + 1);
-      setCombo(0);
-      setFeedback("miss");
-      audioRef.current.playMiss();
-      return;
-    }
-    attemptRef.current.correctKeystrokes += 1;
-    attemptRef.current.input = outcome.nextState.input;
-    setCorrect((value) => value + 1);
-    setCombo((value) => {
-      const next = value + 1;
-      setMaxCombo((maximum) => Math.max(maximum, next));
-      return next;
-    });
-    if (!outcome.completed) {
-      setTyping(outcome.nextState);
-      setFeedback("correct");
-      audioRef.current.playCorrect();
-      return;
-    }
-    attemptRef.current.completedAt = time;
-    attemptsRef.current.push({ ...attemptRef.current });
-    const next = selectors[trainingSet].next();
-    setCompletedPrompts((value) => value + 1);
-    setFeedback("complete");
-    audioRef.current.playComplete();
-    setPrompt(next);
-    setTyping(createTypingState(next.reading));
-    attemptRef.current = {
-      promptId: next.id, startedAt: time, input: "", correctKeystrokes: 0, incorrectKeystrokes: 0,
-    };
-  }, [clock.status, prompt, selectors, trainingSet, typing]);
+  const typeText = useCallback(
+    (text: string) => {
+      if (clock.status !== "playing" || !attemptRef.current) return;
+      const applied = applyTypingText(prompt, typing, text, () => selectors[trainingSet].next());
+      let acceptedCount = 0;
+      let missCount = 0;
+      let completedCount = 0;
+      let latestFeedback: "correct" | "miss" | "complete" | null = null;
+
+      for (const step of applied.steps) {
+        const time = performance.now();
+        const event: Session.KeystrokeEvent = {
+          timestamp: time,
+          key: step.key,
+          normalizedKey: step.key,
+          correct: step.result.accepted,
+          promptId: step.prompt.id,
+          position: step.previousState.input.length,
+        };
+        keystrokesRef.current.push(event);
+        if (!step.result.accepted) {
+          attemptRef.current.incorrectKeystrokes += 1;
+          missCount += 1;
+          setCombo(0);
+          latestFeedback = "miss";
+          audioRef.current.playMiss();
+          continue;
+        }
+        acceptedCount += 1;
+        attemptRef.current.correctKeystrokes += 1;
+        attemptRef.current.input = step.result.nextState.input;
+        setCombo((value) => {
+          const next = value + 1;
+          setMaxCombo((maximum) => Math.max(maximum, next));
+          return next;
+        });
+        if (!step.result.completed) {
+          latestFeedback = "correct";
+          audioRef.current.playCorrect();
+          continue;
+        }
+        attemptRef.current.completedAt = time;
+        attemptsRef.current.push({ ...attemptRef.current });
+        completedCount += 1;
+        latestFeedback = "complete";
+        audioRef.current.playComplete();
+        const next = step.nextPrompt as TypingPrompt;
+        attemptRef.current = {
+          promptId: next.id,
+          startedAt: time,
+          input: "",
+          correctKeystrokes: 0,
+          incorrectKeystrokes: 0,
+        };
+      }
+
+      if (acceptedCount > 0) setCorrect((value) => value + acceptedCount);
+      if (missCount > 0) setMisses((value) => value + missCount);
+      if (completedCount > 0) setCompletedPrompts((value) => value + completedCount);
+      if (latestFeedback) setFeedback(latestFeedback);
+      setPrompt(applied.prompt);
+      setTyping(applied.typing);
+    },
+    [clock.status, prompt, selectors, trainingSet, typing],
+  );
 
   const pause = useCallback(() => dispatch({ type: "PAUSE", now: performance.now() }), []);
   const resume = useCallback(() => dispatch({ type: "RESUME", now: performance.now() }), []);
@@ -230,16 +261,39 @@ export function useTypingSession() {
     });
   }, []);
 
-  const elapsedMs = getElapsedMs(clock, now);
+  const elapsedMs = sessionClock.getElapsedMs(clock, now);
   const liveMetrics = useMemo(
     () => calculateMetrics({ correct, incorrect: misses, elapsedMs }),
     [correct, misses, elapsedMs],
   );
 
   return {
-    clock, now, countdown: getCountdownValue(clock, now), prompt, guide: getTypingGuide(typing),
-    correct, misses, combo, maxCombo, completedPrompts, feedback, liveMetrics,
-    result, history, best: bests[trainingSet], bests, settings, trainingSet,
-    start, typeKey, pause, resume, abort, home, escape, enter, toggleSound,
+    clock,
+    now,
+    countdown: sessionClock.getCountdownValue(clock, now),
+    prompt,
+    guide: getTypingGuide(typing),
+    correct,
+    misses,
+    combo,
+    maxCombo,
+    completedPrompts,
+    feedback,
+    liveMetrics,
+    result,
+    history,
+    best: bests[trainingSet],
+    bests,
+    settings,
+    trainingSet,
+    start,
+    typeText,
+    pause,
+    resume,
+    abort,
+    home,
+    escape,
+    enter,
+    toggleSound,
   };
 }

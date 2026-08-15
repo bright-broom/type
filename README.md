@@ -18,6 +18,7 @@ Node.js 22.13以降が必要です。
 
 ```bash
 npm ci
+npm run e2e:install
 npm run dev
 ```
 
@@ -35,16 +36,17 @@ npm run check
 npm run check:ci
 ```
 
-`check:quick` は開発中の typecheck・lint・unit test、`check` はそれらに production build を加えた最終確認です。CIはさらにHigh以上の依存脆弱性を検査する `check:ci` を使用します。設計判断は [`docs/adr`](docs/adr) に記録しています。
+`check:quick` は開発中の format・lint・typecheck・unit・integration、`check` は coverage・dead-code・production build・Playwright E2E まで実行します。`check:ci` はさらに tracked-secret scan と High 以上の依存脆弱性を検査します。詳細は [`docs/quality-harness.md`](docs/quality-harness.md)、設計判断は [`docs/adr`](docs/adr) に記録しています。
 
 ## Review workflow
 
 PRレビューはCodeRabbitなどの外部レビューボットに依存しません。実装後は次の順序で確認します。
 
-1. `npm run check` で機械的な品質ゲートを通す
-2. Codexの `/review` で `main` との差分を専用レビュアーに確認させる
+1. `npm run check:ci` で機械的な品質ゲートを通す
+2. `.agents/skills/review-typeloop` を使い、コードを編集しない独立レビュアーに差分を確認させる
 3. [`AGENTS.md`](AGENTS.md) のCode Review Rulesに沿って、互換性・依存境界・local-first制約を確認する
-4. GitHubへpushしてPRを作成し、CI成功と人間の最終判断を経てマージする
+4. Critical / High finding を修正し、初回レビュー後は最大2回まで修正・再レビューを行う
+5. GitHubへpushしてPRを作成し、CI成功と人間の最終判断を経てマージする（branch protection はGitHub planとowner設定が必要）
 
 AIレビューは、CIで判定できないリポジトリ固有のリスクを補完するために使います。自動生成された指摘だけをマージ判断の根拠にはしません。
 

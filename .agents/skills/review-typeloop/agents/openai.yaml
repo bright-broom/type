@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review TypeLoop"
+  short_description: "Review TypeLoop changes without editing"
+  default_prompt: "Use $review-typeloop to independently review this TypeLoop diff and return findings only."

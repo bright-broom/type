@@ -12,7 +12,13 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title,
     description,
-    openGraph: { title, description, type: "website", locale: "ja_JP", images: [{ url: image, width: 1200, height: 630 }] },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      locale: "ja_JP",
+      images: [{ url: image, width: 1200, height: 630 }],
+    },
     twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }

@@ -8,8 +8,10 @@ const requiredDocuments = [
   "AGENTS.md",
   "README.md",
   ".agents/skills/develop-typeloop/SKILL.md",
+  ".agents/skills/review-typeloop/SKILL.md",
   "docs/architecture.md",
   "docs/directory-structure.md",
+  "docs/quality-harness.md",
   "docs/adr/README.md",
   "src/content/generated/AGENTS.md",
 ];
@@ -20,11 +22,13 @@ const maxAuthoredLines = 300;
 
 async function walk(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
-  const nested = await Promise.all(entries.map(async (entry) => {
-    const path = resolve(directory, entry.name);
-    if (entry.isDirectory()) return [{ path, directory: true }, ...await walk(path)];
-    return [{ path, directory: false }];
-  }));
+  const nested = await Promise.all(
+    entries.map(async (entry) => {
+      const path = resolve(directory, entry.name);
+      if (entry.isDirectory()) return [{ path, directory: true }, ...(await walk(path))];
+      return [{ path, directory: false }];
+    }),
+  );
   return nested.flat();
 }
 
@@ -36,12 +40,13 @@ test("agent instructions stay concise and the repository skill is valid", async 
   const agentGuide = await readFile(resolve(repositoryRoot, "AGENTS.md"), "utf8");
   assert.ok(agentGuide.split(/\r?\n/).length <= 120, "AGENTS.md must stay below 120 lines");
 
-  const skill = await readFile(
-    resolve(repositoryRoot, ".agents/skills/develop-typeloop/SKILL.md"),
-    "utf8",
-  );
+  const skill = await readFile(resolve(repositoryRoot, ".agents/skills/develop-typeloop/SKILL.md"), "utf8");
   assert.match(skill, /^---\nname: develop-typeloop\ndescription: .+\n---\n/);
   assert.doesNotMatch(skill, /\bTODO\b/);
+
+  const reviewSkill = await readFile(resolve(repositoryRoot, ".agents/skills/review-typeloop/SKILL.md"), "utf8");
+  assert.match(reviewSkill, /^---\nname: review-typeloop\ndescription: .+\n---\n/);
+  assert.match(reviewSkill, /Never modify the working tree/);
 });
 
 test("source directories use responsibility-specific names", async () => {

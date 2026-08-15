@@ -8,13 +8,13 @@ The architecture optimizes for deterministic typing behavior, fast local feedbac
 
 ## Layers and dependency direction
 
-| Layer | Responsibility | May depend on |
-|---|---|---|
-| `domain` | Typing rules, scoring, prompt selection, analytics | `domain` only |
-| `application` | Session state, transitions, application types, ports | `application`, `domain` |
-| `content` | Learning datasets, filters, validation, prompt adapters | `content`, `domain` |
-| `infrastructure` | Browser audio and persistence adapters | `infrastructure`, `application`, `domain` |
-| `presentation` | React UI, browser event handling, composition | all layers |
+| Layer            | Responsibility                                          | May depend on                             |
+| ---------------- | ------------------------------------------------------- | ----------------------------------------- |
+| `domain`         | Typing rules, scoring, prompt selection, analytics      | `domain` only                             |
+| `application`    | Session state, transitions, application types, ports    | `application`, `domain`                   |
+| `content`        | Learning datasets, filters, validation, prompt adapters | `content`, `domain`                       |
+| `infrastructure` | Browser audio and persistence adapters                  | `infrastructure`, `application`, `domain` |
+| `presentation`   | React UI, browser event handling, composition           | all layers                                |
 
 Dependencies point inward toward stable policy. `application/ports` owns interfaces because application behavior defines what it needs; `infrastructure` supplies implementations.
 

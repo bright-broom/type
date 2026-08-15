@@ -1,0 +1,20 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "app/**/*.{ts,tsx}",
+    "src/domain/typing/typing-matcher.ts",
+    "scripts/*.mjs",
+    "tests/**/*.mjs",
+    "e2e/**/*.ts",
+  ],
+  "project": [
+    "app/**/*.{ts,tsx,css}",
+    "src/**/*.{ts,tsx}",
+    "scripts/*.mjs",
+    "tests/**/*.mjs",
+    "e2e/**/*.ts",
+    "*.{ts,mjs}",
+  ],
+  "ignoreExportsUsedInFile": true,
+  "ignoreDependencies": ["react-server-dom-webpack"],
+}

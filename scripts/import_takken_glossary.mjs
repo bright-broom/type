@@ -41,8 +41,9 @@ for (const [index, entry] of entries.entries()) {
 }
 
 const categories = [...new Set(entries.map((entry) => entry.category))];
-const importanceLevels = [...new Set(entries.map((entry) => entry.importance))]
-  .sort((a, b) => ["A", "B", "C"].indexOf(a) - ["A", "B", "C"].indexOf(b));
+const importanceLevels = [...new Set(entries.map((entry) => entry.importance))].sort(
+  (a, b) => ["A", "B", "C"].indexOf(a) - ["A", "B", "C"].indexOf(b),
+);
 const sourceIds = [...new Set(entries.map((entry) => entry.sourceId))].sort((a, b) =>
   a.localeCompare(b, "ja", { numeric: true }),
 );

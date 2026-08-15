@@ -22,10 +22,14 @@ export function filterTakkenGlossary(
       entry.examNote,
       entry.law,
       entry.searchKeywords,
-    ].join(" ").toLocaleLowerCase("ja");
-    return (!normalizedQuery || searchable.includes(normalizedQuery))
-      && (!filters.category || entry.category === filters.category)
-      && (!filters.importance || entry.importance === filters.importance)
-      && (!filters.sourceId || entry.sourceId === filters.sourceId);
+    ]
+      .join(" ")
+      .toLocaleLowerCase("ja");
+    return (
+      (!normalizedQuery || searchable.includes(normalizedQuery)) &&
+      (!filters.category || entry.category === filters.category) &&
+      (!filters.importance || entry.importance === filters.importance) &&
+      (!filters.sourceId || entry.sourceId === filters.sourceId)
+    );
   });
 }
