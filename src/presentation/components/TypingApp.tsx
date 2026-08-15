@@ -35,15 +35,23 @@ export function TypingApp() {
   };
 
   useKeyboardInput({
-    onKey: session.typeKey,
+    onKey: session.typeText,
     onEnter: () => {
-      if (showHistory || showPlaybook || showTakkenGlossary) { setShowHistory(false); setShowPlaybook(false); setShowTakkenGlossary(false); return; }
+      if (showHistory || showPlaybook || showTakkenGlossary) {
+        setShowHistory(false);
+        setShowPlaybook(false);
+        setShowTakkenGlossary(false);
+        return;
+      }
       if (["idle", "finished", "aborted"].includes(session.clock.status)) start(session.trainingSet);
       else session.enter();
     },
     onEscape: () => {
-      if (showHistory || showPlaybook || showTakkenGlossary) { setShowHistory(false); setShowPlaybook(false); setShowTakkenGlossary(false); }
-      else session.escape();
+      if (showHistory || showPlaybook || showTakkenGlossary) {
+        setShowHistory(false);
+        setShowPlaybook(false);
+        setShowTakkenGlossary(false);
+      } else session.escape();
     },
   });
 
@@ -54,15 +62,36 @@ export function TypingApp() {
         compact={active}
         soundEnabled={session.settings.soundEnabled}
         onToggleSound={session.toggleSound}
-        onShowHome={active ? undefined : () => { setShowHistory(false); setShowPlaybook(false); setShowTakkenGlossary(false); session.home(); }}
+        onShowHome={
+          active
+            ? undefined
+            : () => {
+                setShowHistory(false);
+                setShowPlaybook(false);
+                setShowTakkenGlossary(false);
+                session.home();
+              }
+        }
       />
 
       {showTakkenGlossary ? (
-        <Suspense fallback={<main className="playbook-loading" role="status">宅建用語集を読み込んでいます…</main>}>
+        <Suspense
+          fallback={
+            <main className="playbook-loading" role="status">
+              宅建用語集を読み込んでいます…
+            </main>
+          }
+        >
           <TakkenGlossary onBack={() => setShowTakkenGlossary(false)} onStart={() => start("takken")} />
         </Suspense>
       ) : showPlaybook ? (
-        <Suspense fallback={<main className="playbook-loading" role="status">実務辞典を読み込んでいます…</main>}>
+        <Suspense
+          fallback={
+            <main className="playbook-loading" role="status">
+              実務辞典を読み込んでいます…
+            </main>
+          }
+        >
           <ConsultingPlaybook onBack={() => setShowPlaybook(false)} onStart={() => start("consulting")} />
         </Suspense>
       ) : showHistory ? (
@@ -81,6 +110,7 @@ export function TypingApp() {
             metrics={session.liveMetrics}
             feedback={session.feedback}
             onPause={session.pause}
+            onTypeText={session.typeText}
           />
           {session.clock.status === "paused" && <PauseDialog onResume={session.resume} onAbort={session.abort} />}
         </>
@@ -90,7 +120,10 @@ export function TypingApp() {
           previousBest={previousBest}
           onRetry={() => start(session.trainingSet)}
           onHistory={() => setShowHistory(true)}
-          onHome={() => { setShowHistory(false); session.home(); }}
+          onHome={() => {
+            setShowHistory(false);
+            session.home();
+          }}
         />
       ) : (
         <HomeScreen
@@ -105,7 +138,10 @@ export function TypingApp() {
           aborted={session.clock.status === "aborted"}
         />
       )}
-      <footer className="site-footer"><span>TYPELOOP / 60 SEC TRAINING</span><span>LOCAL FIRST · NO ACCOUNT</span></footer>
+      <footer className="site-footer">
+        <span>TYPELOOP / 60 SEC TRAINING</span>
+        <span>LOCAL FIRST · NO ACCOUNT</span>
+      </footer>
     </div>
   );
 }

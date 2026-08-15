@@ -1,10 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
-  createTypingState,
-  getTypingGuide,
-  validateInput,
-} from "./romanization-engine.ts";
+import { createTypingState, getTypingGuide, validateInput } from "./romanization-engine.ts";
 
 function type(reading: string, input: string) {
   let state = createTypingState(reading);

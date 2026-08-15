@@ -58,12 +58,9 @@ export class LocalSessionRepository implements SessionRepository {
   }
 
   async getBest(trainingSet: TrainingSet = "japanese"): Promise<CompletedSession | null> {
-    return readStorage().sessions
-      .filter((session) => (session.trainingSet ?? "japanese") === trainingSet)
-      .reduce<CompletedSession | null>(
-      (best, session) => (!best || session.score > best.score ? session : best),
-      null,
-    );
+    return readStorage()
+      .sessions.filter((session) => (session.trainingSet ?? "japanese") === trainingSet)
+      .reduce<CompletedSession | null>((best, session) => (!best || session.score > best.score ? session : best), null);
   }
 
   async getSettings(): Promise<AppSettings> {

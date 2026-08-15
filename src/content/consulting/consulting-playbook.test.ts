@@ -15,10 +15,9 @@ test("imports every workbook section, populated cell, and formula value", () => 
     0,
   );
   const countedFormulas = playbook.sheets.reduce(
-    (sheetTotal, sheet) => sheetTotal + sheet.rows.reduce(
-      (rowTotal, row) => rowTotal + row.cells.filter((cell) => "formula" in cell).length,
-      0,
-    ),
+    (sheetTotal, sheet) =>
+      sheetTotal +
+      sheet.rows.reduce((rowTotal, row) => rowTotal + row.cells.filter((cell) => "formula" in cell).length, 0),
     0,
   );
   assert.equal(countedCells, playbook.stats.nonemptyCellCount);

@@ -32,7 +32,13 @@ export class WebAudioService implements AudioService {
     }
   }
 
-  playCorrect() { this.tone(620, 0.035, 0.018); }
-  playMiss() { this.tone(150, 0.075, 0.025); }
-  playComplete() { this.tone(880, 0.09, 0.03); }
+  playCorrect() {
+    this.tone(620, 0.035, 0.018);
+  }
+  playMiss() {
+    this.tone(150, 0.075, 0.025);
+  }
+  playComplete() {
+    this.tone(880, 0.09, 0.03);
+  }
 }

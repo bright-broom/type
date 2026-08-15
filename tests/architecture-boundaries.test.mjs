@@ -14,11 +14,13 @@ const allowedDependencies = {
 
 async function sourceFiles(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
-  const nested = await Promise.all(entries.map((entry) => {
-    const path = resolve(directory, entry.name);
-    if (entry.isDirectory()) return sourceFiles(path);
-    return /\.(?:ts|tsx)$/.test(entry.name) ? [path] : [];
-  }));
+  const nested = await Promise.all(
+    entries.map((entry) => {
+      const path = resolve(directory, entry.name);
+      if (entry.isDirectory()) return sourceFiles(path);
+      return /\.(?:ts|tsx)$/.test(entry.name) ? [path] : [];
+    }),
+  );
   return nested.flat();
 }
 
