@@ -18,40 +18,42 @@ const ConsultingPlaybook = lazy(() =>
 const TakkenGlossary = lazy(() =>
   import("./takken/TakkenGlossary.tsx").then((module) => ({ default: module.TakkenGlossary })),
 );
+const AisGlossary = lazy(() => import("./ais/AisGlossary.tsx").then((module) => ({ default: module.AisGlossary })));
+
+/** Reference screens layered over the session flow. Only one is ever open. */
+type Overlay = "none" | "history" | "playbook" | "takken" | "ais";
+
+const RESTARTABLE = ["idle", "finished", "aborted"];
 
 export function TypingApp() {
   const session = useTypingSession();
-  const [showHistory, setShowHistory] = useState(false);
-  const [showPlaybook, setShowPlaybook] = useState(false);
-  const [showTakkenGlossary, setShowTakkenGlossary] = useState(false);
+  const [overlay, setOverlay] = useState<Overlay>("none");
   const [previousBest, setPreviousBest] = useState<CompletedSession | null>(null);
 
   const start = (trainingSet: TrainingSet = "japanese") => {
     setPreviousBest(session.bests[trainingSet]);
-    setShowHistory(false);
-    setShowPlaybook(false);
-    setShowTakkenGlossary(false);
+    setOverlay("none");
     session.start(trainingSet);
+  };
+
+  const goHome = () => {
+    setOverlay("none");
+    session.home();
   };
 
   useKeyboardInput({
     onKey: session.typeText,
     onEnter: () => {
-      if (showHistory || showPlaybook || showTakkenGlossary) {
-        setShowHistory(false);
-        setShowPlaybook(false);
-        setShowTakkenGlossary(false);
+      if (overlay !== "none") {
+        setOverlay("none");
         return;
       }
-      if (["idle", "finished", "aborted"].includes(session.clock.status)) start(session.trainingSet);
+      if (RESTARTABLE.includes(session.clock.status)) start(session.trainingSet);
       else session.enter();
     },
     onEscape: () => {
-      if (showHistory || showPlaybook || showTakkenGlossary) {
-        setShowHistory(false);
-        setShowPlaybook(false);
-        setShowTakkenGlossary(false);
-      } else session.escape();
+      if (overlay !== "none") setOverlay("none");
+      else session.escape();
     },
   });
 
@@ -62,19 +64,20 @@ export function TypingApp() {
         compact={active}
         soundEnabled={session.settings.soundEnabled}
         onToggleSound={session.toggleSound}
-        onShowHome={
-          active
-            ? undefined
-            : () => {
-                setShowHistory(false);
-                setShowPlaybook(false);
-                setShowTakkenGlossary(false);
-                session.home();
-              }
-        }
+        onShowHome={active ? undefined : goHome}
       />
 
-      {showTakkenGlossary ? (
+      {overlay === "ais" ? (
+        <Suspense
+          fallback={
+            <main className="playbook-loading" role="status">
+              AIS会議用語辞典を読み込んでいます…
+            </main>
+          }
+        >
+          <AisGlossary onBack={() => setOverlay("none")} onStart={() => start("ais")} />
+        </Suspense>
+      ) : overlay === "takken" ? (
         <Suspense
           fallback={
             <main className="playbook-loading" role="status">
@@ -82,9 +85,9 @@ export function TypingApp() {
             </main>
           }
         >
-          <TakkenGlossary onBack={() => setShowTakkenGlossary(false)} onStart={() => start("takken")} />
+          <TakkenGlossary onBack={() => setOverlay("none")} onStart={() => start("takken")} />
         </Suspense>
-      ) : showPlaybook ? (
+      ) : overlay === "playbook" ? (
         <Suspense
           fallback={
             <main className="playbook-loading" role="status">
@@ -92,10 +95,10 @@ export function TypingApp() {
             </main>
           }
         >
-          <ConsultingPlaybook onBack={() => setShowPlaybook(false)} onStart={() => start("consulting")} />
+          <ConsultingPlaybook onBack={() => setOverlay("none")} onStart={() => start("consulting")} />
         </Suspense>
-      ) : showHistory ? (
-        <HistoryScreen sessions={session.history} onBack={() => setShowHistory(false)} />
+      ) : overlay === "history" ? (
+        <HistoryScreen sessions={session.history} onBack={() => setOverlay("none")} />
       ) : session.clock.status === "countdown" ? (
         <CountdownScreen value={session.countdown} />
       ) : session.clock.status === "playing" || session.clock.status === "paused" ? (
@@ -119,11 +122,8 @@ export function TypingApp() {
           result={session.result}
           previousBest={previousBest}
           onRetry={() => start(session.trainingSet)}
-          onHistory={() => setShowHistory(true)}
-          onHome={() => {
-            setShowHistory(false);
-            session.home();
-          }}
+          onHistory={() => setOverlay("history")}
+          onHome={goHome}
         />
       ) : (
         <HomeScreen
@@ -132,9 +132,11 @@ export function TypingApp() {
           onStart={() => start()}
           onStartConsulting={() => start("consulting")}
           onStartTakken={() => start("takken")}
-          onShowPlaybook={() => setShowPlaybook(true)}
-          onShowTakkenGlossary={() => setShowTakkenGlossary(true)}
-          onShowHistory={() => setShowHistory(true)}
+          onStartAis={() => start("ais")}
+          onShowPlaybook={() => setOverlay("playbook")}
+          onShowTakkenGlossary={() => setOverlay("takken")}
+          onShowAisGlossary={() => setOverlay("ais")}
+          onShowHistory={() => setOverlay("history")}
           aborted={session.clock.status === "aborted"}
         />
       )}

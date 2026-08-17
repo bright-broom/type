@@ -123,6 +123,18 @@ const DIGRAPHS: Readonly<Record<string, ReadonlyArray<string>>> = {
   ふぃ: ["fi"],
   ふぇ: ["fe"],
   ふぉ: ["fo"],
+  しぇ: ["she", "sye"],
+  じぇ: ["je", "jye", "zye"],
+  ちぇ: ["che", "tye"],
+  つぁ: ["tsa"],
+  つぃ: ["tsi"],
+  つぇ: ["tse"],
+  つぉ: ["tso"],
+  ふゅ: ["fyu"],
+  てゅ: ["thu"],
+  でゅ: ["dhu"],
+  うぃ: ["wi"],
+  うぇ: ["we"],
 };
 
 function unique(values: ReadonlyArray<string>): string[] {

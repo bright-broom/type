@@ -20,7 +20,7 @@ TypeLoop is a local-first Next.js typing trainer. Before structural work, read:
 - `src/infrastructure/`: browser adapters implementing application ports
 - `src/content/`: authored content loaders, filters, types, and tests
 - `src/content/generated/`: generated artifacts; never edit by hand
-- `scripts/`: repeatable content importers
+- `scripts/`: repeatable content importers and their authored ingestion policies
 - `tests/`: cross-layer and repository-level guardrails
 
 ## Rules
@@ -31,6 +31,7 @@ TypeLoop is a local-first Next.js typing trainer. Before structural work, read:
 - Use precise responsibility names. Do not create generic `shared`, `common`, or `utils` directories.
 - Keep authored TypeScript, JavaScript, and Python files below 300 lines. Split by responsibility, not merely by size.
 - Regenerate content with the npm import commands; do not patch generated JSON directly.
+- Confidential source material is de-identified by its importer, never by the UI. Do not commit source workbooks, and do not add a real customer or personal name to any authored file (see `docs/adr/ADR-009-ais-meeting-glossary.md`).
 - Do not add dependencies, persistence, authentication, or network calls without a concrete requirement and ADR-worthy justification.
 - Never commit `.env*`, credentials, tokens, or user-local output.
 - The application currently has no database or migrations. Stop and require an ADR plus an approved migration/rollback plan before adding either.
@@ -79,6 +80,7 @@ TypeLoop is a local-first Next.js typing trainer. Before structural work, read:
 - Architecture only: `npm run test:architecture`
 - Consulting import: `npm run import:consulting -- "/path/to/source.xlsx"`
 - Takken import: `npm run import:takken -- "/path/to/source.tsv"`
+- AIS meeting glossary import: `npm run import:ais -- "/path/to/source.xlsx"`
 
 ## Definition of Done
 

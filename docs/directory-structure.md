@@ -18,6 +18,7 @@
 │   │   └── session/            Session state and transitions
 │   ├── content/
 │   │   ├── generated/          Versioned JSON with scoped agent guidance
+│   │   ├── ais/                AIS meeting glossary types, filters, and tests
 │   │   ├── consulting/         Consulting types and dataset tests
 │   │   ├── prompts/            Typed prompt loaders and validation
 │   │   └── takken/             Takken types, filters, and tests
@@ -44,7 +45,8 @@ Do not create a generic `shared`, `common`, `utils`, or `helpers` bucket. A modu
 ## Naming rules
 
 - React component files: `PascalCase.tsx`.
-- Other source and test files: `kebab-case.ts`, `kebab-case.mjs`, or `kebab-case.py`.
+- Other files under `src`, `app`, and `tests`: `kebab-case.ts`, `kebab-case.tsx`, or `kebab-case.mjs`.
+- Files under `scripts`: `snake_case`, named after the command that runs them, such as `import_ais_glossary.py` for `npm run import:ais`. Supporting policy or data modules keep the importer's prefix.
 - Tests: `<subject>.test.<extension>` beside the subject when layer-local.
 - Ports: responsibility names such as `session-repository.ts`; implementations add their mechanism, such as `local-session-repository.ts`.
 - ADRs: `ADR-NNN-short-decision.md` with the next sequential number.

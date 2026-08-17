@@ -44,6 +44,11 @@ source file → importer → generated JSON → typed content loader → present
 
 Generated artifacts are versioned for reproducible builds but are not hand-edited.
 
+Confidentiality is an importer responsibility, not a UI one. When a source contains
+material that must not reach a deployed bundle, the importer de-identifies it and
+fails on any leak, so the generated artifact is already the publishable form. See
+[ADR-009](adr/ADR-009-ais-meeting-glossary.md).
+
 ## State and failure boundaries
 
 - The session reducer is the source of truth for lifecycle and time transitions.
@@ -58,8 +63,8 @@ When adding a training set:
 
 1. Add or generate content under `src/content`.
 2. Convert it to `TypingPrompt` without changing domain rules unless the input model truly differs.
-3. Register the selector in the presentation composition hook.
-4. Extend the `TrainingSet` type and persistence lookup.
+3. Extend the `TrainingSet` type in `application/session/session-types.ts`.
+4. Bind the set to its dataset in the `TRAINING_SET_PROMPTS` registry in `useTypingSession`. Selectors, personal bests, and persistence lookups derive from that registry, so no other wiring is needed.
 5. Add dataset validation and an interaction-level test.
 
 When adding persistence or another external capability, define the required port in `application/ports`, implement it in `infrastructure`, and wire it only at the presentation composition boundary.

@@ -1,5 +1,5 @@
 export type PromptCategory =
-  "basic" | "daily" | "sokuon" | "contracted" | "n-rule" | "phrase" | "consulting" | "takken";
+  "basic" | "daily" | "sokuon" | "contracted" | "n-rule" | "phrase" | "consulting" | "takken" | "ais";
 
 export type TypingPrompt = {
   id: string;

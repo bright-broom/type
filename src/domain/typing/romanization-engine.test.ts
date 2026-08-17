@@ -57,3 +57,23 @@ test("ASCII consulting terms are matched case-insensitively with spaces and digi
   assert.equal(type("mece", "MECE").completed, true);
   assert.equal(type("b2b strategy", "b2b strategy").completed, true);
 });
+
+for (const [reading, variants] of [
+  ["えーじぇんと", ["e-jento", "e-jyento"]],
+  ["ちぇっく", ["chekku", "tyekku"]],
+  ["しぇあ", ["shea", "syea"]],
+  ["つぁー", ["tsa-"]],
+  ["ふゅーじょん", ["fyu-jon"]],
+  ["うぇぶ", ["webu"]],
+] as const) {
+  for (const variant of variants) {
+    test(`loanword syllable ${reading} accepts ${variant}`, () => {
+      assert.equal(type(reading, variant).completed, true);
+    });
+  }
+}
+
+test("mixed latin and kana readings type as one continuous target", () => {
+  assert.equal(type("aiえーじぇんと", "aie-jento").completed, true);
+  assert.equal(type("ほしゅapi", "hoshuapi").completed, true);
+});
