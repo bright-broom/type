@@ -3,20 +3,20 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { analyzeWeakKeys } from "../../domain/analytics/weak-key-analyzer.ts";
 import { createPromptSelector } from "../../domain/prompts/prompt-selector.ts";
+import type { PromptSelector } from "../../domain/prompts/prompt-selector.ts";
 import type { TypingPrompt } from "../../domain/prompts/prompt-types.ts";
 import { calculateMetrics } from "../../domain/scoring/metrics.ts";
 import { calculateScore } from "../../domain/scoring/scoring-engine.ts";
 import { createTypingState, getTypingGuide } from "../../domain/typing/romanization-engine.ts";
 import type { TypingState } from "../../domain/typing/typing-types.ts";
 import { JAPANESE_PROMPTS } from "../../content/prompts/japanese-prompts.ts";
-import { CONSULTING_PROMPTS } from "../../content/prompts/consulting-prompts.ts";
-import { TAKKEN_PROMPTS } from "../../content/prompts/takken-prompts.ts";
 import { LocalSessionRepository } from "../../infrastructure/persistence/local-session-repository.ts";
 import { WebAudioService } from "../../infrastructure/audio/audio-service.ts";
 import { createSessionId } from "../../infrastructure/identity/browser-session-id.ts";
 import * as sessionClock from "../../application/session/session-reducer.ts";
 import { applyTypingText } from "../../application/session/apply-typing-text.ts";
 import type * as Session from "../../application/session/session-types.ts";
+import { byTrainingSet, TRAINING_SET_PROMPTS, TRAINING_SETS } from "./training-set-prompts.ts";
 
 const repository = new LocalSessionRepository();
 
@@ -26,11 +26,9 @@ export function useTypingSession() {
   const [clock, dispatch] = useReducer(sessionClock.sessionTransition, undefined, () =>
     sessionClock.createSessionState(),
   );
-  const [selectors] = useState(() => ({
-    japanese: createPromptSelector(JAPANESE_PROMPTS),
-    consulting: createPromptSelector(CONSULTING_PROMPTS),
-    takken: createPromptSelector(TAKKEN_PROMPTS),
-  }));
+  const [selectors] = useState<Record<Session.TrainingSet, PromptSelector>>(() =>
+    byTrainingSet((set) => createPromptSelector(TRAINING_SET_PROMPTS[set])),
+  );
   const [trainingSet, setTrainingSet] = useState<Session.TrainingSet>("japanese");
   const firstPrompt = JAPANESE_PROMPTS[0] as TypingPrompt;
   const [prompt, setPrompt] = useState<TypingPrompt>(firstPrompt);
@@ -43,11 +41,9 @@ export function useTypingSession() {
   const [feedback, setFeedback] = useState<"correct" | "miss" | "complete" | null>(null);
   const [result, setResult] = useState<Session.CompletedSession | null>(null);
   const [history, setHistory] = useState<Session.CompletedSession[]>([]);
-  const [bests, setBests] = useState<Record<Session.TrainingSet, Session.CompletedSession | null>>({
-    japanese: null,
-    consulting: null,
-    takken: null,
-  });
+  const [bests, setBests] = useState<Record<Session.TrainingSet, Session.CompletedSession | null>>(() =>
+    byTrainingSet(() => null),
+  );
   const [settings, setSettings] = useState<Session.AppSettings>({ soundEnabled: true });
   const [now, setNow] = useState(0);
   const keystrokesRef = useRef<Session.KeystrokeEvent[]>([]);
@@ -59,14 +55,12 @@ export function useTypingSession() {
   useEffect(() => {
     Promise.all([
       repository.getRecent(20),
-      repository.getBest("japanese"),
-      repository.getBest("consulting"),
-      repository.getBest("takken"),
+      Promise.all(TRAINING_SETS.map(async (set) => [set, await repository.getBest(set)] as const)),
       repository.getSettings(),
     ])
-      .then(([recent, japaneseBest, consultingBest, takkenBest, storedSettings]) => {
+      .then(([recent, bestPerSet, storedSettings]) => {
         setHistory(recent);
-        setBests({ japanese: japaneseBest, consulting: consultingBest, takken: takkenBest });
+        setBests(Object.fromEntries(bestPerSet) as Record<Session.TrainingSet, Session.CompletedSession | null>);
         setSettings(storedSettings);
         audioRef.current.setEnabled(storedSettings.soundEnabled);
       })

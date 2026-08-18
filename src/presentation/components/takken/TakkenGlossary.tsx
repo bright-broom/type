@@ -26,8 +26,8 @@ export function TakkenGlossary({ onBack, onStart }: { onBack: () => void; onStar
   };
 
   return (
-    <main className="takken-shell">
-      <div className="takken-heading">
+    <main className="glossary-shell">
+      <div className="glossary-heading">
         <button className="text-button" type="button" onClick={onBack}>
           ← ホームへ
         </button>
@@ -44,8 +44,8 @@ export function TakkenGlossary({ onBack, onStart }: { onBack: () => void; onStar
         </button>
       </div>
 
-      <section className="takken-filters" aria-label="用語の絞り込み">
-        <label className="takken-search">
+      <section className="glossary-filters takken-filters" aria-label="用語の絞り込み">
+        <label className="glossary-search">
           <span>キーワード検索</span>
           <input
             value={query}
@@ -92,15 +92,15 @@ export function TakkenGlossary({ onBack, onStart }: { onBack: () => void; onStar
         </button>
       </section>
 
-      <div className="takken-result-meta" aria-live="polite">
+      <div className="glossary-result-meta" aria-live="polite">
         <strong>{entries.length.toLocaleString("ja-JP")}</strong> / {glossary.stats.entryCount}語
       </div>
-      <section className="takken-list" aria-label="宅建用語一覧">
+      <section className="glossary-list" aria-label="宅建用語一覧">
         {entries.map((entry) => (
-          <article className="takken-entry" key={entry.id}>
+          <article className="glossary-entry" key={entry.id}>
             <span className="row-number">{String(entry.id).padStart(3, "0")}</span>
-            <div className="takken-entry-main">
-              <div className="takken-entry-title">
+            <div className="glossary-entry-main">
+              <div className="glossary-entry-title">
                 <div>
                   <span>{entry.reading}</span>
                   <h2>{entry.term}</h2>

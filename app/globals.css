@@ -318,6 +318,13 @@ kbd {
   background: var(--coral);
   color: white;
 }
+.ais-link {
+  margin-top: 10px;
+}
+.ais-link span {
+  background: var(--ink-deep);
+  color: var(--cyan);
+}
 
 .home-card {
   min-height: 480px;
@@ -1156,13 +1163,13 @@ kbd {
   font-size: 0.9rem;
   font-weight: 750;
 }
-.takken-shell {
+.glossary-shell {
   flex: 1;
   width: min(1320px, calc(100% - (var(--page-gutter) * 2)));
   margin: 0 auto;
   padding: 42px 0 70px;
 }
-.takken-heading {
+.glossary-heading {
   display: grid;
   grid-template-columns: 130px 1fr auto;
   gap: 30px;
@@ -1170,19 +1177,19 @@ kbd {
   padding-bottom: 30px;
   border-bottom: 1px solid var(--line);
 }
-.takken-heading .text-button {
+.glossary-heading .text-button {
   justify-self: start;
 }
-.takken-heading h1 {
+.glossary-heading h1 {
   margin: 7px 0 5px;
   font-size: clamp(2.5rem, 4.5vw, 4.2rem);
   letter-spacing: -0.065em;
 }
-.takken-heading p {
+.glossary-heading p {
   margin: 0;
   color: var(--muted);
 }
-.takken-filters {
+.glossary-filters {
   margin-top: 24px;
   padding: 18px;
   display: grid;
@@ -1193,19 +1200,19 @@ kbd {
   border-radius: var(--radius-md);
   background: rgb(250 248 242 / 78%);
 }
-.takken-filters label {
+.glossary-filters label {
   display: grid;
   gap: 8px;
 }
-.takken-filters label > span {
+.glossary-filters label > span {
   color: var(--muted);
   font:
     700 0.59rem var(--font-geist-mono),
     monospace;
   letter-spacing: 0.09em;
 }
-.takken-filters input,
-.takken-filters select {
+.glossary-filters input,
+.glossary-filters select {
   width: 100%;
   min-height: 44px;
   border: 1px solid var(--line);
@@ -1215,8 +1222,8 @@ kbd {
   color: var(--ink);
   font: inherit;
 }
-.takken-filters input:focus-visible,
-.takken-filters select:focus-visible {
+.glossary-filters input:focus-visible,
+.glossary-filters select:focus-visible {
   outline: 3px solid var(--cyan-dark);
   outline-offset: 2px;
 }
@@ -1231,7 +1238,7 @@ kbd {
   cursor: pointer;
   white-space: nowrap;
 }
-.takken-result-meta {
+.glossary-result-meta {
   padding: 22px 4px 12px;
   color: var(--muted);
   font:
@@ -1239,18 +1246,18 @@ kbd {
     monospace;
   text-align: right;
 }
-.takken-result-meta strong {
+.glossary-result-meta strong {
   color: var(--cyan-dark);
   font-size: 1rem;
 }
-.takken-list {
+.glossary-list {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: rgb(250 248 242 / 78%);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
-.takken-entry {
+.glossary-entry {
   padding: 24px 28px;
   display: grid;
   grid-template-columns: 54px 1fr;
@@ -1258,36 +1265,36 @@ kbd {
   content-visibility: auto;
   contain-intrinsic-size: auto 210px;
 }
-.takken-entry:last-child {
+.glossary-entry:last-child {
   border-bottom: 0;
 }
-.takken-entry-main {
+.glossary-entry-main {
   min-width: 0;
 }
-.takken-entry-title {
+.glossary-entry-title {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 20px;
 }
-.takken-entry-title span {
+.glossary-entry-title span {
   color: var(--muted);
   font-size: 0.68rem;
   letter-spacing: 0.1em;
 }
-.takken-entry-title h2 {
+.glossary-entry-title h2 {
   margin: 3px 0 0;
   color: var(--ink-deep);
   font-size: 1.22rem;
   letter-spacing: -0.025em;
 }
-.takken-entry-main > p {
+.glossary-entry-main > p {
   margin: 13px 0 0;
   color: #4d616d;
   font-size: 0.82rem;
   line-height: 1.75;
 }
-.takken-entry-main .exam-note {
+.glossary-entry-main .exam-note {
   padding: 10px 12px;
   border-left: 3px solid var(--coral);
   background: rgb(243 111 86 / 6%);
@@ -1297,13 +1304,13 @@ kbd {
   color: var(--coral);
   font-size: 0.68rem;
 }
-.takken-entry footer {
+.glossary-entry footer {
   margin-top: 14px;
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
 }
-.takken-entry footer span {
+.glossary-entry footer span {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 4px 8px;
@@ -1331,6 +1338,91 @@ kbd {
   color: var(--muted);
   border: 1px solid var(--line);
   background: var(--paper-soft);
+}
+.glossary-notice {
+  margin: 20px 0 0;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--ink-deep);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  color: #4d616d;
+  background: rgb(11 32 46 / 4%);
+  font-size: 0.74rem;
+  line-height: 1.7;
+}
+.glossary-notice strong {
+  margin-right: 10px;
+  color: var(--ink-deep);
+  font:
+    800 0.6rem var(--font-geist-mono),
+    monospace;
+  letter-spacing: 0.08em;
+}
+.ais-filters {
+  grid-template-columns: minmax(230px, 2fr) repeat(3, minmax(118px, 1fr)) auto auto;
+}
+.glossary-toggle {
+  align-content: end;
+}
+.glossary-toggle input {
+  width: 22px;
+  height: 22px;
+  min-height: 0;
+  margin: 11px 0;
+  accent-color: var(--cyan-dark);
+  cursor: pointer;
+}
+.glossary-result-meta span {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+.confidence {
+  flex: none;
+  border-radius: 999px;
+  padding: 6px 9px;
+  font:
+    normal 750 0.6rem var(--font-geist-mono),
+    monospace;
+  white-space: nowrap;
+}
+.confidence-confirmed {
+  color: var(--ink-deep);
+  background: var(--cyan);
+}
+.confidence-partial {
+  color: var(--ink-deep);
+  border: 1px solid var(--coral);
+  background: rgb(243 111 86 / 12%);
+}
+.confidence-pending {
+  color: white;
+  background: var(--coral);
+}
+.glossary-entry-main .meeting-context {
+  padding: 10px 12px;
+  border-left: 3px solid var(--cyan-dark);
+  background: rgb(86 216 208 / 10%);
+}
+.meeting-context strong {
+  margin-right: 12px;
+  color: var(--cyan-dark);
+  font-size: 0.68rem;
+}
+.glossary-entry-main .review-question {
+  padding: 10px 12px;
+  border-left: 3px solid var(--muted);
+  background: rgb(11 32 46 / 4%);
+}
+.review-question strong {
+  margin-right: 12px;
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+.glossary-entry footer span.masked-chip {
+  border-color: var(--ink-deep);
+  color: var(--ink-deep);
+  background: rgb(11 32 46 / 8%);
+  font-weight: 750;
 }
 .error-shell {
   min-height: 100svh;
@@ -1364,7 +1456,7 @@ kbd {
   .hero-actions {
     gap: 14px;
   }
-  .takken-filters {
+  .glossary-filters {
     grid-template-columns: minmax(240px, 2fr) repeat(2, minmax(130px, 1fr));
   }
   .takken-filters label:nth-of-type(4) {
@@ -1401,15 +1493,15 @@ kbd {
     padding: 0 15px;
   }
   .playbook-heading,
-  .takken-heading {
+  .glossary-heading {
     grid-template-columns: minmax(0, 1fr) auto;
   }
   .playbook-heading .text-button,
-  .takken-heading .text-button {
+  .glossary-heading .text-button {
     grid-column: 1 / -1;
   }
   .playbook-heading .primary-button,
-  .takken-heading .primary-button {
+  .glossary-heading .primary-button {
     align-self: end;
   }
   .playbook-layout {
@@ -1420,10 +1512,10 @@ kbd {
     border-right: 0;
     border-bottom: 1px solid var(--line);
   }
-  .takken-filters {
+  .glossary-filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .takken-search {
+  .glossary-search {
     grid-column: 1 / -1;
   }
   .takken-filters label:nth-of-type(4) {
@@ -1708,25 +1800,25 @@ kbd {
     gap: 10px;
   }
   .playbook-shell,
-  .takken-shell {
+  .glossary-shell {
     padding: 30px 0 50px;
   }
   .playbook-heading,
-  .takken-heading {
+  .glossary-heading {
     grid-template-columns: minmax(0, 1fr);
     gap: 18px;
   }
   .playbook-heading .text-button,
-  .takken-heading .text-button {
+  .glossary-heading .text-button {
     grid-column: auto;
   }
   .playbook-heading h1,
-  .takken-heading h1 {
+  .glossary-heading h1 {
     font-size: clamp(2.25rem, 11vw, 3.2rem);
     overflow-wrap: anywhere;
   }
   .playbook-heading .primary-button,
-  .takken-heading .primary-button {
+  .glossary-heading .primary-button {
     justify-self: stretch;
   }
   .playbook-controls {
@@ -1767,24 +1859,26 @@ kbd {
   .playbook-rows article {
     grid-template-columns: 38px minmax(0, 1fr);
   }
-  .takken-filters {
+  .glossary-filters {
     grid-template-columns: minmax(0, 1fr);
   }
-  .takken-search,
+  .glossary-search,
   .takken-filters label:nth-of-type(4) {
     grid-column: auto;
   }
   .filter-clear {
     justify-self: start;
   }
-  .takken-entry {
+  .glossary-entry {
     padding: 20px 16px;
     grid-template-columns: 36px minmax(0, 1fr);
   }
-  .takken-entry-title {
+  .glossary-entry-title {
     align-items: flex-start;
   }
-  .takken-entry-main .exam-note {
+  .glossary-entry-main .exam-note,
+  .glossary-entry-main .meeting-context,
+  .glossary-entry-main .review-question {
     display: grid;
     gap: 4px;
   }
@@ -1846,13 +1940,13 @@ kbd {
     gap: 16px 8px;
     padding: 16px 14px;
   }
-  .takken-entry {
+  .glossary-entry {
     grid-template-columns: minmax(0, 1fr);
   }
-  .takken-entry > .row-number {
+  .glossary-entry > .row-number {
     display: none;
   }
-  .takken-entry-title {
+  .glossary-entry-title {
     align-items: flex-start;
     flex-direction: column;
     gap: 10px;

@@ -10,6 +10,7 @@
 - Local-first personal best, history, weak-key analysis, and settings
 - Excel由来のConsulting Playbook全17セクション検索と327件の用語練習
 - 令和8年度向け宅建用語446語の検索・分野/重要度/出典フィルター・用語練習
+- AIS週次定例会議の用語154語を、カテゴリ・確度・種別・確認待ちで絞り込み＆練習（顧客名・個人名・金額は取込時に非開示化）
 - Keyboard-first operation, IME protection, reduced motion, and optional sound
 
 ## Development
@@ -75,6 +76,9 @@ src/
 ```bash
 npm run import:consulting -- "/path/to/Consulting_Playbook_Dictionary_JA.xlsx"
 npm run import:takken -- "/path/to/takken-glossary.tsv"
+npm run import:ais -- "/path/to/AIS_weekly_meeting_glossary.xlsx"
 ```
 
 生成物は `src/content/generated/` に出力されます。生成JSONを直接編集せず、取込スクリプトを再実行してください。取込データはローカル静的データとして保持され、外部へ送信されません。
+
+会議用語集の元ブックは機密資料です。顧客名・個人名は取込時に固定の代替表記へ置換し、金額・件数・割合は非開示マーカーへ置換したうえで生成物に書き出します。元ブックはリポジトリにコミットしないでください。方針は [ADR-009](docs/adr/ADR-009-ais-meeting-glossary.md) を正とします。

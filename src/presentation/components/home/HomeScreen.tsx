@@ -6,8 +6,10 @@ type HomeScreenProps = {
   onStart: () => void;
   onStartConsulting: () => void;
   onStartTakken: () => void;
+  onStartAis: () => void;
   onShowPlaybook: () => void;
   onShowTakkenGlossary: () => void;
+  onShowAisGlossary: () => void;
   onShowHistory: () => void;
   aborted: boolean;
 };
@@ -18,8 +20,10 @@ export function HomeScreen({
   onStart,
   onStartConsulting,
   onStartTakken,
+  onStartAis,
   onShowPlaybook,
   onShowTakkenGlossary,
+  onShowAisGlossary,
   onShowHistory,
   aborted,
 }: HomeScreenProps) {
@@ -55,6 +59,9 @@ export function HomeScreen({
           <button className="secondary-button" type="button" onClick={onStartTakken}>
             宅建用語モード
           </button>
+          <button className="secondary-button" type="button" onClick={onStartAis}>
+            会議用語モード
+          </button>
           {history.length > 0 && (
             <button className="text-button" type="button" onClick={onShowHistory}>
               練習履歴を見る <span aria-hidden="true">→</span>
@@ -66,6 +73,9 @@ export function HomeScreen({
         </button>
         <button className="playbook-link takken-link" type="button" onClick={onShowTakkenGlossary}>
           <span>R8</span> 宅建試験 完全用語一覧を開く <i>446語を収録</i>
+        </button>
+        <button className="playbook-link ais-link" type="button" onClick={onShowAisGlossary}>
+          <span>AIS</span> 週次定例会議 用語辞典を開く <i>154語を収録</i>
         </button>
       </section>
 

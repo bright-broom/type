@@ -22,6 +22,7 @@
     "e2e:install": "playwright install chromium",
     "import:consulting": "python3 scripts/import_consulting_playbook.py",
     "import:takken": "node scripts/import_takken_glossary.mjs",
+    "import:ais": "python3 scripts/import_ais_glossary.py",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "check:dead-code": "knip",

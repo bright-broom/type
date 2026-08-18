@@ -134,8 +134,21 @@ test("local dictionaries filter accurately across responsive layout classes", as
     await expect(page.getByRole("heading", { name: "宅建試験 完全用語一覧" })).toBeVisible();
     const takkenSearch = page.getByRole("searchbox", { name: /キーワード検索/ });
     await takkenSearch.fill("抵当権");
-    await expect(page.locator(".takken-entry").first()).toContainText("抵当権");
+    await expect(page.locator(".glossary-entry").first()).toContainText("抵当権");
     await takkenSearch.fill("__NO_MATCH__");
+    await expect(page.getByText("一致する用語はありません。")).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await page.getByRole("button", { name: /ホームへ/ }).click();
+
+    await page.getByRole("button", { name: /週次定例会議 用語辞典を開く/ }).click();
+    await expect(page.getByRole("heading", { name: "AIS週次定例会議 用語辞典" })).toBeVisible();
+    const aisSearch = page.getByRole("searchbox", { name: /キーワード検索/ });
+    await aisSearch.fill("パイプライン");
+    await expect(page.locator(".glossary-entry").first()).toContainText("パイプライン");
+    // De-identified parties must reach the browser as pseudonyms only.
+    await aisSearch.fill("顧客A");
+    await expect(page.locator(".glossary-entry").first()).toContainText("実名非開示");
+    await aisSearch.fill("__NO_MATCH__");
     await expect(page.getByText("一致する用語はありません。")).toBeVisible();
     await expectNoHorizontalOverflow(page);
     await expectNoFailures(page, failures);
