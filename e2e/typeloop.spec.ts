@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 
 const viewports = [
@@ -78,6 +79,23 @@ test("critical flow stays operable from compact portrait through landscape and d
     await expectNoHorizontalOverflow(page);
     await page.getByRole("button", { name: /練習履歴/ }).click();
     await expect(page.getByRole("heading", { name: "練習の記録" })).toBeVisible();
+    const saveButton = page.getByRole("button", { name: "記録を保存" });
+    await expect(saveButton).toBeVisible();
+    const downloadPromise = page.waitForEvent("download");
+    await saveButton.click();
+    const download = await downloadPromise;
+    const downloadPath = await download.path();
+    expect(download.suggestedFilename()).toMatch(/^typeloop-history-.*\.json$/);
+    expect(downloadPath).not.toBeNull();
+    const archive = JSON.parse(await readFile(downloadPath as string, "utf8")) as {
+      format: string;
+      version: number;
+      sessions: Array<{ id: string }>;
+    };
+    expect(archive.format).toBe("typeloop-session-history");
+    expect(archive.version).toBe(1);
+    expect(archive.sessions).toHaveLength(1);
+    await expect(page.getByRole("status")).toHaveText("JSONファイルに保存しました。");
     await expectNoHorizontalOverflow(page);
     await expectNoFailures(page, failures);
     await context.close();

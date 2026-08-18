@@ -54,6 +54,10 @@ export class LocalSessionRepository implements SessionRepository {
     writeStorage({ ...data, sessions: [session, ...data.sessions].slice(0, MAX_SESSIONS) });
   }
 
+  async getAll(): Promise<CompletedSession[]> {
+    return readStorage().sessions;
+  }
+
   async getRecent(limit: number): Promise<CompletedSession[]> {
     return readStorage().sessions.slice(0, Math.max(0, limit));
   }

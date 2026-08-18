@@ -69,6 +69,7 @@ test("caps history and keeps best scores isolated by training set", async () => 
   await repository.save(session("takken-1", 800, "takken"));
 
   assert.equal((await repository.getRecent(100)).length, 50);
+  assert.equal((await repository.getAll()).length, 50);
   assert.equal((await repository.getBest("japanese"))?.score, 51);
   assert.equal((await repository.getBest("consulting"))?.score, 900);
   assert.equal((await repository.getBest("takken"))?.score, 800);
