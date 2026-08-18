@@ -678,7 +678,7 @@ kbd {
 .feedback-miss .feedback-line {
   color: var(--danger);
 }
-.touch-typing-input {
+.typing-input-dock {
   display: none;
 }
 .live-stats {
@@ -1536,8 +1536,31 @@ kbd {
   .text-button:hover {
     border-bottom-color: transparent;
   }
+  /*
+   * The field is mounted for the whole app lifetime so that focus can ride the tap
+   * that starts play. Outside a session it stays reachable by script but invisible,
+   * because `display: none` would make it unfocusable and close the keyboard.
+   */
+  .typing-input-dock {
+    display: block;
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 40;
+    padding: 10px var(--page-gutter) max(10px, env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    background: rgb(244 241 233 / 96%);
+    backdrop-filter: blur(8px);
+    /* iOS does not reflow fixed content for the keyboard; visualViewport does. */
+    transform: translateY(calc(-1 * var(--keyboard-inset, 0px)));
+  }
+  .typing-input-dock[data-active="false"] {
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(100%);
+  }
   .touch-typing-input {
-    margin: 12px 0 0;
+    margin: 0 auto;
+    width: min(var(--content-game), 100%);
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
@@ -1557,11 +1580,34 @@ kbd {
     padding: 10px 12px;
     color: var(--ink-deep);
     background: var(--paper-soft);
+    /* 16px keeps iOS Safari from zooming the page on focus. */
     font-size: 16px;
   }
   .touch-typing-input input:focus {
     border-color: var(--cyan-dark);
     outline: 3px solid rgb(22 127 123 / 16%);
+  }
+  /* Leave room for the dock so it never covers the live stats. */
+  .state-countdown .game-shell,
+  .state-playing .game-shell,
+  .state-paused .game-shell {
+    padding-bottom: 84px;
+  }
+  /*
+   * With the keyboard open the usable height roughly halves, so the session drops
+   * to its essentials: timer, prompt, and the romaji guide being typed.
+   */
+  [data-keyboard="open"] .prompt-description,
+  [data-keyboard="open"] .live-stats,
+  [data-keyboard="open"] .site-footer {
+    display: none;
+  }
+  [data-keyboard="open"] .prompt-stage {
+    min-height: 0;
+    padding-top: 40px;
+  }
+  [data-keyboard="open"] .game-meta {
+    height: 72px;
   }
 }
 
@@ -1684,6 +1730,11 @@ kbd {
   }
   .touch-typing-input {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .state-countdown .game-shell,
+  .state-playing .game-shell,
+  .state-paused .game-shell {
+    padding-bottom: 76px;
   }
   .touch-typing-input > span {
     position: absolute;
