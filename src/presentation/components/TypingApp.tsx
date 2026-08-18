@@ -2,8 +2,11 @@
 
 import { lazy, Suspense, useCallback, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
+import { saveSessionArchive } from "../../application/session/session-archive.ts";
 import type { CompletedSession } from "../../application/session/session-types.ts";
 import type { TrainingSet } from "../../domain/prompts/prompt-types.ts";
+import { BrowserSessionArchiveSink } from "../../infrastructure/persistence/browser-session-archive-sink.ts";
+import { LocalSessionRepository } from "../../infrastructure/persistence/local-session-repository.ts";
 import { useKeyboardInput } from "../hooks/useKeyboardInput.ts";
 import { useKeyboardInset } from "../hooks/useKeyboardInset.ts";
 import { useTypingSession } from "../hooks/useTypingSession.ts";
@@ -61,6 +64,15 @@ export function TypingApp() {
     setOverlay("none");
     session.home();
   };
+
+  const saveHistory = useCallback(async () => {
+    try {
+      await saveSessionArchive(new LocalSessionRepository(), new BrowserSessionArchiveSink(), Date.now());
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
 
   /**
    * Recovery path: tapping the play area re-opens a dismissed software keyboard.
@@ -135,7 +147,7 @@ export function TypingApp() {
           <ConsultingPlaybook onBack={() => setOverlay("none")} onStart={() => start("consulting")} />
         </Suspense>
       ) : overlay === "history" ? (
-        <HistoryScreen sessions={session.history} onBack={() => setOverlay("none")} />
+        <HistoryScreen sessions={session.history} onBack={() => setOverlay("none")} onSave={saveHistory} />
       ) : session.clock.status === "countdown" ? (
         <CountdownScreen value={session.countdown} />
       ) : session.clock.status === "playing" || session.clock.status === "paused" ? (

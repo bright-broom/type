@@ -1,6 +1,21 @@
+"use client";
+
+import { useState } from "react";
 import type { CompletedSession } from "../../../application/session/session-types.ts";
 
-export function HistoryScreen({ sessions, onBack }: { sessions: ReadonlyArray<CompletedSession>; onBack: () => void }) {
+type HistoryScreenProps = {
+  sessions: ReadonlyArray<CompletedSession>;
+  onBack: () => void;
+  onSave: () => Promise<boolean>;
+};
+
+export function HistoryScreen({ sessions, onBack, onSave }: HistoryScreenProps) {
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "failed">("idle");
+  const saveRecords = async () => {
+    setSaveStatus("saving");
+    setSaveStatus((await onSave()) ? "saved" : "failed");
+  };
+
   return (
     <main className="history-shell">
       <div className="history-heading">
@@ -10,8 +25,22 @@ export function HistoryScreen({ sessions, onBack }: { sessions: ReadonlyArray<Co
         <div>
           <span className="section-index">LOCAL HISTORY</span>
           <h1>練習の記録</h1>
-          <p>小さな伸びも、積み重ねれば見えてくる。</p>
+          <p>この端末に自動保存。JSONファイルに書き出して、手元にも残せます。</p>
         </div>
+        {sessions.length > 0 && (
+          <div className="history-actions">
+            <button className="primary-button" type="button" onClick={saveRecords} disabled={saveStatus === "saving"}>
+              {saveStatus === "saving" ? "保存中…" : "記録を保存"}
+            </button>
+            <p className={"history-save-status status-" + saveStatus} role="status" aria-live="polite">
+              {saveStatus === "saved"
+                ? "JSONファイルに保存しました。"
+                : saveStatus === "failed"
+                  ? "保存できませんでした。ダウンロード設定を確認してください。"
+                  : ""}
+            </p>
+          </div>
+        )}
       </div>
       {sessions.length === 0 ? (
         <p className="empty-state">まだ記録がありません。</p>
