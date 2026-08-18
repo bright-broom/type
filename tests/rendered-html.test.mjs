@@ -25,7 +25,8 @@ test("declares an App Router home route and finished TypeLoop shell", async () =
   assert.match(app, /HomeScreen/);
   assert.match(app, /TypingInput/);
   assert.match(game, /英数字キーボードに切り替え/);
-  assert.match(keyboardInput, /isEditableTarget/);
+  assert.match(keyboardInput, /isForeignEditableTarget/);
+  assert.match(keyboardInput, /isInteractiveTarget/);
   assert.match(keyboardInput, /isTypingField/);
   assert.match(styles, /--keyboard-inset/);
   assert.match(styles, /--page-gutter/);

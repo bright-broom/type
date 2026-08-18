@@ -11,8 +11,18 @@ type ResultScreenProps = {
 export function ResultScreen({ result, previousBest, onRetry, onHome, onHistory }: ResultScreenProps) {
   const isBest = !previousBest || result.score > previousBest.score;
   const delta = previousBest ? result.metrics.wpm - previousBest.metrics.wpm : 0;
+  const nextFocus =
+    result.metrics.accuracy >= 98
+      ? {
+          title: "精度は十分。次はリズムを一定に。",
+          detail: "同じモードをもう一度。迷うキーだけ速度を落とすと、WPMが安定します。",
+        }
+      : {
+          title: "次はミスを1つ減らす。",
+          detail: "速さはそのままで大丈夫。正確な入力が増えるほど、スコアとWPMは自然に伸びます。",
+        };
   return (
-    <main className="result-shell">
+    <main className="result-shell" data-result-root tabIndex={-1}>
       <section className="result-heading">
         <div className="eyebrow">
           <span /> SESSION COMPLETE
@@ -81,12 +91,20 @@ export function ResultScreen({ result, previousBest, onRetry, onHome, onHistory 
         </section>
       )}
 
+      <section className="result-takeaway" aria-labelledby="next-focus-title">
+        <span className="section-index">NEXT FOCUS</span>
+        <div>
+          <h2 id="next-focus-title">{nextFocus.title}</h2>
+          <p>{nextFocus.detail}</p>
+        </div>
+      </section>
+
       <div className="result-actions">
         <button className="primary-button" type="button" onClick={onRetry}>
-          <span>もう一度挑戦</span>
+          <span>同じモードでもう1回</span>
           <kbd>Enter</kbd>
         </button>
-        <button className="text-button" type="button" onClick={onHistory}>
+        <button className="text-button" type="button" data-focus-key="result-history" onClick={onHistory}>
           練習履歴 <span aria-hidden="true">→</span>
         </button>
         <button className="text-button" type="button" onClick={onHome}>

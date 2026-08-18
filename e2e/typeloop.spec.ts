@@ -42,13 +42,32 @@ test("home remains operable across layout equivalence classes", async ({ browser
     const failures = observeFailures(page);
 
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: /タイピングを、.*習慣に。/ })).toBeVisible();
-    await expect(page.getByRole("button", { name: /60秒トレーニング/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /60秒で、.*昨日より軽く。/ })).toBeVisible();
+    const japaneseMode = page.getByRole("radio", { name: /日本語/ });
+    const consultingMode = page.getByRole("radio", { name: /コンサル/ });
+    await expect(japaneseMode).toBeChecked();
+    await page.locator("label.mode-option").filter({ hasText: "コンサル" }).click();
+    await expect(consultingMode).toBeChecked();
+    await expect(japaneseMode).not.toBeChecked();
+    await expect(page.getByRole("button", { name: /60秒トレーニングを始める/ })).toBeVisible();
     await expectNoHorizontalOverflow(page);
     await expectNoFailures(page, failures);
 
     await context.close();
   }
+});
+
+test("Enter starts the mode selected in quick start", async ({ page }) => {
+  await page.clock.install();
+  await page.goto("/");
+  const consultingMode = page.getByRole("radio", { name: /コンサル/ });
+  await page.locator("label.mode-option").filter({ hasText: "コンサル" }).click();
+  await consultingMode.focus();
+  await expect(consultingMode).toBeFocused();
+  await page.keyboard.press("Enter");
+  await page.clock.fastForward(4_000);
+
+  await expect(page.locator(".prompt-reading")).toHaveText("CONSULTING TERM");
 });
 
 test("critical flow stays operable from compact portrait through landscape and desktop", async ({ browser }) => {
@@ -58,7 +77,7 @@ test("critical flow stays operable from compact portrait through landscape and d
     const failures = observeFailures(page);
     await page.clock.install();
     await page.goto("/");
-    await page.getByRole("button", { name: /60秒トレーニング/ }).click();
+    await page.getByRole("button", { name: /60秒トレーニングを始める/ }).click();
     await page.clock.fastForward(4_000);
 
     const inputGuide = page.locator(".roman-line");
@@ -75,14 +94,24 @@ test("critical flow stays operable from compact portrait through landscape and d
     await page.clock.fastForward(61_000);
 
     await expect(page.getByRole("heading", { name: "おつかれさまでした。" })).toBeVisible();
-    await expect(page.getByRole("button", { name: /もう一度挑戦/ })).toBeVisible();
+    await expect(page.locator(".result-shell")).toBeFocused();
+    await expect(page.getByRole("button", { name: /同じモードでもう1回/ })).toBeVisible();
     await expectNoHorizontalOverflow(page);
-    await page.getByRole("button", { name: /練習履歴/ }).click();
+    const historyButton = page.getByRole("button", { name: viewport.name === "desktop" ? "記録" : /練習履歴/ });
+    if (viewport.name === "desktop") {
+      await historyButton.focus();
+      await page.keyboard.press("Enter");
+    } else await historyButton.click();
     await expect(page.getByRole("heading", { name: "練習の記録" })).toBeVisible();
-    const saveButton = page.getByRole("button", { name: "記録を保存" });
+    await expect(page.locator(".history-shell")).toBeFocused();
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+    const saveButton = page.getByRole("button", { name: "JSONで保存" });
     await expect(saveButton).toBeVisible();
     const downloadPromise = page.waitForEvent("download");
-    await saveButton.click();
+    if (viewport.name === "desktop") {
+      await saveButton.focus();
+      await page.keyboard.press("Enter");
+    } else await saveButton.click();
     const download = await downloadPromise;
     const downloadPath = await download.path();
     expect(download.suggestedFilename()).toMatch(/^typeloop-history-.*\.json$/);
@@ -110,7 +139,7 @@ test("touch controls meet the minimum tap target on every phone size", async ({ 
     await page.goto("/");
     await expect(page.locator(".icon-button")).toBeVisible();
     const undersized = await page.evaluate(() =>
-      [...document.querySelectorAll("button, a[href], select")]
+      [...document.querySelectorAll("button, a[href], select, label.mode-option")]
         .map((element) => ({ element, box: element.getBoundingClientRect() }))
         .filter(({ box }) => box.width > 0 && (box.width < 44 || box.height < 44))
         .map(
@@ -228,6 +257,7 @@ test("local dictionaries filter accurately across responsive layout classes", as
 
     await page.getByRole("button", { name: /コンサル実務辞典を開く/ }).click();
     await expect(page.getByRole("heading", { name: "コンサル実務辞典" })).toBeVisible();
+    await expect(page.locator(".playbook-shell")).toBeFocused();
     await page
       .getByRole("navigation", { name: "Playbook セクション" })
       .getByRole("button", { name: /17 学習ロードマップ/ })

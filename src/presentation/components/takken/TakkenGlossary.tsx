@@ -26,7 +26,7 @@ export function TakkenGlossary({ onBack, onStart }: { onBack: () => void; onStar
   };
 
   return (
-    <main className="glossary-shell">
+    <main className="glossary-shell" data-overlay-root tabIndex={-1}>
       <div className="glossary-heading">
         <button className="text-button" type="button" onClick={onBack}>
           ← ホームへ

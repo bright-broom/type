@@ -72,7 +72,7 @@ export function useTypingSession() {
     let frame = 0;
     let lastPaint = 0;
     const update = (time: number) => {
-      if (time - lastPaint >= 50) {
+      if (time - lastPaint >= 100) {
         lastPaint = time;
         setNow(time);
         dispatch({ type: "TICK", now: time });

@@ -2,10 +2,11 @@ type AppHeaderProps = {
   soundEnabled: boolean;
   onToggleSound: () => void;
   onShowHome?: () => void;
+  onShowHistory?: () => void;
   compact?: boolean;
 };
 
-export function AppHeader({ soundEnabled, onToggleSound, onShowHome, compact = false }: AppHeaderProps) {
+export function AppHeader({ soundEnabled, onToggleSound, onShowHome, onShowHistory, compact = false }: AppHeaderProps) {
   return (
     <header className={`app-header ${compact ? "app-header--compact" : ""}`}>
       <button className="brand" type="button" onClick={onShowHome} disabled={!onShowHome} aria-label="TypeLoop ホーム">
@@ -16,17 +17,24 @@ export function AppHeader({ soundEnabled, onToggleSound, onShowHome, compact = f
         </span>
         <span>TypeLoop</span>
       </button>
-      <button
-        className="icon-button"
-        type="button"
-        onClick={onToggleSound}
-        aria-pressed={soundEnabled}
-        // The text label is hidden on small screens, leaving only the icon.
-        aria-label={soundEnabled ? "サウンド ON" : "サウンド OFF"}
-      >
-        <span aria-hidden="true">{soundEnabled ? "♪" : "×"}</span>
-        <span>{soundEnabled ? "サウンド ON" : "サウンド OFF"}</span>
-      </button>
+      <div className="header-actions">
+        {onShowHistory ? (
+          <button className="header-link" type="button" data-focus-key="header-history" onClick={onShowHistory}>
+            記録
+          </button>
+        ) : null}
+        <button
+          className="icon-button"
+          type="button"
+          onClick={onToggleSound}
+          aria-pressed={soundEnabled}
+          // The text label is hidden on small screens, leaving only the icon.
+          aria-label={soundEnabled ? "サウンド ON" : "サウンド OFF"}
+        >
+          <span aria-hidden="true">{soundEnabled ? "♪" : "×"}</span>
+          <span>{soundEnabled ? "サウンド ON" : "サウンド OFF"}</span>
+        </button>
+      </div>
     </header>
   );
 }
