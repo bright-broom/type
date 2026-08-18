@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import playbook from "../generated/consulting-playbook.json" with { type: "json" };
-import { CONSULTING_PROMPTS } from "../prompts/consulting-prompts.ts";
-import { validatePrompts } from "../prompts/validate-prompts.ts";
+import { CONSULTING_PROMPTS } from "./consulting-prompts.ts";
+import { validatePrompts } from "../../domain/prompts/validate-prompts.ts";
 
 test("imports every workbook section, populated cell, and formula value", () => {
   assert.equal(playbook.stats.sheetCount, 17);

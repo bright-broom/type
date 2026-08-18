@@ -2,7 +2,8 @@
 
 import { lazy, Suspense, useCallback, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
-import type { CompletedSession, TrainingSet } from "../../application/session/session-types.ts";
+import type { CompletedSession } from "../../application/session/session-types.ts";
+import type { TrainingSet } from "../../domain/prompts/prompt-types.ts";
 import { useKeyboardInput } from "../hooks/useKeyboardInput.ts";
 import { useKeyboardInset } from "../hooks/useKeyboardInset.ts";
 import { useTypingSession } from "../hooks/useTypingSession.ts";

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
-import type { CompletedSession, TrainingSet } from "../../application/session/session-types.ts";
+import type { CompletedSession } from "../../application/session/session-types.ts";
+import type { TrainingSet } from "../../domain/prompts/prompt-types.ts";
 import { LocalSessionRepository } from "./local-session-repository.ts";
 
 const STORAGE_KEY = "typeloop:data";

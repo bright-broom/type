@@ -1,5 +1,5 @@
-import { segmentReading } from "../../domain/typing/romanization-engine.ts";
-import type { TypingPrompt } from "../../domain/prompts/prompt-types.ts";
+import { segmentReading } from "../typing/romanization-engine.ts";
+import type { TypingPrompt } from "./prompt-types.ts";
 
 export function validatePrompts(
   prompts: ReadonlyArray<TypingPrompt>,

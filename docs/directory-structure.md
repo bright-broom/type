@@ -17,11 +17,12 @@
 │   │   ├── ports/              Interfaces required by the application
 │   │   └── session/            Session state and transitions
 │   ├── content/
+│   │   ├── training-set-catalog.ts  Binds each TrainingSet id to its dataset
 │   │   ├── generated/          Versioned JSON with scoped agent guidance
-│   │   ├── ais/                AIS meeting glossary types, filters, and tests
-│   │   ├── consulting/         Consulting types and dataset tests
-│   │   ├── prompts/            Typed prompt loaders and validation
-│   │   └── takken/             Takken types, filters, and tests
+│   │   ├── ais/                One directory per dataset: types, filters,
+│   │   ├── consulting/         prompt adapter, and dataset tests
+│   │   ├── japanese/
+│   │   └── takken/
 │   ├── domain/                 Pure business rules by capability
 │   ├── infrastructure/         Browser adapters by capability
 │   └── presentation/
@@ -37,7 +38,9 @@
 - Session orchestration and capability interfaces belong in `application`.
 - Browser or vendor-specific implementations belong in `infrastructure`.
 - React rendering and browser event composition belong in `presentation`.
-- Learning material and prompt adapters belong in `content`.
+- Learning material and prompt adapters belong in `content`, one directory per dataset. A dataset directory owns its types, filters, prompt adapter, and tests, and must not import another dataset.
+- `content/training-set-catalog.ts` is the only module that reaches across datasets. It is the seam where a `TrainingSet` identifier is bound to its prompts.
+- Pure rules over domain types belong in `domain` even when only `content` calls them, as with `domain/prompts/validate-prompts.ts`.
 - Cross-layer rules belong in root `tests`; capability tests stay beside their source.
 
 Do not create a generic `shared`, `common`, `utils`, or `helpers` bucket. A module used by several callers still belongs to the layer and capability that owns its responsibility. Rename around purpose before extracting around reuse.

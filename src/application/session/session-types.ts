@@ -1,7 +1,6 @@
 import type { KeyPerformance } from "../../domain/analytics/weak-key-analyzer.ts";
+import type { TrainingSet } from "../../domain/prompts/prompt-types.ts";
 import type { SessionMetrics } from "../../domain/scoring/metrics.ts";
-
-export type TrainingSet = "japanese" | "consulting" | "takken" | "ais";
 
 export type KeystrokeEvent = {
   timestamp: number;

@@ -1,7 +1,8 @@
 import type { KeyPerformance } from "../../domain/analytics/weak-key-analyzer.ts";
 import type { SessionMetrics } from "../../domain/scoring/metrics.ts";
 import { calculateScore } from "../../domain/scoring/scoring-engine.ts";
-import type { CompletedSession, KeystrokeEvent, PromptAttempt, TrainingSet } from "./session-types.ts";
+import type { CompletedSession, KeystrokeEvent, PromptAttempt } from "./session-types.ts";
+import type { TrainingSet } from "../../domain/prompts/prompt-types.ts";
 
 export type SessionOutcome = {
   id: string;
