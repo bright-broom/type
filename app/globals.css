@@ -1529,6 +1529,14 @@ kbd {
   select {
     min-height: var(--tap-target);
   }
+  /* The sound toggle drops its label on small screens, leaving only the icon. */
+  .icon-button,
+  .playbook-nav button {
+    min-width: var(--tap-target);
+  }
+  .playbook-nav button {
+    min-height: var(--tap-target);
+  }
   .primary-button:hover {
     transform: none;
     background: var(--ink-deep);
@@ -1775,6 +1783,14 @@ kbd {
   .result-heading h1,
   .history-heading h1 {
     font-size: clamp(2.25rem, 11vw, 3.25rem);
+  }
+  .best-ribbon {
+    top: 18px;
+    right: -30px;
+    width: 138px;
+    padding: 6px 0;
+    font-size: 0.45rem;
+    letter-spacing: 0.06em;
   }
   .score-card {
     padding: 30px 22px;

@@ -84,6 +84,27 @@ test("critical flow stays operable from compact portrait through landscape and d
   }
 });
 
+test("touch controls meet the minimum tap target on every phone size", async ({ browser }) => {
+  // Height alone was constrained before, so icon-only controls stayed under 44px wide.
+  for (const viewport of [viewports[0], viewports[1], viewports[2]]) {
+    const context = await browser.newContext({ viewport, hasTouch: true, isMobile: true });
+    const page = await context.newPage();
+    await page.goto("/");
+    await expect(page.locator(".icon-button")).toBeVisible();
+    const undersized = await page.evaluate(() =>
+      [...document.querySelectorAll("button, a[href], select")]
+        .map((element) => ({ element, box: element.getBoundingClientRect() }))
+        .filter(({ box }) => box.width > 0 && (box.width < 44 || box.height < 44))
+        .map(
+          ({ element, box }) =>
+            `${element.className || element.tagName} ${Math.round(box.width)}x${Math.round(box.height)}`,
+        ),
+    );
+    expect(undersized, `${viewport.name} has undersized touch controls`).toEqual([]);
+    await context.close();
+  }
+});
+
 test("a phone opens its keyboard from the start tap and keeps the field focused", async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
   const page = await context.newPage();
