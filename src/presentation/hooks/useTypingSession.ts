@@ -6,8 +6,8 @@ import { createPromptSelector } from "../../domain/prompts/prompt-selector.ts";
 import type { PromptSelector } from "../../domain/prompts/prompt-selector.ts";
 import type { TypingPrompt } from "../../domain/prompts/prompt-types.ts";
 import { calculateMetrics } from "../../domain/scoring/metrics.ts";
-import { calculateScore } from "../../domain/scoring/scoring-engine.ts";
 import { createTypingState, getTypingGuide } from "../../domain/typing/romanization-engine.ts";
+import { normalizeTypedText } from "../../domain/typing/typed-text.ts";
 import type { TypingState } from "../../domain/typing/typing-types.ts";
 import { JAPANESE_PROMPTS } from "../../content/prompts/japanese-prompts.ts";
 import { LocalSessionRepository } from "../../infrastructure/persistence/local-session-repository.ts";
@@ -15,6 +15,7 @@ import { WebAudioService } from "../../infrastructure/audio/audio-service.ts";
 import { createSessionId } from "../../infrastructure/identity/browser-session-id.ts";
 import * as sessionClock from "../../application/session/session-reducer.ts";
 import { applyTypingText } from "../../application/session/apply-typing-text.ts";
+import { completeSession } from "../../application/session/complete-session.ts";
 import type * as Session from "../../application/session/session-types.ts";
 import { byTrainingSet, TRAINING_SET_PROMPTS, TRAINING_SETS } from "./training-set-prompts.ts";
 
@@ -38,7 +39,7 @@ export function useTypingSession() {
   const [combo, setCombo] = useState(0);
   const [maxCombo, setMaxCombo] = useState(0);
   const [completedPrompts, setCompletedPrompts] = useState(0);
-  const [feedback, setFeedback] = useState<"correct" | "miss" | "complete" | null>(null);
+  const [feedback, setFeedback] = useState<Session.TypingFeedback>(null);
   const [result, setResult] = useState<Session.CompletedSession | null>(null);
   const [history, setHistory] = useState<Session.CompletedSession[]>([]);
   const [bests, setBests] = useState<Record<Session.TrainingSet, Session.CompletedSession | null>>(() =>
@@ -138,20 +139,18 @@ export function useTypingSession() {
     const weakKeys = analyzeWeakKeys(
       keystrokesRef.current.map((event) => ({ key: event.normalizedKey, correct: event.correct })),
     );
-    const session: Session.CompletedSession = {
+    const session = completeSession({
       id: createSessionId(),
-      mode: "60s",
       trainingSet,
       startedAt,
       endedAt,
-      prompts: [...attemptsRef.current],
-      keystrokes: [...keystrokesRef.current],
+      attempts: attemptsRef.current,
+      keystrokes: keystrokesRef.current,
       metrics,
-      score: calculateScore({ ...metrics, completedPrompts, maxCombo }),
       completedPrompts,
       maxCombo,
       weakKeys,
-    };
+    });
     setResult(session);
     setHistory((current) => [session, ...current].slice(0, 20));
     setBests((current) => ({
@@ -171,11 +170,17 @@ export function useTypingSession() {
   const typeText = useCallback(
     (text: string) => {
       if (clock.status !== "playing" || !attemptRef.current) return;
-      const applied = applyTypingText(prompt, typing, text, () => selectors[trainingSet].next());
+      const { keys, rejected } = normalizeTypedText(text);
+      if (!keys) {
+        // Nothing usable arrived. Guide the player instead of failing silently.
+        if (rejected) setFeedback("unsupported");
+        return;
+      }
+      const applied = applyTypingText(prompt, typing, keys, () => selectors[trainingSet].next());
       let acceptedCount = 0;
       let missCount = 0;
       let completedCount = 0;
-      let latestFeedback: "correct" | "miss" | "complete" | null = null;
+      let latestFeedback: Session.TypingFeedback = null;
 
       for (const step of applied.steps) {
         const time = performance.now();

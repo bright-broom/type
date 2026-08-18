@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { TYPABLE_CHARACTER } from "../../domain/typing/typed-text.ts";
 
 type KeyboardInputOptions = {
   onKey: (key: string) => void;
@@ -27,6 +28,11 @@ function isEditableTarget(target: EventTarget | null): boolean {
   return target.isContentEditable || ["INPUT", "SELECT", "TEXTAREA"].includes(target.tagName);
 }
 
+/** The session's own typing field, which stays focused while a session runs. */
+function isTypingField(target: EventTarget | null): boolean {
+  return target instanceof HTMLElement && target.dataset.typingInput === "true";
+}
+
 export function useKeyboardInput(options: KeyboardInputOptions) {
   const handlers = useRef(options);
 
@@ -43,8 +49,11 @@ export function useKeyboardInput(options: KeyboardInputOptions) {
       composing = false;
     };
     const onKeyDown = (event: KeyboardEvent) => {
+      // The typing field is deliberately not treated as a foreign editable target:
+      // it holds focus for the whole session, so Enter and Escape must still work
+      // for players using a hardware keyboard alongside a touch device.
       if (
-        isEditableTarget(event.target) ||
+        (isEditableTarget(event.target) && !isTypingField(event.target)) ||
         composing ||
         event.isComposing ||
         event.repeat ||
@@ -64,7 +73,9 @@ export function useKeyboardInput(options: KeyboardInputOptions) {
         return;
       }
       if (IGNORED_KEYS.has(event.key) || event.key.startsWith("F") || event.key.length !== 1) return;
-      if (/^[a-z0-9 ' -]$/i.test(event.key)) {
+      // Characters typed into the typing field arrive through its input event.
+      if (isTypingField(event.target)) return;
+      if (TYPABLE_CHARACTER.test(event.key)) {
         event.preventDefault();
         handlers.current.onKey(event.key.toLowerCase());
       }
