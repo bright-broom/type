@@ -55,23 +55,25 @@ fails on any leak, so the generated artifact is already the publishable form. Se
 - `performance.now()` is the monotonic active-session clock.
 - localStorage is best-effort; corrupt or unavailable storage must not stop play.
 - Audio failures are non-fatal and must not alter scoring.
+- Software-keyboard focus is owned by the presentation composition boundary because it must ride a user gesture; see [ADR-010](adr/ADR-010-software-keyboard-input.md).
+- Input the romanization engine cannot consume is reported, never silently dropped, and never counted as a typing mistake.
 - Domain modules remain deterministic and testable without React or browser mocks.
 
 ## Extension rules
 
 When adding a training set:
 
-1. Add or generate content under `src/content`.
+1. Add or generate content under `src/content/<dataset>/`, keeping the dataset self-contained.
 2. Convert it to `TypingPrompt` without changing domain rules unless the input model truly differs.
-3. Extend the `TrainingSet` type in `application/session/session-types.ts`.
-4. Bind the set to its dataset in the `TRAINING_SET_PROMPTS` registry in `useTypingSession`. Selectors, personal bests, and persistence lookups derive from that registry, so no other wiring is needed.
+3. Extend the `TrainingSet` union in `domain/prompts/prompt-types.ts`.
+4. Bind the set to its dataset in `content/training-set-catalog.ts`. Selectors, personal bests, and persistence lookups derive from that catalogue, so no other wiring is needed.
 5. Add dataset validation and an interaction-level test.
 
 When adding persistence or another external capability, define the required port in `application/ports`, implement it in `infrastructure`, and wire it only at the presentation composition boundary.
 
 ## Guardrails
 
-- `tests/architecture-boundaries.test.mjs` enforces layer dependencies.
+- `tests/architecture-boundaries.test.mjs` enforces layer dependencies, dataset self-containment, and that React hooks stay in `presentation/hooks`.
 - `tests/repository-conventions.test.mjs` enforces required documentation, precise directory names, and authored-file size limits.
 - `npm run check` is the canonical deterministic local validation command; CI adds the network-backed dependency audit with `npm run check:ci`.
 - `.agents/skills/develop-typeloop` provides a reusable, progressively loaded workflow for TypeLoop changes.

@@ -6,6 +6,7 @@ TypeLoop treats command output, tests, and CI status as evidence. An agent's sta
 
 | Stage       | Command                    | Purpose                                                            |
 | ----------- | -------------------------- | ------------------------------------------------------------------ |
+| Deps        | `npm run check:deps`       | Every declared peer range is satisfiable by the pinned versions    |
 | Format      | `npm run format:check`     | Deterministic authored-file formatting                             |
 | Lint        | `npm run lint`             | TypeScript, React, hooks, accessibility, and Next.js rules         |
 | Typecheck   | `npm run typecheck`        | Strict TypeScript contracts                                        |
@@ -61,3 +62,39 @@ CodeQL, native Secret Scanning, push protection, branch rulesets, and Vercel pro
 ## Dead-code cleanup
 
 Knip findings are candidates, not deletion instructions. Confirm framework conventions, lazy imports, generated data, public assets, and runtime entry points before removal. Use the sequence: static finding → reference check → deletion plan → smallest deletion → full regression.
+
+## Failure automation
+
+Two workflows react to a failing gate. Both are deliberately narrow: the boundary is
+whether a fix needs judgement.
+
+### CI triage (`.github/workflows/ci-triage.yml`)
+
+Runs on `workflow_run` after CI finishes, so it executes the classifier from the
+default branch and never checks out the branch whose CI failed. That keeps it safe
+to run for forks and for dependabot, which is precisely where the reporting matters.
+
+`scripts/triage-ci-failure.mjs` maps the failed job log onto a known cause, states
+whether it is mechanically fixable, and comments the evidence and the next command
+on the pull request. Causes marked blocking — dependency conflicts, tracked
+secrets, high-severity advisories — also fail the triage job, so "do not merge" is
+visible as a check and not only inside a log.
+
+### Autofix (`.github/workflows/autofix.yml`)
+
+Applies `npm run format` and `eslint --fix`, verifies the result with
+`npm run check:quick`, then pushes an `[autofix]` commit to the same branch. It is
+limited to same-repository branches, skips its own commits, and skips dependabot
+branches. Nothing that needs a decision is ever rewritten.
+
+A `GITHUB_TOKEN` push does not start a new workflow run, so the job comments that CI
+needs re-running on the new commit. Add `[skip autofix]` to a pull request title to
+opt out.
+
+### What the automation deliberately does not do
+
+Dependency conflicts are not auto-fixed. Choosing between pinning a dependency back
+and upgrading the whole constraint is a judgement about the toolchain, and guessing
+would produce a green build on a tree nobody chose. `npm run check:deps` names the
+conflict, dependabot ignores keep known-incompatible majors out, and the triage
+comment marks the pull request unmergeable — the decision stays with a person.

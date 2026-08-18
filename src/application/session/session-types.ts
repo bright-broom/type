@@ -1,7 +1,6 @@
 import type { KeyPerformance } from "../../domain/analytics/weak-key-analyzer.ts";
+import type { TrainingSet } from "../../domain/prompts/prompt-types.ts";
 import type { SessionMetrics } from "../../domain/scoring/metrics.ts";
-
-export type TrainingSet = "japanese" | "consulting" | "takken" | "ais";
 
 export type KeystrokeEvent = {
   timestamp: number;
@@ -35,6 +34,13 @@ export type CompletedSession = {
   maxCombo: number;
   weakKeys: ReadonlyArray<KeyPerformance>;
 };
+
+/**
+ * Live feedback for the current keystroke. `unsupported` means the input could not
+ * be consumed at all (for example kana from a software keyboard left in Japanese
+ * mode), which is a keyboard-mode problem rather than a typing mistake.
+ */
+export type TypingFeedback = "correct" | "miss" | "complete" | "unsupported" | null;
 
 export type AppSettings = {
   soundEnabled: boolean;

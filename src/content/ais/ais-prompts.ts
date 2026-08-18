@@ -1,6 +1,6 @@
 import glossaryJson from "../generated/ais-glossary.json" with { type: "json" };
 import type { TypingPrompt } from "../../domain/prompts/prompt-types.ts";
-import type { AisGlossary } from "../ais/ais-glossary-types.ts";
+import type { AisGlossary } from "./ais-glossary-types.ts";
 
 const glossary = glossaryJson as AisGlossary;
 

@@ -1,0 +1,91 @@
+name: Autofix
+
+# Applies only the changes a formatter or linter can make on its own, then verifies
+# them. Anything needing judgement is left to the CI triage comment.
+#
+# Scope is deliberately narrow for safety:
+#   - same-repository branches only, so a fork can never make this job push
+#   - never runs on its own commits, so it cannot loop
+#   - dependabot branches are skipped: their token is read-only, and a dependency
+#     conflict is a decision, not a formatting slip
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: autofix-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  autofix:
+    name: Apply mechanical fixes
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'dependabot[bot]' &&
+      !contains(github.event.pull_request.title, '[skip autofix]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout the pull request branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 2
+      - name: Stop if the last commit is already an autofix
+        id: guard
+        run: |
+          if git log -1 --pretty=%B | grep -q '\[autofix\]'; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Last commit is an autofix; nothing to do."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Set up Node.js
+        if: steps.guard.outputs.skip == 'false'
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install dependencies
+        if: steps.guard.outputs.skip == 'false'
+        run: npm ci
+      - name: Apply the formatter and the linter's own fixes
+        if: steps.guard.outputs.skip == 'false'
+        run: |
+          npm run format
+          npx eslint . --ignore-pattern dist --ignore-pattern .next --fix || true
+      - name: Report when nothing needed fixing
+        id: diff
+        if: steps.guard.outputs.skip == 'false'
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --stat
+          fi
+      - name: Verify the fixes before pushing them
+        if: steps.diff.outputs.changed == 'true'
+        run: npm run check:quick
+      - name: Commit and push
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit --all --message 'style: [autofix] フォーマットとlintの自動修正を適用'
+          git push origin "HEAD:$BRANCH"
+      - name: Note that CI must be re-run
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr comment "$NUMBER" --repo "$GITHUB_REPOSITORY" --body \
+            'フォーマットとlintの自動修正を push しました。GITHUB_TOKEN による push は CI を再起動しないため、最新コミットでの再実行が必要です。'

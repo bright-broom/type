@@ -1,7 +1,7 @@
 import type { TypingPrompt } from "../../../domain/prompts/prompt-types.ts";
 import type { TypingGuide } from "../../../domain/typing/typing-types.ts";
 import type { SessionMetrics } from "../../../domain/scoring/metrics.ts";
-import { TypingInput } from "./TypingInput.tsx";
+import type { TypingFeedback } from "../../../application/session/session-types.ts";
 
 type GameScreenProps = {
   prompt: TypingPrompt;
@@ -11,9 +11,8 @@ type GameScreenProps = {
   completedPrompts: number;
   misses: number;
   metrics: SessionMetrics;
-  feedback: "correct" | "miss" | "complete" | null;
+  feedback: TypingFeedback;
   onPause: () => void;
-  onTypeText: (text: string) => void;
 };
 
 export function GameScreen(props: GameScreenProps) {
@@ -51,17 +50,17 @@ export function GameScreen(props: GameScreenProps) {
           <span className="roman-remaining">{props.guide.remaining}</span>
         </div>
         <div className="feedback-line" aria-live="polite">
-          {props.feedback === "miss"
-            ? "MISS — 正しいキーで続けよう"
-            : props.combo >= 10
-              ? `${props.combo} COMBO`
-              : props.prompt.category === "consulting"
-                ? "英字で入力"
-                : "ローマ字で入力"}
+          {props.feedback === "unsupported"
+            ? "かな入力を受け取りました — 英数字キーボードに切り替えてください"
+            : props.feedback === "miss"
+              ? "MISS — 正しいキーで続けよう"
+              : props.combo >= 10
+                ? `${props.combo} COMBO`
+                : props.prompt.category === "consulting"
+                  ? "英字で入力"
+                  : "ローマ字で入力"}
         </div>
       </section>
-
-      <TypingInput onText={props.onTypeText} />
 
       <div className="live-stats" aria-label="現在の成績">
         <div>

@@ -18,7 +18,7 @@ TypeLoop is a local-first Next.js typing trainer. Before structural work, read:
 - `src/application/`: session state and application-owned ports
 - `src/domain/`: pure framework-independent business rules
 - `src/infrastructure/`: browser adapters implementing application ports
-- `src/content/`: authored content loaders, filters, types, and tests
+- `src/content/`: one directory per learning dataset, plus `training-set-catalog.ts` binding each `TrainingSet` to its prompts
 - `src/content/generated/`: generated artifacts; never edit by hand
 - `scripts/`: repeatable content importers and their authored ingestion policies
 - `tests/`: cross-layer and repository-level guardrails

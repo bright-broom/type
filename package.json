@@ -27,11 +27,12 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "check:dead-code": "knip",
     "check:secrets": "node scripts/check-secrets.mjs",
+    "check:deps": "node scripts/check-dependency-compatibility.mjs",
     "check:security": "npm run check:secrets && npm run audit:dependencies",
     "audit:dependencies": "npm audit --audit-level=high",
     "check:quick": "npm run format:check && npm run lint && npm run typecheck && npm run test",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run check:dead-code && npm run build && npm run test:e2e",
-    "check:ci": "npm run check && npm run check:security"
+    "check:ci": "npm run check:deps && npm run check && npm run check:security"
   },
   "dependencies": {
     "next": "16.3.1",
@@ -39,7 +40,7 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
-    "@eslint/js": "10.0.1",
+    "@eslint/js": "9.39.5",
     "@next/eslint-plugin-next": "16.3.1",
     "@playwright/test": "1.62.1",
     "@tailwindcss/postcss": "4.3.3",
@@ -56,7 +57,7 @@
     "prettier": "3.9.6",
     "react-server-dom-webpack": "19.2.8",
     "tailwindcss": "4.3.3",
-    "typescript": "7.0.2",
+    "typescript": "5.9.3",
     "typescript-eslint": "8.67.0"
   },
   "type": "module"
