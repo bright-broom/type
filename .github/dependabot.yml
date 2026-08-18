@@ -9,6 +9,15 @@ updates:
         dependency-type: development
         update-types: [minor, patch]
     open-pull-requests-limit: 5
+    ignore:
+      # ESLint 10 has no compatible eslint-plugin-react or eslint-plugin-jsx-a11y
+      # release yet, and installing it breaks `npm ci` outright. Drop this entry once
+      # both plugins declare an eslint@^10 peer range.
+      - dependency-name: eslint
+        update-types: [version-update:semver-major]
+      # @types/node tracks the runtime major pinned in .nvmrc, not the newest release.
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
   - package-ecosystem: github-actions
     directory: /
     schedule:
