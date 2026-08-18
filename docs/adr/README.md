@@ -13,5 +13,6 @@ ADRs capture durable decisions that constrain future implementation. They do not
 | [007](ADR-007-source-boundaries.md)         | Source directory boundaries              |
 | [008](ADR-008-ai-development-guardrails.md) | AI-readable repository guardrails        |
 | [009](ADR-009-ais-meeting-glossary.md)      | De-identified meeting glossary ingestion |
+| [010](ADR-010-software-keyboard-input.md)   | Software keyboard input on touch devices |
 
 Add an ADR only for a decision with meaningful alternatives and long-lived consequences. Use the next number and include Context, Decision, Alternatives, and Consequences.

@@ -84,6 +84,79 @@ test("critical flow stays operable from compact portrait through landscape and d
   }
 });
 
+test("a phone opens its keyboard from the start tap and keeps the field focused", async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  const page = await context.newPage();
+  const failures = observeFailures(page);
+  await page.clock.install();
+  await page.goto("/");
+
+  const focusedLabel = () => page.evaluate(() => document.activeElement?.getAttribute("aria-label") ?? null);
+  await page.getByRole("button", { name: /60秒トレーニング/ }).tap();
+  // Focus must land during the countdown: a software keyboard only opens while the
+  // starting gesture is still being handled.
+  expect(await focusedLabel()).toBe("タイピング入力");
+  await page.clock.fastForward(4_000);
+  expect(await focusedLabel()).toBe("タイピング入力");
+
+  // Dismissing the keyboard is recoverable by tapping the play area.
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+  expect(await focusedLabel()).toBeNull();
+  await page.locator(".prompt-stage h1").tap();
+  expect(await focusedLabel()).toBe("タイピング入力");
+
+  // Pausing releases the keyboard; resuming takes it back.
+  await page.getByRole("button", { name: /一時停止/ }).tap();
+  await expect(page.getByRole("dialog", { name: "ひと休み。" })).toBeVisible();
+  await page.getByRole("button", { name: /トレーニングを再開/ }).tap();
+  expect(await focusedLabel()).toBe("タイピング入力");
+
+  await expectNoFailures(page, failures);
+  await context.close();
+});
+
+test("kana from a keyboard left in Japanese mode is explained, not scored as a miss", async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  const page = await context.newPage();
+  const failures = observeFailures(page);
+  await page.clock.install();
+  await page.goto("/");
+  await page.getByRole("button", { name: /60秒トレーニング/ }).tap();
+  await page.clock.fastForward(4_000);
+
+  const missCount = page.locator(".live-stats > div").filter({ hasText: "ミス" }).locator("strong");
+  await page.getByRole("textbox", { name: "タイピング入力" }).fill("あいう");
+  await expect(page.locator(".feedback-line")).toContainText("英数字キーボードに切り替え");
+  await expect(page.locator(".roman-typed")).toHaveText("");
+  await expect(missCount).toHaveText("0");
+
+  // Latin input still works straight after the guidance.
+  const fullInput = (await page.locator(".roman-line").getAttribute("aria-label"))?.replace(/^入力:\s*/, "") ?? "";
+  await page.getByRole("textbox", { name: "タイピング入力" }).fill(fullInput[0] ?? "a");
+  await expect(page.locator(".roman-typed")).not.toHaveText("");
+
+  await expectNoFailures(page, failures);
+  await context.close();
+});
+
+test("the prompt and the typing field stay visible in the space a keyboard leaves", async ({ browser }) => {
+  // 390x420 approximates a 390x844 phone with a ~420px software keyboard open.
+  const context = await browser.newContext({ viewport: { width: 390, height: 420 }, hasTouch: true, isMobile: true });
+  const page = await context.newPage();
+  const failures = observeFailures(page);
+  await page.clock.install();
+  await page.goto("/");
+  await page.getByRole("button", { name: /60秒トレーニング/ }).tap();
+  await page.clock.fastForward(4_000);
+
+  await expect(page.locator(".prompt-stage h1")).toBeInViewport();
+  await expect(page.locator(".roman-line")).toBeInViewport();
+  await expect(page.getByRole("textbox", { name: "タイピング入力" })).toBeInViewport();
+  await expectNoHorizontalOverflow(page);
+  await expectNoFailures(page, failures);
+  await context.close();
+});
+
 test("touch input processes multi-character IME events sequentially", async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
   const page = await context.newPage();

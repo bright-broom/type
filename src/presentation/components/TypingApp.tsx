@@ -1,14 +1,17 @@
 "use client";
 
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useCallback, useRef, useState } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
 import type { CompletedSession, TrainingSet } from "../../application/session/session-types.ts";
 import { useKeyboardInput } from "../hooks/useKeyboardInput.ts";
+import { useKeyboardInset } from "../hooks/useKeyboardInset.ts";
 import { useTypingSession } from "../hooks/useTypingSession.ts";
 import { AppHeader } from "./AppHeader.tsx";
 import { HomeScreen } from "./home/HomeScreen.tsx";
 import { CountdownScreen } from "./game/CountdownScreen.tsx";
 import { GameScreen } from "./game/GameScreen.tsx";
 import { PauseDialog } from "./game/PauseDialog.tsx";
+import { TypingInput } from "./game/TypingInput.tsx";
 import { ResultScreen } from "./result/ResultScreen.tsx";
 import { HistoryScreen } from "./history/HistoryScreen.tsx";
 
@@ -29,16 +32,47 @@ export function TypingApp() {
   const session = useTypingSession();
   const [overlay, setOverlay] = useState<Overlay>("none");
   const [previousBest, setPreviousBest] = useState<CompletedSession | null>(null);
+  const typingFieldRef = useRef<HTMLInputElement>(null);
+  useKeyboardInset();
+
+  /**
+   * A software keyboard only opens while a user gesture is still being handled, so
+   * the field is focused synchronously from the tap that starts or resumes play.
+   * The field is mounted for the whole app lifetime for the same reason: focusing
+   * an element that React has not created yet would land outside the gesture.
+   */
+  const focusTypingField = useCallback(() => typingFieldRef.current?.focus(), []);
 
   const start = (trainingSet: TrainingSet = "japanese") => {
+    focusTypingField();
     setPreviousBest(session.bests[trainingSet]);
     setOverlay("none");
     session.start(trainingSet);
   };
 
+  const resume = () => {
+    focusTypingField();
+    session.resume();
+  };
+
   const goHome = () => {
+    typingFieldRef.current?.blur();
     setOverlay("none");
     session.home();
+  };
+
+  /**
+   * Recovery path: tapping the play area re-opens a dismissed software keyboard.
+   * The default pointer-down action moves focus to the tapped element, which would
+   * undo this, so it is suppressed for taps that hit no control of their own.
+   */
+  const onFramePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (session.clock.status !== "playing") return;
+    // `.prompt-description` scrolls, so leave its drag gestures alone.
+    const OWN_GESTURE = "button, a, input, select, textarea, .prompt-description";
+    if (event.target instanceof Element && event.target.closest(OWN_GESTURE)) return;
+    event.preventDefault();
+    focusTypingField();
   };
 
   useKeyboardInput({
@@ -49,17 +83,19 @@ export function TypingApp() {
         return;
       }
       if (RESTARTABLE.includes(session.clock.status)) start(session.trainingSet);
+      else if (session.clock.status === "paused") resume();
       else session.enter();
     },
     onEscape: () => {
       if (overlay !== "none") setOverlay("none");
+      else if (session.clock.status === "paused") resume();
       else session.escape();
     },
   });
 
   const active = ["countdown", "playing", "paused"].includes(session.clock.status);
   return (
-    <div className={`app-frame state-${session.clock.status}`}>
+    <div className={`app-frame state-${session.clock.status}`} onPointerDown={onFramePointerDown}>
       <AppHeader
         compact={active}
         soundEnabled={session.settings.soundEnabled}
@@ -113,9 +149,8 @@ export function TypingApp() {
             metrics={session.liveMetrics}
             feedback={session.feedback}
             onPause={session.pause}
-            onTypeText={session.typeText}
           />
-          {session.clock.status === "paused" && <PauseDialog onResume={session.resume} onAbort={session.abort} />}
+          {session.clock.status === "paused" && <PauseDialog onResume={resume} onAbort={session.abort} />}
         </>
       ) : session.clock.status === "finished" && session.result ? (
         <ResultScreen
@@ -140,6 +175,8 @@ export function TypingApp() {
           aborted={session.clock.status === "aborted"}
         />
       )}
+      <TypingInput inputRef={typingFieldRef} active={active} onText={session.typeText} />
+
       <footer className="site-footer">
         <span>TYPELOOP / 60 SEC TRAINING</span>
         <span>LOCAL FIRST · NO ACCOUNT</span>
