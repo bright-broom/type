@@ -41,10 +41,10 @@
     "@eslint/js": "9.39.4",
     "@next/eslint-plugin-next": "16.3.1",
     "@playwright/test": "1.62.1",
-    "@tailwindcss/postcss": "4.2.1",
+    "@tailwindcss/postcss": "4.3.3",
     "@types/node": "22.19.19",
-    "@types/react": "19.2.14",
-    "@types/react-dom": "19.2.3",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
     "c8": "12.0.0",
     "eslint": "9.39.4",
     "eslint-plugin-jsx-a11y": "6.10.2",
@@ -54,9 +54,9 @@
     "knip": "6.32.2",
     "prettier": "3.9.6",
     "react-server-dom-webpack": "19.2.8",
-    "tailwindcss": "4.2.1",
+    "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.59.3"
+    "typescript-eslint": "8.67.0"
   },
   "type": "module"
 }
