@@ -15,6 +15,14 @@ updates:
       # both plugins declare an eslint@^10 peer range.
       - dependency-name: eslint
         update-types: [version-update:semver-major]
+      # @eslint/js ships the core rule set for its own major and declares
+      # `peerOptional eslint@^<major>`, so it can only move when eslint moves.
+      - dependency-name: "@eslint/js"
+        update-types: [version-update:semver-major]
+      # typescript-eslint caps the compiler at `<6.1.0`. Drop this entry once it
+      # declares support for the next TypeScript major.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
       # @types/node tracks the runtime major pinned in .nvmrc, not the newest release.
       - dependency-name: "@types/node"
         update-types: [version-update:semver-major]
