@@ -27,11 +27,12 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "check:dead-code": "knip",
     "check:secrets": "node scripts/check-secrets.mjs",
+    "check:deps": "node scripts/check-dependency-compatibility.mjs",
     "check:security": "npm run check:secrets && npm run audit:dependencies",
     "audit:dependencies": "npm audit --audit-level=high",
     "check:quick": "npm run format:check && npm run lint && npm run typecheck && npm run test",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run check:dead-code && npm run build && npm run test:e2e",
-    "check:ci": "npm run check && npm run check:security"
+    "check:ci": "npm run check:deps && npm run check && npm run check:security"
   },
   "dependencies": {
     "next": "16.3.1",
