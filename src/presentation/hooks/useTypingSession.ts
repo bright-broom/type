@@ -17,11 +17,10 @@ import { createSessionId } from "../../infrastructure/identity/browser-session-i
 import * as sessionClock from "../../application/session/session-reducer.ts";
 import { applyTypingText } from "../../application/session/apply-typing-text.ts";
 import { completeSession } from "../../application/session/complete-session.ts";
+import { tallyTypingSteps } from "../../application/session/tally-typing-steps.ts";
 import type * as Session from "../../application/session/session-types.ts";
 
 const repository = new LocalSessionRepository();
-
-type AttemptDraft = Session.PromptAttempt & { completedAt?: number };
 
 export function useTypingSession() {
   const [clock, dispatch] = useReducer(sessionClock.sessionTransition, undefined, () =>
@@ -49,7 +48,7 @@ export function useTypingSession() {
   const [now, setNow] = useState(0);
   const keystrokesRef = useRef<Session.KeystrokeEvent[]>([]);
   const attemptsRef = useRef<Session.PromptAttempt[]>([]);
-  const attemptRef = useRef<AttemptDraft | null>(null);
+  const attemptRef = useRef<Session.PromptAttempt & { completedAt?: number }>(null);
   const savedRef = useRef(false);
   const audioRef = useRef(new WebAudioService());
 
@@ -177,66 +176,33 @@ export function useTypingSession() {
         return;
       }
       const applied = applyTypingText(prompt, typing, keys, () => selectors[trainingSet].next());
-      let acceptedCount = 0;
-      let missCount = 0;
-      let completedCount = 0;
-      let latestFeedback: Session.TypingFeedback = null;
+      const tally = tallyTypingSteps({
+        steps: applied.steps,
+        attempt: attemptRef.current,
+        combo,
+        maxCombo,
+        now: () => performance.now(),
+      });
 
-      for (const step of applied.steps) {
-        const time = performance.now();
-        const event: Session.KeystrokeEvent = {
-          timestamp: time,
-          key: step.key,
-          normalizedKey: step.key,
-          correct: step.result.accepted,
-          promptId: step.prompt.id,
-          position: step.previousState.input.length,
-        };
-        keystrokesRef.current.push(event);
-        if (!step.result.accepted) {
-          attemptRef.current.incorrectKeystrokes += 1;
-          missCount += 1;
-          setCombo(0);
-          latestFeedback = "miss";
-          audioRef.current.playMiss();
-          continue;
-        }
-        acceptedCount += 1;
-        attemptRef.current.correctKeystrokes += 1;
-        attemptRef.current.input = step.result.nextState.input;
-        setCombo((value) => {
-          const next = value + 1;
-          setMaxCombo((maximum) => Math.max(maximum, next));
-          return next;
-        });
-        if (!step.result.completed) {
-          latestFeedback = "correct";
-          audioRef.current.playCorrect();
-          continue;
-        }
-        attemptRef.current.completedAt = time;
-        attemptsRef.current.push({ ...attemptRef.current });
-        completedCount += 1;
-        latestFeedback = "complete";
-        audioRef.current.playComplete();
-        const next = step.nextPrompt as TypingPrompt;
-        attemptRef.current = {
-          promptId: next.id,
-          startedAt: time,
-          input: "",
-          correctKeystrokes: 0,
-          incorrectKeystrokes: 0,
-        };
+      keystrokesRef.current.push(...tally.keystrokes);
+      attemptsRef.current.push(...tally.finishedAttempts);
+      attemptRef.current = tally.attempt;
+      for (const sound of tally.sounds) {
+        if (sound === "miss") audioRef.current.playMiss();
+        else if (sound === "correct") audioRef.current.playCorrect();
+        else audioRef.current.playComplete();
       }
 
-      if (acceptedCount > 0) setCorrect((value) => value + acceptedCount);
-      if (missCount > 0) setMisses((value) => value + missCount);
-      if (completedCount > 0) setCompletedPrompts((value) => value + completedCount);
-      if (latestFeedback) setFeedback(latestFeedback);
+      if (tally.accepted > 0) setCorrect((value) => value + tally.accepted);
+      if (tally.missed > 0) setMisses((value) => value + tally.missed);
+      if (tally.completed > 0) setCompletedPrompts((value) => value + tally.completed);
+      setCombo(tally.combo);
+      setMaxCombo(tally.maxCombo);
+      if (tally.feedback) setFeedback(tally.feedback);
       setPrompt(applied.prompt);
       setTyping(applied.typing);
     },
-    [clock.status, prompt, selectors, trainingSet, typing],
+    [clock.status, combo, maxCombo, prompt, selectors, trainingSet, typing],
   );
 
   const pause = useCallback(() => dispatch({ type: "PAUSE", now: performance.now() }), []);

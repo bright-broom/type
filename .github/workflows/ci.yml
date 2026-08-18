@@ -60,6 +60,8 @@ jobs:
         run: npm run check:dead-code
       - name: Build production application
         run: npm run build
+      - name: Hold shipped JavaScript to its budget
+        run: npm run check:bundle
 
   e2e:
     name: Browser E2E
@@ -79,7 +81,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium webkit
       - name: Verify critical browser flows
         run: npm run test:e2e
       - name: Upload browser failure evidence

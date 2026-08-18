@@ -16,7 +16,14 @@ export function AppHeader({ soundEnabled, onToggleSound, onShowHome, compact = f
         </span>
         <span>TypeLoop</span>
       </button>
-      <button className="icon-button" type="button" onClick={onToggleSound} aria-pressed={soundEnabled}>
+      <button
+        className="icon-button"
+        type="button"
+        onClick={onToggleSound}
+        aria-pressed={soundEnabled}
+        // The text label is hidden on small screens, leaving only the icon.
+        aria-label={soundEnabled ? "サウンド ON" : "サウンド OFF"}
+      >
         <span aria-hidden="true">{soundEnabled ? "♪" : "×"}</span>
         <span>{soundEnabled ? "サウンド ON" : "サウンド OFF"}</span>
       </button>

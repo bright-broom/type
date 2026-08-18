@@ -29,7 +29,15 @@ export function GameScreen(props: GameScreenProps) {
             <small>.{String(Math.floor((props.remainingMs % 1_000) / 100)).padStart(1, "0")}</small>
           </strong>
         </div>
-        <div className="game-progress" aria-label={`残り${seconds}秒`}>
+        <div
+          className="game-progress"
+          role="progressbar"
+          aria-label="残り時間"
+          aria-valuemin={0}
+          aria-valuemax={60}
+          aria-valuenow={seconds}
+          aria-valuetext={`残り${seconds}秒`}
+        >
           <i style={{ width: `${progress}%` }} />
         </div>
         <button className="pause-button" type="button" onClick={props.onPause}>

@@ -1,41 +1,19 @@
 import type { AppSettings, CompletedSession } from "../../application/session/session-types.ts";
 import type { TrainingSet } from "../../domain/prompts/prompt-types.ts";
 import type { SessionRepository } from "../../application/ports/session-repository.ts";
+import { emptyEnvelope, migrateEnvelope, STORAGE_VERSION, type StorageEnvelope } from "./storage-envelope.ts";
 
 const STORAGE_KEY = "typeloop:data";
 const MAX_SESSIONS = 50;
-const DEFAULT_SETTINGS: AppSettings = { soundEnabled: true };
-
-type StorageEnvelope = {
-  version: 1;
-  sessions: CompletedSession[];
-  settings: AppSettings;
-};
-
-const EMPTY: StorageEnvelope = { version: 1, sessions: [], settings: DEFAULT_SETTINGS };
-
-function isSession(value: unknown): value is CompletedSession {
-  if (!value || typeof value !== "object") return false;
-  const record = value as Record<string, unknown>;
-  return typeof record.id === "string" && typeof record.score === "number" && typeof record.endedAt === "number";
-}
 
 function readStorage(): StorageEnvelope {
-  if (typeof window === "undefined") return EMPTY;
+  if (typeof window === "undefined") return emptyEnvelope();
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return EMPTY;
-    const parsed = JSON.parse(raw) as Partial<StorageEnvelope>;
-    if (parsed.version !== 1 || !Array.isArray(parsed.sessions)) return EMPTY;
-    return {
-      version: 1,
-      sessions: parsed.sessions.filter(isSession),
-      settings: {
-        soundEnabled: parsed.settings?.soundEnabled ?? DEFAULT_SETTINGS.soundEnabled,
-      },
-    };
+    if (!raw) return emptyEnvelope();
+    return migrateEnvelope(JSON.parse(raw));
   } catch {
-    return EMPTY;
+    return emptyEnvelope();
   }
 }
 
@@ -51,7 +29,7 @@ function writeStorage(value: StorageEnvelope): void {
 export class LocalSessionRepository implements SessionRepository {
   async save(session: CompletedSession): Promise<void> {
     const data = readStorage();
-    writeStorage({ ...data, sessions: [session, ...data.sessions].slice(0, MAX_SESSIONS) });
+    writeStorage({ ...data, version: STORAGE_VERSION, sessions: [session, ...data.sessions].slice(0, MAX_SESSIONS) });
   }
 
   async getRecent(limit: number): Promise<CompletedSession[]> {
@@ -70,6 +48,6 @@ export class LocalSessionRepository implements SessionRepository {
 
   async saveSettings(settings: AppSettings): Promise<void> {
     const data = readStorage();
-    writeStorage({ ...data, settings });
+    writeStorage({ ...data, version: STORAGE_VERSION, settings });
   }
 }

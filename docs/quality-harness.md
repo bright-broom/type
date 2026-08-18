@@ -4,19 +4,20 @@ TypeLoop treats command output, tests, and CI status as evidence. An agent's sta
 
 ## Validation ladder
 
-| Stage       | Command                    | Purpose                                                            |
-| ----------- | -------------------------- | ------------------------------------------------------------------ |
-| Deps        | `npm run check:deps`       | Every declared peer range is satisfiable by the pinned versions    |
-| Format      | `npm run format:check`     | Deterministic authored-file formatting                             |
-| Lint        | `npm run lint`             | TypeScript, React, hooks, accessibility, and Next.js rules         |
-| Typecheck   | `npm run typecheck`        | Strict TypeScript contracts                                        |
-| Unit        | `npm run test:unit`        | Pure domain, reducer, and content behavior                         |
-| Integration | `npm run test:integration` | Cross-module, repository policy, and infrastructure behavior       |
-| Coverage    | `npm run test:coverage`    | All authored `src` modules, including zero-hit files, with floors  |
-| Dead code   | `npm run check:dead-code`  | Unused files, exports, and dependencies                            |
-| Build       | `npm run build`            | Next.js production compilation                                     |
-| Browser     | `npm run test:e2e`         | Critical flows, responsive overflow, console, and request failures |
-| Security    | `npm run check:security`   | Tracked-secret heuristic and High dependency audit                 |
+| Stage       | Command                    | Purpose                                                              |
+| ----------- | -------------------------- | -------------------------------------------------------------------- |
+| Deps        | `npm run check:deps`       | Every declared peer range is satisfiable by the pinned versions      |
+| Bundle      | `npm run check:bundle`     | Shipped JavaScript stays inside its first-load and referenced budget |
+| Format      | `npm run format:check`     | Deterministic authored-file formatting                               |
+| Lint        | `npm run lint`             | TypeScript, React, hooks, accessibility, and Next.js rules           |
+| Typecheck   | `npm run typecheck`        | Strict TypeScript contracts                                          |
+| Unit        | `npm run test:unit`        | Pure domain, reducer, and content behavior                           |
+| Integration | `npm run test:integration` | Cross-module, repository policy, and infrastructure behavior         |
+| Coverage    | `npm run test:coverage`    | All authored `src` modules, including zero-hit files, with floors    |
+| Dead code   | `npm run check:dead-code`  | Unused files, exports, and dependencies                              |
+| Build       | `npm run build`            | Next.js production compilation                                       |
+| Browser     | `npm run test:e2e`         | Critical flows, responsive overflow, console, and request failures   |
+| Security    | `npm run check:security`   | Tracked-secret heuristic and High dependency audit                   |
 
 Coverage uses c8's all-source mode. It includes zero-hit authored runtime modules under `src`, while excluding generated
 datasets, tests, type-only contracts, application ports, and the compatibility export facade. Browser behavior remains
@@ -62,6 +63,21 @@ CodeQL, native Secret Scanning, push protection, branch rulesets, and Vercel pro
 ## Dead-code cleanup
 
 Knip findings are candidates, not deletion instructions. Confirm framework conventions, lazy imports, generated data, public assets, and runtime entry points before removal. Use the sequence: static finding → reference check → deletion plan → smallest deletion → full regression.
+
+## Browser matrix
+
+E2E runs on Chromium and WebKit. WebKit is not optional: the software-keyboard
+handling targets Safari's behaviour — `visualViewport` as the only keyboard signal,
+fixed content that Safari does not reflow for the keyboard, and focus that opens the
+keyboard only inside a gesture. Chromium cannot prove any of it.
+
+## Accessibility
+
+`eslint-plugin-jsx-a11y` reads source and cannot see a contrast ratio, a label hidden
+by a media query, or an ARIA attribute invalid for the role the browser computed.
+`e2e/accessibility.spec.ts` runs axe over every screen on every engine at a phone
+viewport, and fails on critical or serious violations. Moderate and minor findings are
+reported without gating, so the signal stays actionable.
 
 ## Failure automation
 

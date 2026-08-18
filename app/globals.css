@@ -8,7 +8,8 @@
   --paper: #f3f0e8;
   --paper-soft: #faf8f2;
   --line: #d4d0c4;
-  --muted: #70808a;
+  /* Darkened from #70808a, which failed WCAG AA at badge and caption sizes. */
+  --muted: #5d6b75;
   --cyan: #56d8d0;
   --cyan-dark: #167f7b;
   --coral: #f36f56;
@@ -316,7 +317,7 @@ kbd {
 }
 .takken-link span {
   background: var(--coral);
-  color: white;
+  color: var(--ink-deep);
 }
 .ais-link {
   margin-top: 10px;
@@ -1327,7 +1328,7 @@ kbd {
     monospace;
 }
 .importance-a {
-  color: white;
+  color: var(--ink-deep);
   background: var(--coral);
 }
 .importance-b {
@@ -1395,7 +1396,7 @@ kbd {
   background: rgb(243 111 86 / 12%);
 }
 .confidence-pending {
-  color: white;
+  color: var(--ink-deep);
   background: var(--coral);
 }
 .glossary-entry-main .meeting-context {

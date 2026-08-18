@@ -46,7 +46,7 @@ afterEach(() => {
   Reflect.deleteProperty(globalThis, "window");
 });
 
-test("recovers from corrupt or incompatible persisted data", async () => {
+test("recovers from corrupt persisted data", async () => {
   const storage = new MemoryStorage();
   const repository = new LocalSessionRepository();
   useStorage(storage);
@@ -54,9 +54,21 @@ test("recovers from corrupt or incompatible persisted data", async () => {
   storage.values.set(STORAGE_KEY, "not-json");
   assert.deepEqual(await repository.getRecent(10), []);
   assert.deepEqual(await repository.getSettings(), { soundEnabled: true });
+});
+
+test("history written by a different envelope version is kept, not discarded", async () => {
+  // This assertion used to be the opposite: any version mismatch reset the entry,
+  // which would have deleted every player's history on the first envelope change.
+  const storage = new MemoryStorage();
+  const repository = new LocalSessionRepository();
+  useStorage(storage);
 
   storage.values.set(STORAGE_KEY, JSON.stringify({ version: 2, sessions: [session("old", 1)] }));
-  assert.deepEqual(await repository.getRecent(10), []);
+  const recovered = await repository.getRecent(10);
+  assert.deepEqual(
+    recovered.map((entry) => entry.id),
+    ["old"],
+  );
 });
 
 test("caps history and keeps best scores isolated by training set", async () => {
