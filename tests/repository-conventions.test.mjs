@@ -69,3 +69,41 @@ test("authored code stays below the reviewability ceiling", async () => {
   }
   assert.deepEqual(violations, []);
 });
+
+test("the manifest declares every dependency exactly once", async () => {
+  // A conflicted merge once duplicated four devDependencies. JSON keeps the last
+  // value silently, so the reverted version only surfaced as an install failure.
+  const raw = await readFile(resolve(repositoryRoot, "package.json"), "utf8");
+  for (const section of ["dependencies", "devDependencies"]) {
+    const block = raw.split(`"${section}": {`)[1]?.split("\n  }")[0] ?? "";
+    const names = [...block.matchAll(/"([^"]+)":\s*"/g)].map((match) => match[1]);
+    const duplicates = names.filter((name, index) => names.indexOf(name) !== index);
+    assert.deepEqual(duplicates, [], `${section} declares a dependency more than once`);
+  }
+});
+
+test("the ESLint runtime stays within every ESLint plugin's supported major", async () => {
+  // `npm ci` fails on this mismatch, but a red dependency PR can still be merged.
+  // Naming the constraint here makes the reason visible in the failing assertion.
+  const manifest = JSON.parse(await readFile(resolve(repositoryRoot, "package.json"), "utf8"));
+  const devDependencies = manifest.devDependencies ?? {};
+  const eslintMajor = Number.parseInt(devDependencies.eslint, 10);
+  assert.equal(
+    Number.parseInt(devDependencies["@eslint/js"], 10),
+    eslintMajor,
+    "@eslint/js must share a major with eslint",
+  );
+
+  const plugins = Object.keys(devDependencies).filter((name) => name.startsWith("eslint-plugin-"));
+  assert.ok(plugins.length > 0);
+  for (const plugin of plugins) {
+    const manifestPath = resolve(repositoryRoot, "node_modules", plugin, "package.json");
+    const peer = JSON.parse(await readFile(manifestPath, "utf8")).peerDependencies?.eslint;
+    if (!peer) continue;
+    const supported = [...peer.matchAll(/\^?(\d+)/g)].map((match) => Number(match[1]));
+    assert.ok(
+      supported.includes(eslintMajor),
+      `${plugin} supports eslint ${peer}, but the project pins eslint ${eslintMajor}`,
+    );
+  }
+});
