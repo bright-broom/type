@@ -34,6 +34,14 @@ const eslintConfig = defineConfig([
     files: ["app/**/*.{ts,tsx}", "src/**/*.{ts,tsx}"],
     ignores: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
     rules: {
+      // WCAG 2.1.1 requires a scrollable region to be keyboard operable, which axe
+      // enforces as `scrollable-region-focusable`. That needs a tabindex on a
+      // container the plugin considers non-interactive, so the roles used for those
+      // regions are allowed here rather than silenced at each call site.
+      "jsx-a11y/no-noninteractive-tabindex": [
+        "error",
+        { tags: [], roles: ["tabpanel", "group", "region"], allowExpressionValues: true },
+      ],
       "no-restricted-globals": [
         "error",
         { name: "fetch", message: "TypeLoop runtime is local-first; add an ADR before network access." },

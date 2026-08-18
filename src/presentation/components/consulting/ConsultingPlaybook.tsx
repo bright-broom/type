@@ -83,7 +83,13 @@ export function ConsultingPlaybook({ onBack, onStart }: { onBack: () => void; on
               {rows.length} / {activeSheet?.rowCount} rows
             </strong>
           </header>
-          <div className="playbook-rows">
+          <div
+            className="playbook-rows"
+            // The list scrolls, so it must be reachable without a pointer.
+            tabIndex={0}
+            role="group"
+            aria-label="辞典の項目一覧"
+          >
             {rows.map((row) => (
               <article key={row.index}>
                 <span className="row-number">{String(row.index).padStart(3, "0")}</span>
