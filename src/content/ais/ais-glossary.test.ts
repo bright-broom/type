@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import glossaryJson from "../generated/ais-glossary.json" with { type: "json" };
 import type { AisGlossary } from "./ais-glossary-types.ts";
-import { AIS_PROMPTS } from "../prompts/ais-prompts.ts";
-import { validatePrompts } from "../prompts/validate-prompts.ts";
+import { AIS_PROMPTS } from "./ais-prompts.ts";
+import { validatePrompts } from "../../domain/prompts/validate-prompts.ts";
 import { filterAisGlossary } from "./filter-ais-glossary.ts";
 
 const glossary = glossaryJson as AisGlossary;

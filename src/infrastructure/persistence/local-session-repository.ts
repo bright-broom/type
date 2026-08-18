@@ -1,4 +1,5 @@
-import type { AppSettings, CompletedSession, TrainingSet } from "../../application/session/session-types.ts";
+import type { AppSettings, CompletedSession } from "../../application/session/session-types.ts";
+import type { TrainingSet } from "../../domain/prompts/prompt-types.ts";
 import type { SessionRepository } from "../../application/ports/session-repository.ts";
 
 const STORAGE_KEY = "typeloop:data";
