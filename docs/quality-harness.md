@@ -95,6 +95,13 @@ to open a large glossary paid the compile cost — on a shared runner that pushe
 Serving the build removes that variance and means the suite exercises what ships, so
 `npm run test:e2e` expects `npm run build` to have run (both `npm run check` and CI do).
 
+CI runs the browser job inside the version-matched, digest-pinned Playwright
+`noble` image. The image owns Chromium, WebKit, and their OS packages; do not add
+`playwright install-deps` or a browser cache to the job. Linux OS packages are not
+cacheable, and downloading them from the runner's APT mirror caused both timeout
+exit `124` and an orphaned APT lock. The repository convention test keeps the npm
+package version and image tag aligned.
+
 E2E runs on Chromium and WebKit. WebKit is not optional: the software-keyboard
 handling targets Safari's behaviour — `visualViewport` as the only keyboard signal,
 fixed content that Safari does not reflow for the keyboard, and focus that opens the
