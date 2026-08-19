@@ -39,8 +39,9 @@ TypeLoop is a local-first Next.js typing trainer. Before structural work, read:
 - Never commit `.env*`, credentials, tokens, or user-local output.
 - The application currently has no database or migrations. Stop and require an ADR plus an approved migration/rollback plan before adding either.
 - Never run destructive data, filesystem, Git-history, credential, OS, SSH, firewall, or production operations without explicit approval.
-- Never deploy or change production directly. Use a reviewed PR and green CI as a procedural policy; branch protection
-  requires an eligible GitHub plan and owner configuration.
+- Never commit or push directly to `main` (or another default/protected branch). Before editing, create a focused feature branch (`codex/<topic>` for agent work), push only that branch, and open a pull request.
+- Never merge a pull request or enable auto-merge. Wait for every required CI check to pass, report the PR as ready, and leave the final merge to a human repository owner.
+- Never deploy or change production directly. Do not bypass, disable, or weaken branch protection, rulesets, required reviews, or required status checks.
 
 ## Code Review Rules
 
@@ -64,6 +65,7 @@ TypeLoop is a local-first Next.js typing trainer. Before structural work, read:
 6. Resolve every Critical/High finding and use at most two fix/re-review rounds after the initial review. If either
    severity remains after round two, stop and report the blocker.
 7. Record only durable architectural decisions in `docs/adr`.
+8. Push the feature branch, open a PR, wait for all PR checks, and hand the unmerged PR to the human owner.
 
 ## Commands
 
