@@ -96,3 +96,16 @@ test("the typing field keeps an accessible name while a session runs", async ({ 
   await expect(page.getByRole("progressbar", { name: "残り時間" })).toHaveAttribute("aria-valuetext", /残り\d+秒/);
   await context.close();
 });
+
+test("keyboard focus remains visible on the full theme option", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "表示設定" }).click();
+
+  const themeInput = page.getByRole("radio", { name: /モダン/ });
+  const themeOption = page.locator("label.settings-option").filter({ has: themeInput });
+  await themeInput.focus();
+  await expect(themeInput).toBeFocused();
+
+  await expect(themeOption).toHaveCSS("outline-style", "solid");
+  await expect(themeOption).toHaveCSS("outline-width", "3px");
+});

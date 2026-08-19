@@ -17,8 +17,8 @@ Retuning the tone meant grepping ~3,000 lines and hoping.
 
 ## Decision
 
-**One marked token block.** All color values live between `@tokens-begin` and
-`@tokens-end` in `app/globals.css` — primitives (with `--*-rgb` channel triplets
+**One marked token block.** This placement was moved by ADR-014; all color values
+now live between `@tokens-begin` and `@tokens-end` in `app/styles/themes.css` — primitives (with `--*-rgb` channel triplets
 for translucent use) and semantic roles (`--text-prose`, `--text-on-dark`,
 `--surface-raised`). Everything below the block references `var(--token)`.
 

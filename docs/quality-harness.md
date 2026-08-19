@@ -74,7 +74,8 @@ Components reference `var(--token)`; translucent colors use the channel triplets
 tone is therefore an edit to one block, guarded three ways:
 
 - `npm run check:tokens` rejects color literals outside the registry, a second
-  unscoped `:root`, and any color literal in TSX.
+  unscoped `:root`, any color literal in TSX, and raw geometry or timing values in
+  the modern product layer.
 - `tests/design-tokens.test.mjs` asserts the core reading pairs meet WCAG AA and
   that `--*-rgb` triplets match their hex base, so a bad retune fails in
   milliseconds — before axe ever starts a browser.

@@ -17,6 +17,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const THEME_REGISTRY = "app/styles/themes.css";
+const MODERN_STYLES = "app/styles/modern.css";
 const CSS_ROOT = "app";
 const CODE_ROOTS = ["src", "app"];
 
@@ -24,6 +25,8 @@ const HEX_COLOR = /#[0-9a-fA-F]{3,8}\b/;
 const NUMERIC_COLOR_FN = /\b(?:rgb|hsl)a?\(\s*[\d.]/;
 const COLOR_KEYWORD =
   /(?:^|[\s:])(?:color|background(?:-color)?|border(?:-\w+)?-color|fill|stroke)\s*:\s*(?:white|black)\b/;
+const RAW_DESIGN_DIMENSION =
+  /(?<![\w-])-?\d*\.?\d+(?:px|rem|em|ms|s|%|fr|deg|ch|ex|cap|ic|lh|rlh|vw|vh|vi|vb|vmin|vmax|svw|svh|lvw|lvh|dvw|dvh|cqw|cqh|cqi|cqb|cqmin|cqmax)\b/;
 
 function walk(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -66,6 +69,16 @@ for (const file of walk(CSS_ROOT)) {
   scan(file, readFileSync(file, "utf8"));
 }
 
+// The new modern layer is the migration target for all screen styling. Unlike
+// the historical global stylesheet, it must not acquire raw geometry or timing
+// decisions: those belong in the registry so settings can retune them globally.
+const modernCss = readFileSync(MODERN_STYLES, "utf8");
+modernCss.split(/\r?\n/).forEach((line, index) => {
+  if (RAW_DESIGN_DIMENSION.test(line)) {
+    violations.push(`${MODERN_STYLES}:${index + 1}: raw design dimension: ${line.trim().slice(0, 80)}`);
+  }
+});
+
 // 3. Authored TypeScript/TSX. Colors belong to the stylesheet, not to markup.
 for (const root of CODE_ROOTS) {
   for (const file of walk(root)) {
@@ -76,17 +89,18 @@ for (const root of CODE_ROOTS) {
 }
 
 if (violations.length > 0) {
-  console.error("Color literals outside the design-token block:\n");
+  console.error("Design literals outside the theme registry:\n");
   for (const violation of violations) console.error(`  ${violation}`);
   console.error(
     [
       "",
       "Add or reuse a token between @tokens-begin/@tokens-end in app/styles/themes.css",
-      "and reference it with var(--token). Translucent colors use the channel",
+      "and reference it with var(--token). Modern geometry and timing decisions",
+      "also belong there. Translucent colors use the channel",
       "triplets: rgb(var(--ink-rgb) / 8%).",
     ].join("\n"),
   );
   process.exit(1);
 }
 
-console.log("Design colors are defined only inside the theme registry.");
+console.log("Design colors and modern layout values are defined only inside the theme registry.");
