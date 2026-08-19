@@ -66,6 +66,13 @@ Knip findings are candidates, not deletion instructions. Confirm framework conve
 
 ## Browser matrix
 
+E2E runs on Chromium and WebKit, against the **production server** rather than
+`next dev`. In development the dictionary chunks compile on demand, so the first test
+to open a large glossary paid the compile cost — on a shared runner that pushed the
+446-entry takken accessibility scan past the default timeout while it passed locally.
+Serving the build removes that variance and means the suite exercises what ships, so
+`npm run test:e2e` expects `npm run build` to have run (both `npm run check` and CI do).
+
 E2E runs on Chromium and WebKit. WebKit is not optional: the software-keyboard
 handling targets Safari's behaviour — `visualViewport` as the only keyboard signal,
 fixed content that Safari does not reflow for the keyboard, and focus that opens the

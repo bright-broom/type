@@ -80,8 +80,11 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Install Chromium
+      - name: Install browsers
         run: npx playwright install --with-deps chromium webkit
+      # The E2E suite runs against the production server, so it needs a build first.
+      - name: Build production application
+        run: npm run build
       - name: Verify critical browser flows
         run: npm run test:e2e
       - name: Upload browser failure evidence
