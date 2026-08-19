@@ -24,7 +24,7 @@
     "import:takken": "node scripts/import_takken_glossary.mjs",
     "import:ais": "python3 scripts/import_ais_glossary.py",
     "import:git": "node scripts/import_git_commands.mjs",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit -p tsconfig.check.json",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "check:dead-code": "knip",
     "check:secrets": "node scripts/check-secrets.mjs",

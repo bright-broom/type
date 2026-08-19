@@ -7,7 +7,7 @@ TypeLoop treats command output, tests, and CI status as evidence. An agent's sta
 | Stage       | Command                    | Purpose                                                              |
 | ----------- | -------------------------- | -------------------------------------------------------------------- |
 | Deps        | `npm run check:deps`       | Every declared peer range is satisfiable by the pinned versions      |
-| Bundle      | `npm run check:bundle`     | Shipped JavaScript stays inside its first-load and referenced budget |
+| Bundle      | `npm run check:bundle`     | First-load and App Router route JavaScript stay inside named budgets |
 | Tokens      | `npm run check:tokens`     | Design colors exist only inside the theme registry; TSX carries none |
 | Format      | `npm run format:check`     | Deterministic authored-file formatting                               |
 | Lint        | `npm run lint`             | TypeScript, React, hooks, accessibility, and Next.js rules           |

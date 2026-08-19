@@ -4,9 +4,9 @@
  *
  * The product promise is a 60-second session that starts immediately, so the size
  * of the first-load bundle is a feature, not an implementation detail. Sizes are
- * read from the build manifest rather than by globbing chunks, so lazily loaded
- * dictionaries are not counted against the first paint and content-hashed
- * filenames do not matter.
+ * read from build manifests rather than by globbing chunks, so lazily loaded
+ * dictionaries are not counted against first paint, substantial routes have
+ * explicit ceilings, and content-hashed filenames do not matter.
  *
  * Budgets are uncompressed bytes, set just above the measured size at the time of
  * writing. Raising one is a deliberate decision that belongs in a pull request.
@@ -19,6 +19,13 @@ const BUILD_DIR = ".next";
 const BUDGETS = {
   firstLoad: 480 * 1024,
   referenced: 640 * 1024,
+};
+const APP_ROUTE_BUDGETS = {
+  "/takken": 80 * 1024,
+  "/takken/practice": 300 * 1024,
+  "/takken/mock": 300 * 1024,
+  "/takken/history": 300 * 1024,
+  "/takken/glossary": 300 * 1024,
 };
 
 function sizeOf(file) {
@@ -59,6 +66,33 @@ const rows = [
   ["first load", firstLoad, BUDGETS.firstLoad],
   ["referenced", referenced, BUDGETS.referenced],
 ];
+
+function appRouteSize(route) {
+  const manifestPath = join(
+    BUILD_DIR,
+    "server",
+    "app",
+    ...route.slice(1).split("/"),
+    "page_client-reference-manifest.js",
+  );
+  const source = readFileSync(manifestPath, "utf8");
+  const marker = `["${route}/page"] = `;
+  const assignment = source.indexOf(marker);
+  if (assignment < 0) throw new Error(`Cannot parse ${manifestPath}`);
+  const routeManifest = JSON.parse(
+    source
+      .slice(assignment + marker.length)
+      .trim()
+      .replace(/;$/, ""),
+  );
+  const entry = Object.entries(routeManifest.entryJSFiles).find(([key]) => key.endsWith(`/app${route}/page`));
+  if (!entry) throw new Error(`No client entry for ${route}`);
+  return [...new Set(entry[1])].reduce((total, file) => total + sizeOf(file), 0);
+}
+
+for (const [route, budget] of Object.entries(APP_ROUTE_BUDGETS)) {
+  rows.push([route, appRouteSize(route), budget]);
+}
 
 let failed = false;
 for (const [label, actual, budget] of rows) {

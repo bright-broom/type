@@ -7,8 +7,16 @@ import type { TakkenGlossary as TakkenGlossaryData } from "../../../content/takk
 
 const glossary = glossaryJson as TakkenGlossaryData;
 
-export function TakkenGlossary({ onBack, onStart }: { onBack: () => void; onStart: () => void }) {
-  const [query, setQuery] = useState("");
+export function TakkenGlossary({
+  onBack,
+  onStart,
+  initialQuery = "",
+}: {
+  onBack: () => void;
+  onStart: () => void;
+  initialQuery?: string;
+}) {
+  const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState("");
   const [importance, setImportance] = useState("");
   const [sourceId, setSourceId] = useState("");

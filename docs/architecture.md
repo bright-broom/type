@@ -2,7 +2,7 @@
 
 ## System shape
 
-TypeLoop is a single-route, local-first Next.js modular monolith. The browser owns the active session, audio, settings, and history. There is no backend, account, or runtime network dependency.
+TypeLoop is a local-first Next.js modular monolith. The browser owns active typing and assessment sessions, audio, settings, and history. There is no backend, account, or runtime network dependency. Typing stays on the primary route; substantial learning experiences use addressable routes so their state and bundles remain independent.
 
 The architecture optimizes for deterministic typing behavior, fast local feedback, and clear boundaries that can be verified without starting a browser.
 
@@ -33,6 +33,17 @@ Next.js route
 ```
 
 The active typing path stays in memory. Persistence happens after session completion or a settings change, never on every keystroke.
+
+Assessment is a separate application capability. Its low-frequency answers are persisted after each transition so a long mock exam survives reload, while question content remains a versioned build artifact.
+
+```text
+Takken route
+  → Takken assessment presentation
+    → application assessment state machine
+    → domain plan and scoring rules
+    → content takken question pack
+    → infrastructure assessment repository
+```
 
 ## Appearance flow
 

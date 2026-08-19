@@ -35,7 +35,13 @@ const AisGlossary = lazy(() => import("./ais/AisGlossary.tsx").then((module) => 
 type Overlay = "none" | "history" | "playbook" | "takken" | "ais" | "settings";
 type FocusReturn = { key: string | null; fallback: "home" | "result" };
 
-export function TypingApp({ initialAppearance }: { initialAppearance: AppearanceSettings }) {
+export function TypingApp({
+  initialAppearance,
+  initialTrainingSet = "japanese",
+}: {
+  initialAppearance: AppearanceSettings;
+  initialTrainingSet?: TrainingSet;
+}) {
   const session = useTypingSession();
   const [appearance, setAppearance] = useState(initialAppearance);
   useAppearance(appearance);
@@ -46,7 +52,7 @@ export function TypingApp({ initialAppearance }: { initialAppearance: Appearance
     writeAppearanceCookie(next);
   }, []);
   const [overlay, setOverlay] = useState<Overlay>("none");
-  const [selectedTrainingSet, setSelectedTrainingSet] = useState<TrainingSet>("japanese");
+  const [selectedTrainingSet, setSelectedTrainingSet] = useState<TrainingSet>(initialTrainingSet);
   const [previousBest, setPreviousBest] = useState<CompletedSession | null>(null);
   const typingFieldRef = useRef<HTMLInputElement>(null);
   const focusReturnRef = useRef<FocusReturn | null>(null);
