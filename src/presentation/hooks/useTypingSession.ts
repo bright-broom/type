@@ -22,6 +22,9 @@ import type * as Session from "../../application/session/session-types.ts";
 
 const repository = new LocalSessionRepository();
 
+/** How many recent sessions the history screen shows. Storage keeps more. */
+const RECENT_SESSIONS_SHOWN = 20;
+
 export function useTypingSession() {
   const [clock, dispatch] = useReducer(sessionClock.sessionTransition, undefined, () =>
     sessionClock.createSessionState(),
@@ -54,7 +57,7 @@ export function useTypingSession() {
 
   useEffect(() => {
     Promise.all([
-      repository.getRecent(20),
+      repository.getRecent(RECENT_SESSIONS_SHOWN),
       Promise.all(TRAINING_SETS.map(async (set) => [set, await repository.getBest(set)] as const)),
       repository.getSettings(),
     ])
@@ -151,7 +154,7 @@ export function useTypingSession() {
       weakKeys,
     });
     setResult(session);
-    setHistory((current) => [session, ...current].slice(0, 20));
+    setHistory((current) => [session, ...current].slice(0, RECENT_SESSIONS_SHOWN));
     setBests((current) => ({
       ...current,
       [trainingSet]:
