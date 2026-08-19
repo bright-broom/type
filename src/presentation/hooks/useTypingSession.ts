@@ -18,6 +18,11 @@ import * as sessionClock from "../../application/session/session-reducer.ts";
 import { applyTypingText } from "../../application/session/apply-typing-text.ts";
 import { completeSession } from "../../application/session/complete-session.ts";
 import { tallyTypingSteps } from "../../application/session/tally-typing-steps.ts";
+import {
+  DEFAULT_APP_SETTINGS,
+  type AppearanceSettings,
+  type AppSettings,
+} from "../../application/settings/app-settings.ts";
 import type * as Session from "../../application/session/session-types.ts";
 
 const repository = new LocalSessionRepository();
@@ -47,7 +52,8 @@ export function useTypingSession() {
   const [bests, setBests] = useState<Record<TrainingSet, Session.CompletedSession | null>>(() =>
     byTrainingSet(() => null),
   );
-  const [settings, setSettings] = useState<Session.AppSettings>({ soundEnabled: true });
+  const [settings, setSettings] = useState<AppSettings>(DEFAULT_APP_SETTINGS);
+  const [settingsReady, setSettingsReady] = useState(false);
   const [now, setNow] = useState(0);
   const keystrokesRef = useRef<Session.KeystrokeEvent[]>([]);
   const attemptsRef = useRef<Session.PromptAttempt[]>([]);
@@ -67,7 +73,8 @@ export function useTypingSession() {
         setSettings(storedSettings);
         audioRef.current.setEnabled(storedSettings.soundEnabled);
       })
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => setSettingsReady(true));
   }, []);
 
   useEffect(() => {
@@ -222,8 +229,15 @@ export function useTypingSession() {
   }, [clock.status, resume, start, trainingSet]);
   const toggleSound = useCallback(() => {
     setSettings((current) => {
-      const next = { soundEnabled: !current.soundEnabled };
+      const next = { ...current, soundEnabled: !current.soundEnabled };
       audioRef.current.setEnabled(next.soundEnabled);
+      void repository.saveSettings(next);
+      return next;
+    });
+  }, []);
+  const updateAppearance = useCallback((appearance: AppearanceSettings) => {
+    setSettings((current) => {
+      const next = { ...current, appearance };
       void repository.saveSettings(next);
       return next;
     });
@@ -253,6 +267,7 @@ export function useTypingSession() {
     best: bests[trainingSet],
     bests,
     settings,
+    settingsReady,
     trainingSet,
     start,
     typeText,
@@ -263,5 +278,6 @@ export function useTypingSession() {
     escape,
     enter,
     toggleSound,
+    updateAppearance,
   };
 }

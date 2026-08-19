@@ -1,9 +1,10 @@
-import type { AppSettings, CompletedSession } from "../../application/session/session-types.ts";
+import type { AppSettings } from "../../application/settings/app-settings.ts";
+import type { CompletedSession } from "../../application/session/session-types.ts";
 import type { TrainingSet } from "../../domain/prompts/prompt-types.ts";
 import type { SessionRepository } from "../../application/ports/session-repository.ts";
 import { emptyEnvelope, migrateEnvelope, STORAGE_VERSION, type StorageEnvelope } from "./storage-envelope.ts";
 
-const STORAGE_KEY = "typeloop:data";
+export const STORAGE_KEY = "typeloop:data";
 const MAX_SESSIONS = 50;
 
 function readStorage(): StorageEnvelope {

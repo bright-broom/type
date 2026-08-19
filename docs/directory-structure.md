@@ -7,6 +7,7 @@
 ├── .agents/skills/             Repo-scoped agent workflows
 ├── AGENTS.md
 ├── app/                         Next.js routes, metadata, global CSS
+│   └── styles/                  Theme registry and global presentation styles
 ├── docs/
 │   ├── architecture.md         Runtime and dependency design
 │   ├── directory-structure.md  Placement and naming rules
@@ -15,6 +16,7 @@
 ├── src/
 │   ├── application/
 │   │   ├── ports/              Interfaces required by the application
+│   │   ├── settings/           Persisted application preferences and validation
 │   │   └── session/            Session state and transitions
 │   ├── content/
 │   │   ├── training-set-catalog.ts  Binds each TrainingSet id to its dataset
@@ -27,7 +29,8 @@
 │   ├── infrastructure/         Browser adapters by capability
 │   └── presentation/
 │       ├── components/         React components by screen/capability
-│       └── hooks/              Browser-facing orchestration hooks
+│       ├── hooks/              Browser-facing orchestration hooks
+│       └── theme/              Document theme application and bootstrap
 └── tests/                      Cross-layer and repository policy tests
 ```
 
@@ -38,6 +41,7 @@
 - Session orchestration and capability interfaces belong in `application`.
 - Browser or vendor-specific implementations belong in `infrastructure`.
 - React rendering and browser event composition belong in `presentation`.
+- Theme identifiers and defaults belong in `application/settings`; DOM application belongs in `presentation/theme`; raw visual values belong in `app/styles/themes.css`.
 - Learning material and prompt adapters belong in `content`, one directory per dataset. A dataset directory owns its types, filters, prompt adapter, and tests, and must not import another dataset.
 - `content/training-set-catalog.ts` is the only module that reaches across datasets. It is the seam where a `TrainingSet` identifier is bound to its prompts.
 - Pure rules over domain types belong in `domain` even when only `content` calls them, as with `domain/prompts/validate-prompts.ts`.

@@ -41,7 +41,3 @@ export type CompletedSession = {
  * mode), which is a keyboard-mode problem rather than a typing mistake.
  */
 export type TypingFeedback = "correct" | "miss" | "complete" | "unsupported" | null;
-
-export type AppSettings = {
-  soundEnabled: boolean;
-};

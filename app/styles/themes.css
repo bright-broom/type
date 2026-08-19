@@ -1,0 +1,109 @@
+/* @tokens-begin
+ * Raw design values live only in this theme registry. Components consume the
+ * same token contract, so adding a theme never changes screen markup. */
+:root {
+  color-scheme: light;
+
+  /* Primitive palette: modern */
+  --ink: #142b39;
+  --ink-rgb: 20 43 57;
+  --ink-deep: #091f2c;
+  --ink-deep-rgb: 9 31 44;
+  --ink-deep-soft: #0c2837;
+  --ink-hover: #15384c;
+  --paper: #f5f3ed;
+  --paper-rgb: 245 243 237;
+  --paper-soft: #fffdf8;
+  --paper-soft-rgb: 255 253 248;
+  --line: #d9d5ca;
+  --line-soft: #ddd8ca;
+  --line-strong: #aaa79e;
+  --muted: #5f707a;
+  --cyan: #62e2d8;
+  --cyan-rgb: 98 226 216;
+  --cyan-dark: #0d746f;
+  --cyan-dark-rgb: 13 116 111;
+  --coral: #f36f56;
+  --coral-rgb: 243 111 86;
+  --success: #1c9a72;
+  --danger: #c94b3b;
+  --danger-rgb: 201 75 59;
+  --white: #ffffff;
+  --white-rgb: 255 255 255;
+  --black-rgb: 0 0 0;
+
+  /* Semantic text and surfaces */
+  --text-prose: #4d616d;
+  --text-lede: #556874;
+  --text-caption: #89959a;
+  --text-dim: #93a6ae;
+  --text-ghost: #9da6a8;
+  --text-on-dark: #e6ecee;
+  --text-on-dark-muted: #c1ccd1;
+  --text-on-dark-faint: #aab5bb;
+  --surface-raised: #f8f6f0;
+  --border-hover: var(--text-ghost);
+
+  /* Elevation */
+  --shadow: 0 20px 60px rgb(var(--ink-rgb) / 10%);
+  --shadow-soft: 0 16px 50px rgb(var(--ink-deep-rgb) / 8%);
+
+  /* Typography, shape, rhythm, and layout */
+  --font-geist-sans: "Helvetica Neue", "Hiragino Sans", "Yu Gothic", Arial, sans-serif;
+  --font-geist-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --radius-sm: 8px;
+  --radius-md: 18px;
+  --radius-lg: 28px;
+  --radius-pill: 999px;
+  --space-0: 0.25rem;
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2rem;
+  --space-5: 3rem;
+  --page-gutter: clamp(18px, 4vw, 32px);
+  --content-wide: 1240px;
+  --content-reading: 1050px;
+  --content-game: 1120px;
+  --content-settings: 760px;
+  --tap-target: 44px;
+  --font-display-settings: clamp(2.4rem, 6vw, 4.5rem);
+  --font-label: 0.78rem;
+  --tracking-tight: -0.06em;
+  --tracking-label: 0.08em;
+  --leading-copy: 1.8;
+  --settings-page-top: clamp(24px, 7vw, 72px);
+  --settings-option-min: 280px;
+  --settings-swatch-width: 48px;
+  --settings-swatch-height: 36px;
+  --settings-swatch-radius: 10px;
+  --selection-ring: 0 0 0 2px rgb(var(--cyan-dark-rgb) / 16%);
+  --classic-swatch-filter: saturate(72%) hue-rotate(8deg);
+  --motion-reduced-duration: 0.01ms;
+}
+
+/* Classic changes palette only; component geometry and behavior stay stable. */
+:root[data-theme="classic"] {
+  --paper: #eef3f5;
+  --paper-rgb: 238 243 245;
+  --paper-soft: #fbfdfe;
+  --paper-soft-rgb: 251 253 254;
+  --line: #cbd7dc;
+  --line-soft: #d8e1e5;
+  --line-strong: #8da0aa;
+  --cyan: #78d8cc;
+  --cyan-rgb: 120 216 204;
+  --coral: #e37860;
+  --coral-rgb: 227 120 96;
+  --surface-raised: #f4f8fa;
+}
+
+:root[data-density="compact"] {
+  --space-1: 0.375rem;
+  --space-2: 0.75rem;
+  --space-3: 1.125rem;
+  --space-4: 1.5rem;
+  --space-5: 2.25rem;
+  --page-gutter: clamp(14px, 3vw, 24px);
+}
+/* @tokens-end */

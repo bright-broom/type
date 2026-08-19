@@ -31,7 +31,7 @@ TypeLoop is a local-first Next.js typing trainer. Before structural work, read:
 - Use precise responsibility names. Do not create generic `shared`, `common`, or `utils` directories.
 - Keep authored TypeScript, JavaScript, and Python files below 300 lines. Split by responsibility, not merely by size.
 - Regenerate content with the npm import commands; do not patch generated JSON directly.
-- Design colors live only in the `@tokens` block of `app/globals.css`; everything else references `var(--token)`. CI rejects color literals elsewhere, including in TSX (`npm run check:tokens`).
+- Raw design values live only in the `@tokens` registry in `app/styles/themes.css`; components consume named tokens. CI rejects color literals elsewhere, including in TSX (`npm run check:tokens`). Do not hardcode palette values, spacing decisions, motion timings, shadows, radii, or layout thresholds in components; add or reuse a responsibility-named token.
 - Name every meaningful threshold as a module-level constant (`SESSION_DURATION_MS`, `MAX_SESSIONS`); a bare number in an expression must be self-evident, not a design decision.
 - Confidential source material is de-identified by its importer, never by the UI. Do not commit source workbooks, and do not add a real customer or personal name to any authored file (see `docs/adr/ADR-009-ais-meeting-glossary.md`).
 - Do not add dependencies, persistence, authentication, or network calls without a concrete requirement and ADR-worthy justification.

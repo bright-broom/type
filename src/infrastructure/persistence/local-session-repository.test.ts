@@ -1,10 +1,9 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
 import type { CompletedSession } from "../../application/session/session-types.ts";
+import { DEFAULT_APPEARANCE } from "../../application/settings/app-settings.ts";
 import type { TrainingSet } from "../../domain/prompts/prompt-types.ts";
-import { LocalSessionRepository } from "./local-session-repository.ts";
-
-const STORAGE_KEY = "typeloop:data";
+import { LocalSessionRepository, STORAGE_KEY } from "./local-session-repository.ts";
 
 class MemoryStorage {
   values = new Map<string, string>();
@@ -53,7 +52,7 @@ test("recovers from corrupt persisted data", async () => {
 
   storage.values.set(STORAGE_KEY, "not-json");
   assert.deepEqual(await repository.getRecent(10), []);
-  assert.deepEqual(await repository.getSettings(), { soundEnabled: true });
+  assert.deepEqual(await repository.getSettings(), { soundEnabled: true, appearance: DEFAULT_APPEARANCE });
 });
 
 test("history written by a different envelope version is kept, not discarded", async () => {
@@ -93,8 +92,9 @@ test("persists settings and treats unavailable storage as non-fatal", async () =
   const repository = new LocalSessionRepository();
   useStorage(storage);
 
-  await repository.saveSettings({ soundEnabled: false });
-  assert.deepEqual(await repository.getSettings(), { soundEnabled: false });
+  const settings = { soundEnabled: false, appearance: { ...DEFAULT_APPEARANCE, density: "compact" as const } };
+  await repository.saveSettings(settings);
+  assert.deepEqual(await repository.getSettings(), settings);
 
   useStorage({
     getItem() {

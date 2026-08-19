@@ -7,9 +7,8 @@
  * replaced — four accidental near-duplicates of the same gray among them. Retuning
  * the app's tone meant grepping ~3000 lines. This check keeps the seam closed:
  *
- * - `app/globals.css`: raw color values (hex, numeric rgb/hsl, and the `white` /
- *   `black` keywords) are allowed only inside the `@tokens-begin` … `@tokens-end`
- *   block. Everything below it must reference `var(--token)`.
+ * - `app/styles/themes.css`: raw color values are allowed only inside the
+ *   `@tokens-begin` … `@tokens-end` registry. All other CSS uses tokens.
  * - `src/` and `app/` TypeScript/TSX: no color literals at all. Computed style
  *   values (widths, transforms) are fine; colors come from the stylesheet.
  */
@@ -17,7 +16,8 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const STYLESHEET = "app/globals.css";
+const THEME_REGISTRY = "app/styles/themes.css";
+const CSS_ROOT = "app";
 const CODE_ROOTS = ["src", "app"];
 
 const HEX_COLOR = /#[0-9a-fA-F]{3,8}\b/;
@@ -43,24 +43,30 @@ function scan(file, text, startLine = 1) {
 }
 
 // 1. The stylesheet, outside the token block.
-const css = readFileSync(STYLESHEET, "utf8");
+const css = readFileSync(THEME_REGISTRY, "utf8");
 const marker = css.match(/\/\* @tokens-begin[\s\S]*?@tokens-end \*\//);
 if (!marker) {
-  console.error(`${STYLESHEET} has no @tokens-begin/@tokens-end block; the token seam is gone.`);
+  console.error(`${THEME_REGISTRY} has no @tokens-begin/@tokens-end block; the token seam is gone.`);
   process.exit(1);
 }
 const before = css.slice(0, marker.index ?? 0);
 const after = css.slice((marker.index ?? 0) + marker[0].length);
-scan(STYLESHEET, before);
-scan(STYLESHEET, after, css.slice(0, (marker.index ?? 0) + marker[0].length).split(/\r?\n/).length);
+scan(THEME_REGISTRY, before);
+scan(THEME_REGISTRY, after, css.slice(0, (marker.index ?? 0) + marker[0].length).split(/\r?\n/).length);
 
 // A second :root redefining tokens is how the palette forked last time.
 const rootBlocks = css.match(/^:root\s*\{/gm) ?? [];
 if (rootBlocks.length > 1) {
-  violations.push(`${STYLESHEET}: ${rootBlocks.length} :root blocks — later ones silently override the token block`);
+  violations.push(`${THEME_REGISTRY}: ${rootBlocks.length} unscoped :root blocks — the base token contract forked`);
 }
 
-// 2. Authored TypeScript/TSX. Colors belong to the stylesheet, not to markup.
+// 2. Other authored CSS must consume the theme contract rather than define colors.
+for (const file of walk(CSS_ROOT)) {
+  if (!file.endsWith(".css") || file === THEME_REGISTRY) continue;
+  scan(file, readFileSync(file, "utf8"));
+}
+
+// 3. Authored TypeScript/TSX. Colors belong to the stylesheet, not to markup.
 for (const root of CODE_ROOTS) {
   for (const file of walk(root)) {
     if (!/\.(?:ts|tsx)$/.test(file) || /\.(?:test|spec)\./.test(file)) continue;
@@ -75,7 +81,7 @@ if (violations.length > 0) {
   console.error(
     [
       "",
-      "Add or reuse a token between @tokens-begin/@tokens-end in app/globals.css",
+      "Add or reuse a token between @tokens-begin/@tokens-end in app/styles/themes.css",
       "and reference it with var(--token). Translucent colors use the channel",
       "triplets: rgb(var(--ink-rgb) / 8%).",
     ].join("\n"),
@@ -83,4 +89,4 @@ if (violations.length > 0) {
   process.exit(1);
 }
 
-console.log("Design colors are defined only inside the token block.");
+console.log("Design colors are defined only inside the theme registry.");

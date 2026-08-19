@@ -34,6 +34,22 @@ Next.js route
 
 The active typing path stays in memory. Persistence happens after session completion or a settings change, never on every keystroke.
 
+## Appearance flow
+
+Appearance preferences are application settings, persisted through the existing
+`SessionRepository` without introducing a second localStorage owner. Presentation
+applies validated theme, density, and motion identifiers to the document root; CSS
+themes implement the stable token contract under `app/styles`.
+
+```text
+settings UI → AppSettings → SessionRepository → localStorage
+                    ↓
+              document data attributes → theme token registry → screens
+```
+
+The pre-hydration bootstrap accepts only values from the same authored allow-lists.
+Unknown or older settings fall back per field, preserving sound settings and history.
+
 ## Content flow
 
 Source workbooks or TSV files are imported by scripts into `src/content/generated`. Authored loaders and validators expose those artifacts as typed prompt collections.
@@ -75,6 +91,7 @@ When adding persistence or another external capability, define the required port
 
 - `tests/architecture-boundaries.test.mjs` enforces layer dependencies, dataset self-containment, and that React hooks stay in `presentation/hooks`.
 - `tests/repository-conventions.test.mjs` enforces required documentation, precise directory names, and authored-file size limits.
+- `scripts/check-design-tokens.mjs` keeps raw colors inside the theme registry and out of components.
 - `npm run check` is the canonical deterministic local validation command; CI adds the network-backed dependency audit with `npm run check:ci`.
 - `.agents/skills/develop-typeloop` provides a reusable, progressively loaded workflow for TypeLoop changes.
 - Root and nested `AGENTS.md` files hold a small number of consequential review invariants; mechanical rules remain in CI.

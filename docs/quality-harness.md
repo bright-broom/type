@@ -8,7 +8,7 @@ TypeLoop treats command output, tests, and CI status as evidence. An agent's sta
 | ----------- | -------------------------- | -------------------------------------------------------------------- |
 | Deps        | `npm run check:deps`       | Every declared peer range is satisfiable by the pinned versions      |
 | Bundle      | `npm run check:bundle`     | Shipped JavaScript stays inside its first-load and referenced budget |
-| Tokens      | `npm run check:tokens`     | Design colors exist only inside the token block; TSX carries none    |
+| Tokens      | `npm run check:tokens`     | Design colors exist only inside the theme registry; TSX carries none |
 | Format      | `npm run format:check`     | Deterministic authored-file formatting                               |
 | Lint        | `npm run lint`             | TypeScript, React, hooks, accessibility, and Next.js rules           |
 | Typecheck   | `npm run typecheck`        | Strict TypeScript contracts                                          |
@@ -67,13 +67,14 @@ Knip findings are candidates, not deletion instructions. Confirm framework conve
 
 ## Design tokens
 
-Every color is declared once, inside the `@tokens-begin` block of `app/globals.css`.
+Every raw color is declared inside the `@tokens-begin` theme registry in
+`app/styles/themes.css`.
 Components reference `var(--token)`; translucent colors use the channel triplets
 (`rgb(var(--ink-rgb) / 8%)`) so they stay tied to their base. Retuning the app's
 tone is therefore an edit to one block, guarded three ways:
 
-- `npm run check:tokens` rejects color literals outside the block, a second
-  `:root`, and any color literal in TSX.
+- `npm run check:tokens` rejects color literals outside the registry, a second
+  unscoped `:root`, and any color literal in TSX.
 - `tests/design-tokens.test.mjs` asserts the core reading pairs meet WCAG AA and
   that `--*-rgb` triplets match their hex base, so a bad retune fails in
   milliseconds — before axe ever starts a browser.

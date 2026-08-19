@@ -10,6 +10,7 @@ import { LocalSessionRepository } from "../../infrastructure/persistence/local-s
 import { useKeyboardInput } from "../hooks/useKeyboardInput.ts";
 import { useKeyboardInset } from "../hooks/useKeyboardInset.ts";
 import { useTypingSession } from "../hooks/useTypingSession.ts";
+import { useAppearance } from "../hooks/useAppearance.ts";
 import { AppHeader } from "./AppHeader.tsx";
 import { HomeScreen } from "./home/HomeScreen.tsx";
 import { CountdownScreen } from "./game/CountdownScreen.tsx";
@@ -18,6 +19,7 @@ import { PauseDialog } from "./game/PauseDialog.tsx";
 import { TypingInput } from "./game/TypingInput.tsx";
 import { ResultScreen } from "./result/ResultScreen.tsx";
 import { HistoryScreen } from "./history/HistoryScreen.tsx";
+import { SettingsScreen } from "./settings/SettingsScreen.tsx";
 
 const ConsultingPlaybook = lazy(() =>
   import("./consulting/ConsultingPlaybook.tsx").then((module) => ({ default: module.ConsultingPlaybook })),
@@ -28,11 +30,12 @@ const TakkenGlossary = lazy(() =>
 const AisGlossary = lazy(() => import("./ais/AisGlossary.tsx").then((module) => ({ default: module.AisGlossary })));
 
 /** Reference screens layered over the session flow. Only one is ever open. */
-type Overlay = "none" | "history" | "playbook" | "takken" | "ais";
+type Overlay = "none" | "history" | "playbook" | "takken" | "ais" | "settings";
 type FocusReturn = { key: string | null; fallback: "home" | "result" };
 
 export function TypingApp() {
   const session = useTypingSession();
+  useAppearance(session.settings.appearance, session.settingsReady);
   const [overlay, setOverlay] = useState<Overlay>("none");
   const [selectedTrainingSet, setSelectedTrainingSet] = useState<TrainingSet>("japanese");
   const [previousBest, setPreviousBest] = useState<CompletedSession | null>(null);
@@ -174,9 +177,16 @@ export function TypingApp() {
         onShowHistory={
           !active && overlay !== "history" && session.history.length > 0 ? () => navigateOverlay("history") : undefined
         }
+        onShowSettings={!active && overlay !== "settings" ? () => navigateOverlay("settings") : undefined}
       />
 
-      {overlay === "ais" ? (
+      {overlay === "settings" ? (
+        <SettingsScreen
+          appearance={session.settings.appearance}
+          onChange={session.updateAppearance}
+          onBack={() => navigateOverlay("none")}
+        />
+      ) : overlay === "ais" ? (
         <Suspense
           fallback={
             <main className="playbook-loading" role="status">
