@@ -15,6 +15,13 @@ const GATED_IMPACTS = new Set(["critical", "serious"]);
 const screens: ReadonlyArray<{ name: string; open: (page: Page) => Promise<void> }> = [
   { name: "home", open: async () => {} },
   {
+    name: "appearance settings",
+    open: async (page) => {
+      await page.getByRole("button", { name: "表示設定" }).click();
+      await page.getByRole("heading", { name: "表示設定" }).waitFor();
+    },
+  },
+  {
     name: "consulting playbook",
     open: async (page) => {
       await page.getByRole("button", { name: /コンサル実務辞典を開く/ }).click();

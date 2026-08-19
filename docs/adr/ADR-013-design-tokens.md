@@ -1,5 +1,8 @@
 # ADR-013: Single-source design tokens with enforced boundaries
 
+Status: Superseded in placement by [ADR-014](ADR-014-theme-foundation.md). The
+single-source and enforcement principles remain active.
+
 ## Context
 
 A tone redesign is planned, with more expected after it. Measuring the stylesheet

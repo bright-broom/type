@@ -67,7 +67,7 @@ jobs:
     name: Browser E2E
     needs: deps
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -86,19 +86,21 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-      - name: Install browsers
-        # A download once stalled and consumed the whole 15-minute job timeout, so
-        # each attempt is bounded and retried. WebKit's system packages alone need a
-        # few minutes, hence the generous per-attempt bound. On a cache hit only the
-        # system packages are installed.
+      - name: Install Playwright system dependencies
+        # Keep apt single-shot. Retrying after a timeout can overlap the original
+        # apt process and fail on /var/lib/apt/lists/lock.
         timeout-minutes: 12
+        run: timeout --signal=TERM --kill-after=30s 660s npx playwright install-deps chromium webkit
+      - name: Install browsers
+        # Browser downloads do not hold the apt lock, so bounded retries are safe.
+        timeout-minutes: 10
         env:
           CACHE_HIT: ${{ steps.browser-cache.outputs.cache-hit }}
         run: |
-          if [ "$CACHE_HIT" = "true" ]; then command="install-deps"; else command="install --with-deps"; fi
+          if [ "$CACHE_HIT" = "true" ]; then exit 0; fi
           for attempt in 1 2 3; do
-            timeout 360 npx playwright $command chromium webkit && exit 0
-            echo "playwright $command stalled (attempt $attempt); retrying"
+            timeout --signal=TERM --kill-after=15s 180s npx playwright install chromium webkit && exit 0
+            echo "playwright browser download stalled (attempt $attempt); retrying"
           done
           exit 1
       # The E2E suite runs against the production server, so it needs a build first.

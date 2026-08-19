@@ -2,9 +2,7 @@ import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
 import type { CompletedSession } from "../../application/session/session-types.ts";
 import type { TrainingSet } from "../../domain/prompts/prompt-types.ts";
-import { LocalSessionRepository } from "./local-session-repository.ts";
-
-const STORAGE_KEY = "typeloop:data";
+import { LocalSessionRepository, STORAGE_KEY } from "./local-session-repository.ts";
 
 class MemoryStorage {
   values = new Map<string, string>();
@@ -93,8 +91,9 @@ test("persists settings and treats unavailable storage as non-fatal", async () =
   const repository = new LocalSessionRepository();
   useStorage(storage);
 
-  await repository.saveSettings({ soundEnabled: false });
-  assert.deepEqual(await repository.getSettings(), { soundEnabled: false });
+  const settings = { soundEnabled: false };
+  await repository.saveSettings(settings);
+  assert.deepEqual(await repository.getSettings(), settings);
 
   useStorage({
     getItem() {

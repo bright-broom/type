@@ -3,10 +3,18 @@ type AppHeaderProps = {
   onToggleSound: () => void;
   onShowHome?: () => void;
   onShowHistory?: () => void;
+  onShowSettings?: () => void;
   compact?: boolean;
 };
 
-export function AppHeader({ soundEnabled, onToggleSound, onShowHome, onShowHistory, compact = false }: AppHeaderProps) {
+export function AppHeader({
+  soundEnabled,
+  onToggleSound,
+  onShowHome,
+  onShowHistory,
+  onShowSettings,
+  compact = false,
+}: AppHeaderProps) {
   return (
     <header className={`app-header ${compact ? "app-header--compact" : ""}`}>
       <button className="brand" type="button" onClick={onShowHome} disabled={!onShowHome} aria-label="TypeLoop ホーム">
@@ -21,6 +29,11 @@ export function AppHeader({ soundEnabled, onToggleSound, onShowHome, onShowHisto
         {onShowHistory ? (
           <button className="header-link" type="button" data-focus-key="header-history" onClick={onShowHistory}>
             記録
+          </button>
+        ) : null}
+        {onShowSettings ? (
+          <button className="header-link" type="button" data-focus-key="header-settings" onClick={onShowSettings}>
+            表示設定
           </button>
         ) : null}
         <button

@@ -73,6 +73,16 @@ test("settings fall back per field rather than as a whole", () => {
   assert.equal(migrateEnvelope({ settings: { soundEnabled: "yes" } }).settings.soundEnabled, true);
   assert.equal(migrateEnvelope({ settings: {} }).settings.soundEnabled, true);
   assert.equal(migrateEnvelope({ settings: { soundEnabled: false } }).settings.soundEnabled, false);
+  // A stored appearance is stale once the cookie owns it, so reading drops it.
+  assert.deepEqual(
+    migrateEnvelope({
+      settings: {
+        soundEnabled: false,
+        appearance: { themeId: "classic", density: "compact", motion: "reduced" },
+      },
+    }).settings,
+    { soundEnabled: false },
+  );
 });
 
 test("an empty envelope is fresh each time so callers cannot share its arrays", () => {

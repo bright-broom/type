@@ -1,4 +1,9 @@
-import type { AppSettings, CompletedSession } from "../../application/session/session-types.ts";
+import {
+  DEFAULT_APP_SETTINGS,
+  normalizeAppSettings,
+  type AppSettings,
+} from "../../application/settings/app-settings.ts";
+import type { CompletedSession } from "../../application/session/session-types.ts";
 
 /**
  * Layout of the single localStorage entry that holds a player's whole history.
@@ -15,10 +20,12 @@ export type StorageEnvelope = {
 
 export const STORAGE_VERSION = 1;
 
-export const DEFAULT_SETTINGS: AppSettings = { soundEnabled: true };
-
 export function emptyEnvelope(): StorageEnvelope {
-  return { version: STORAGE_VERSION, sessions: [], settings: { ...DEFAULT_SETTINGS } };
+  return {
+    version: STORAGE_VERSION,
+    sessions: [],
+    settings: { ...DEFAULT_APP_SETTINGS },
+  };
 }
 
 /**
@@ -30,14 +37,6 @@ export function isSession(value: unknown): value is CompletedSession {
   if (!value || typeof value !== "object") return false;
   const record = value as Record<string, unknown>;
   return typeof record.id === "string" && typeof record.score === "number" && typeof record.endedAt === "number";
-}
-
-function readSettings(value: unknown): AppSettings {
-  if (!value || typeof value !== "object") return { ...DEFAULT_SETTINGS };
-  const record = value as Record<string, unknown>;
-  return {
-    soundEnabled: typeof record.soundEnabled === "boolean" ? record.soundEnabled : DEFAULT_SETTINGS.soundEnabled,
-  };
 }
 
 /**
@@ -63,6 +62,6 @@ export function migrateEnvelope(payload: unknown): StorageEnvelope {
   return {
     version: STORAGE_VERSION,
     sessions,
-    settings: readSettings(record.settings),
+    settings: normalizeAppSettings(record.settings),
   };
 }

@@ -1,0 +1,157 @@
+.a11y-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.settings-shell {
+  flex: 1;
+  width: min(var(--content-settings), calc(100% - (var(--page-gutter) * 2)));
+  margin: 0 auto;
+  padding: var(--settings-page-top) 0 var(--space-5);
+}
+
+.settings-shell button {
+  min-height: var(--tap-target);
+}
+
+.settings-heading .section-index {
+  display: block;
+  margin: var(--space-4) 0 var(--space-1);
+}
+
+.settings-heading h1 {
+  margin: 0;
+  color: var(--ink-deep);
+  font-size: var(--font-display-settings);
+  letter-spacing: var(--tracking-tight);
+}
+
+.settings-heading p {
+  color: var(--text-prose);
+  line-height: var(--leading-copy);
+}
+
+.settings-groups {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.settings-group,
+.settings-select {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--paper-soft);
+  box-shadow: var(--shadow-soft);
+}
+
+.settings-group {
+  padding: var(--space-3);
+}
+
+.settings-group legend,
+.settings-select > span {
+  color: var(--ink-deep);
+  font-size: var(--font-label);
+  font-weight: 800;
+  letter-spacing: var(--tracking-label);
+}
+
+.theme-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--settings-option-min)), 1fr));
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.settings-option {
+  display: grid;
+  grid-template-columns: auto var(--settings-swatch-width) 1fr;
+  gap: var(--space-2);
+  align-items: center;
+  min-height: var(--tap-target);
+  padding: var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.settings-option:has(input:checked) {
+  border-color: var(--cyan-dark);
+  box-shadow: var(--selection-ring);
+}
+
+.settings-option strong,
+.settings-option small {
+  display: block;
+}
+
+.settings-option small {
+  margin-top: var(--space-0);
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.theme-swatch {
+  width: var(--settings-swatch-width);
+  height: var(--settings-swatch-height);
+  border: 1px solid var(--line);
+  border-radius: var(--settings-swatch-radius);
+  background: linear-gradient(135deg, var(--paper) 0 55%, var(--cyan) 55% 75%, var(--ink-deep) 75%);
+}
+
+.theme-swatch--classic {
+  filter: var(--classic-swatch-filter);
+}
+
+.settings-group--inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.settings-group--inline label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--tap-target);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+}
+
+.settings-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+
+.settings-select select {
+  height: var(--tap-target);
+  min-height: var(--tap-target);
+  flex: 1 1 var(--settings-option-min);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink-deep);
+  background: var(--paper-soft);
+}
+
+:root[data-motion="reduced"] *,
+:root[data-motion="reduced"] *::before,
+:root[data-motion="reduced"] *::after {
+  scroll-behavior: auto !important;
+  animation-duration: var(--motion-reduced-duration) !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: var(--motion-reduced-duration) !important;
+}

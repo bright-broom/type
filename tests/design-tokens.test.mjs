@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 /**
- * Contract tests for the design-token block in app/globals.css.
+ * Contract tests for the design-token registry in app/styles/themes.css.
  *
  * The axe E2E suite measures rendered pages, but only after a build and only for
  * the states the tests visit. These assertions run in milliseconds against the
@@ -11,13 +11,18 @@ import test from "node:test";
  * browser ever starts. They are the reason a tone change is safe to make quickly.
  */
 
-const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+const css = await readFile(new URL("../app/styles/themes.css", import.meta.url), "utf8");
 const block = css.match(/\/\* @tokens-begin[\s\S]*?@tokens-end \*\//)?.[0];
 
 function token(name) {
   const match = block?.match(new RegExp(`--${name}:\\s*([^;]+);`));
   assert.ok(match, `token --${name} is missing from the token block`);
   return match[1].trim();
+}
+
+function themeToken(theme, name) {
+  const declarations = block?.match(new RegExp(`:root\\[data-theme="${theme}"\\]\\s*\\{([^}]+)\\}`))?.[1];
+  return declarations?.match(new RegExp(`--${name}:\\s*([^;]+);`))?.[1]?.trim() ?? token(name);
 }
 
 function luminance(hex) {
@@ -34,7 +39,7 @@ function contrast(foreground, background) {
   return (high + 0.05) / (low + 0.05);
 }
 
-test("the token block exists and is the only :root", () => {
+test("the token registry has one unscoped root contract", () => {
   assert.ok(block, "@tokens-begin/@tokens-end block is missing");
   assert.equal((css.match(/^:root\s*\{/gm) ?? []).length, 1, "a second :root would silently fork the palette");
 });
@@ -62,13 +67,23 @@ for (const [foreground, background] of AA_PAIRS) {
   });
 }
 
-test("every --*-rgb triplet matches its hex base", () => {
+for (const [foreground, background] of AA_PAIRS) {
+  test(`classic --${foreground} on --${background} meets WCAG AA`, () => {
+    const ratio = contrast(themeToken("classic", foreground), themeToken("classic", background));
+    assert.ok(ratio >= 4.5, `contrast is ${ratio.toFixed(2)}:1`);
+  });
+}
+
+test("every --*-rgb triplet matches its hex base in each theme block", () => {
   // Translucent colors are built from these; a mismatch forks the palette invisibly.
-  for (const [, name, triplet] of block.matchAll(/--([a-z-]+)-rgb:\s*(\d+ \d+ \d+);/g)) {
-    if (name === "black") continue; // no opaque --black token; used only for shadows
-    const hex = token(name);
-    const fromHex = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(" ");
-    assert.equal(triplet, fromHex, `--${name}-rgb (${triplet}) drifted from --${name} (${hex})`);
+  for (const [, selector, declarations] of block.matchAll(/([^{}]+)\{([^{}]+)\}/g)) {
+    for (const [, name, triplet] of declarations.matchAll(/--([a-z-]+)-rgb:\s*(\d+ \d+ \d+);/g)) {
+      if (name === "black") continue;
+      const localHex = declarations.match(new RegExp(`--${name}:\\s*(#[0-9a-f]{6});`))?.[1];
+      const hex = localHex ?? token(name);
+      const fromHex = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(" ");
+      assert.equal(triplet, fromHex, `${selector.trim()} --${name}-rgb drifted from ${hex}`);
+    }
   }
 });
 

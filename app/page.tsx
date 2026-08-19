@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { APPEARANCE_COOKIE, parseAppearance } from "@/src/application/settings/appearance-cookie";
 import { TypingApp } from "@/src/presentation/components/TypingApp";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -23,6 +24,9 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function Home() {
-  return <TypingApp />;
+export default async function Home() {
+  // The same cookie the layout used for the root attributes, so the client tree starts
+  // from the value already painted instead of discovering it after hydration.
+  const appearance = parseAppearance((await cookies()).get(APPEARANCE_COOKIE)?.value);
+  return <TypingApp initialAppearance={appearance} />;
 }

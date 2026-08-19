@@ -7,9 +7,12 @@ import type { CompletedSession } from "../../application/session/session-types.t
 import type { TrainingSet } from "../../domain/prompts/prompt-types.ts";
 import { BrowserSessionArchiveSink } from "../../infrastructure/persistence/browser-session-archive-sink.ts";
 import { LocalSessionRepository } from "../../infrastructure/persistence/local-session-repository.ts";
+import type { AppearanceSettings } from "../../application/settings/app-settings.ts";
+import { writeAppearanceCookie } from "../../infrastructure/persistence/browser-appearance-cookie.ts";
 import { useKeyboardInput } from "../hooks/useKeyboardInput.ts";
 import { useKeyboardInset } from "../hooks/useKeyboardInset.ts";
 import { useTypingSession } from "../hooks/useTypingSession.ts";
+import { useAppearance } from "../hooks/useAppearance.ts";
 import { AppHeader } from "./AppHeader.tsx";
 import { HomeScreen } from "./home/HomeScreen.tsx";
 import { CountdownScreen } from "./game/CountdownScreen.tsx";
@@ -18,6 +21,7 @@ import { PauseDialog } from "./game/PauseDialog.tsx";
 import { TypingInput } from "./game/TypingInput.tsx";
 import { ResultScreen } from "./result/ResultScreen.tsx";
 import { HistoryScreen } from "./history/HistoryScreen.tsx";
+import { SettingsScreen } from "./settings/SettingsScreen.tsx";
 
 const ConsultingPlaybook = lazy(() =>
   import("./consulting/ConsultingPlaybook.tsx").then((module) => ({ default: module.ConsultingPlaybook })),
@@ -28,11 +32,19 @@ const TakkenGlossary = lazy(() =>
 const AisGlossary = lazy(() => import("./ais/AisGlossary.tsx").then((module) => ({ default: module.AisGlossary })));
 
 /** Reference screens layered over the session flow. Only one is ever open. */
-type Overlay = "none" | "history" | "playbook" | "takken" | "ais";
+type Overlay = "none" | "history" | "playbook" | "takken" | "ais" | "settings";
 type FocusReturn = { key: string | null; fallback: "home" | "result" };
 
-export function TypingApp() {
+export function TypingApp({ initialAppearance }: { initialAppearance: AppearanceSettings }) {
   const session = useTypingSession();
+  const [appearance, setAppearance] = useState(initialAppearance);
+  useAppearance(appearance);
+
+  /** Persist where the server can read it, so the next load paints this theme first. */
+  const updateAppearance = useCallback((next: AppearanceSettings) => {
+    setAppearance(next);
+    writeAppearanceCookie(next);
+  }, []);
   const [overlay, setOverlay] = useState<Overlay>("none");
   const [selectedTrainingSet, setSelectedTrainingSet] = useState<TrainingSet>("japanese");
   const [previousBest, setPreviousBest] = useState<CompletedSession | null>(null);
@@ -174,9 +186,12 @@ export function TypingApp() {
         onShowHistory={
           !active && overlay !== "history" && session.history.length > 0 ? () => navigateOverlay("history") : undefined
         }
+        onShowSettings={!active && overlay !== "settings" ? () => navigateOverlay("settings") : undefined}
       />
 
-      {overlay === "ais" ? (
+      {overlay === "settings" ? (
+        <SettingsScreen appearance={appearance} onChange={updateAppearance} onBack={() => navigateOverlay("none")} />
+      ) : overlay === "ais" ? (
         <Suspense
           fallback={
             <main className="playbook-loading" role="status">
