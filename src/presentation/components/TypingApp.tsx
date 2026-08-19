@@ -189,6 +189,9 @@ export function TypingApp({
         soundEnabled={session.settings.soundEnabled}
         onToggleSound={session.toggleSound}
         onShowHome={active ? undefined : goHome}
+        showQuickStartShortcut={
+          !active && overlay === "none" && (session.clock.status === "idle" || session.clock.status === "aborted")
+        }
         onShowHistory={
           !active && overlay !== "history" && session.history.length > 0 ? () => navigateOverlay("history") : undefined
         }

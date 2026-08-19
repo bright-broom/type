@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("Git mode starts a directly typable command session", async ({ page }) => {
   await page.goto("/");
   const gitMode = page.getByRole("radio", { name: /Git/ });
-  await page.locator("label.mode-option").filter({ hasText: "Git" }).click();
+  await page.locator("label[data-mode-option]").filter({ hasText: "Git" }).click();
   await expect(gitMode).toBeChecked();
   await page.getByRole("button", { name: /60秒トレーニングを始める/ }).click();
 
