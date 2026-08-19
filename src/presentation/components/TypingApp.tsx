@@ -1,6 +1,6 @@
 "use client";
 
-import { lazy, Suspense, useCallback, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { saveSessionArchive } from "../../application/session/session-archive.ts";
 import type { CompletedSession } from "../../application/session/session-types.ts";
@@ -29,15 +29,69 @@ const AisGlossary = lazy(() => import("./ais/AisGlossary.tsx").then((module) => 
 
 /** Reference screens layered over the session flow. Only one is ever open. */
 type Overlay = "none" | "history" | "playbook" | "takken" | "ais";
-
-const RESTARTABLE = ["idle", "finished", "aborted"];
+type FocusReturn = { key: string | null; fallback: "home" | "result" };
 
 export function TypingApp() {
   const session = useTypingSession();
   const [overlay, setOverlay] = useState<Overlay>("none");
+  const [selectedTrainingSet, setSelectedTrainingSet] = useState<TrainingSet>("japanese");
   const [previousBest, setPreviousBest] = useState<CompletedSession | null>(null);
   const typingFieldRef = useRef<HTMLInputElement>(null);
+  const focusReturnRef = useRef<FocusReturn | null>(null);
   useKeyboardInset();
+
+  const navigateOverlay = useCallback(
+    (next: Overlay) => {
+      if (next !== "none") {
+        const trigger =
+          document.activeElement instanceof HTMLElement
+            ? document.activeElement.closest<HTMLElement>("[data-focus-key]")
+            : null;
+        focusReturnRef.current = {
+          key: trigger?.dataset.focusKey ?? null,
+          fallback: session.clock.status === "finished" ? "result" : "home",
+        };
+      }
+      window.scrollTo(0, 0);
+      setOverlay(next);
+    },
+    [session.clock.status],
+  );
+
+  useEffect(() => {
+    if (overlay === "none") {
+      const focusReturn = focusReturnRef.current;
+      if (!focusReturn) return;
+      const frame = window.requestAnimationFrame(() => {
+        const trigger = focusReturn.key
+          ? document.querySelector<HTMLElement>(`[data-focus-key="${focusReturn.key}"]`)
+          : null;
+        trigger?.focus({ preventScroll: true });
+        if (document.activeElement !== trigger) {
+          document.querySelector<HTMLElement>(`[data-${focusReturn.fallback}-root]`)?.focus({ preventScroll: true });
+        }
+        focusReturnRef.current = null;
+      });
+      return () => window.cancelAnimationFrame(frame);
+    }
+    const focusOverlay = () => {
+      const root = document.querySelector<HTMLElement>("[data-overlay-root]");
+      root?.focus({ preventScroll: true });
+      return Boolean(root);
+    };
+    if (focusOverlay()) return;
+    const observer = new MutationObserver(() => {
+      if (focusOverlay()) observer.disconnect();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [overlay]);
+
+  useEffect(() => {
+    if (session.clock.status === "finished") {
+      document.querySelector<HTMLElement>("[data-result-root]")?.focus({ preventScroll: true });
+    }
+  }, [session.clock.status, session.result]);
 
   /**
    * A software keyboard only opens while a user gesture is still being handled, so
@@ -49,8 +103,9 @@ export function TypingApp() {
 
   const start = (trainingSet: TrainingSet = "japanese") => {
     focusTypingField();
+    setSelectedTrainingSet(trainingSet);
     setPreviousBest(session.bests[trainingSet]);
-    setOverlay("none");
+    navigateOverlay("none");
     session.start(trainingSet);
   };
 
@@ -61,7 +116,7 @@ export function TypingApp() {
 
   const goHome = () => {
     typingFieldRef.current?.blur();
-    setOverlay("none");
+    navigateOverlay("none");
     session.home();
   };
 
@@ -91,16 +146,18 @@ export function TypingApp() {
   useKeyboardInput({
     onKey: session.typeText,
     onEnter: () => {
-      if (overlay !== "none") {
-        setOverlay("none");
-        return;
-      }
-      if (RESTARTABLE.includes(session.clock.status)) start(session.trainingSet);
+      if (overlay === "playbook") start("consulting");
+      else if (overlay === "takken") start("takken");
+      else if (overlay === "ais") start("ais");
+      else if (overlay !== "none") {
+        navigateOverlay("none");
+      } else if (session.clock.status === "idle" || session.clock.status === "aborted") start(selectedTrainingSet);
+      else if (session.clock.status === "finished") start(session.trainingSet);
       else if (session.clock.status === "paused") resume();
       else session.enter();
     },
     onEscape: () => {
-      if (overlay !== "none") setOverlay("none");
+      if (overlay !== "none") navigateOverlay("none");
       else if (session.clock.status === "paused") resume();
       else session.escape();
     },
@@ -114,6 +171,9 @@ export function TypingApp() {
         soundEnabled={session.settings.soundEnabled}
         onToggleSound={session.toggleSound}
         onShowHome={active ? undefined : goHome}
+        onShowHistory={
+          !active && overlay !== "history" && session.history.length > 0 ? () => navigateOverlay("history") : undefined
+        }
       />
 
       {overlay === "ais" ? (
@@ -124,7 +184,7 @@ export function TypingApp() {
             </main>
           }
         >
-          <AisGlossary onBack={() => setOverlay("none")} onStart={() => start("ais")} />
+          <AisGlossary onBack={() => navigateOverlay("none")} onStart={() => start("ais")} />
         </Suspense>
       ) : overlay === "takken" ? (
         <Suspense
@@ -134,7 +194,7 @@ export function TypingApp() {
             </main>
           }
         >
-          <TakkenGlossary onBack={() => setOverlay("none")} onStart={() => start("takken")} />
+          <TakkenGlossary onBack={() => navigateOverlay("none")} onStart={() => start("takken")} />
         </Suspense>
       ) : overlay === "playbook" ? (
         <Suspense
@@ -144,10 +204,10 @@ export function TypingApp() {
             </main>
           }
         >
-          <ConsultingPlaybook onBack={() => setOverlay("none")} onStart={() => start("consulting")} />
+          <ConsultingPlaybook onBack={() => navigateOverlay("none")} onStart={() => start("consulting")} />
         </Suspense>
       ) : overlay === "history" ? (
-        <HistoryScreen sessions={session.history} onBack={() => setOverlay("none")} onSave={saveHistory} />
+        <HistoryScreen sessions={session.history} onBack={() => navigateOverlay("none")} onSave={saveHistory} />
       ) : session.clock.status === "countdown" ? (
         <CountdownScreen value={session.countdown} />
       ) : session.clock.status === "playing" || session.clock.status === "paused" ? (
@@ -170,21 +230,20 @@ export function TypingApp() {
           result={session.result}
           previousBest={previousBest}
           onRetry={() => start(session.trainingSet)}
-          onHistory={() => setOverlay("history")}
+          onHistory={() => navigateOverlay("history")}
           onHome={goHome}
         />
       ) : (
         <HomeScreen
           best={session.bests.japanese}
           history={session.history}
-          onStart={() => start()}
-          onStartConsulting={() => start("consulting")}
-          onStartTakken={() => start("takken")}
-          onStartAis={() => start("ais")}
-          onShowPlaybook={() => setOverlay("playbook")}
-          onShowTakkenGlossary={() => setOverlay("takken")}
-          onShowAisGlossary={() => setOverlay("ais")}
-          onShowHistory={() => setOverlay("history")}
+          selectedMode={selectedTrainingSet}
+          onSelectMode={setSelectedTrainingSet}
+          onStart={() => start(selectedTrainingSet)}
+          onShowPlaybook={() => navigateOverlay("playbook")}
+          onShowTakkenGlossary={() => navigateOverlay("takken")}
+          onShowAisGlossary={() => navigateOverlay("ais")}
+          onShowHistory={() => navigateOverlay("history")}
           aborted={session.clock.status === "aborted"}
         />
       )}

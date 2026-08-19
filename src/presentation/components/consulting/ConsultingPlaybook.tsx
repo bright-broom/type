@@ -29,7 +29,7 @@ export function ConsultingPlaybook({ onBack, onStart }: { onBack: () => void; on
   }, [activeSheet, normalizedQuery]);
 
   return (
-    <main className="playbook-shell">
+    <main className="playbook-shell" data-overlay-root tabIndex={-1}>
       <div className="playbook-heading">
         <button className="text-button" type="button" onClick={onBack}>
           ← ホームへ

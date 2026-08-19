@@ -19,15 +19,18 @@ export function GameScreen(props: GameScreenProps) {
   const seconds = Math.max(0, Math.ceil(props.remainingMs / 1_000));
   const progress = Math.max(0, Math.min(100, (props.remainingMs / 60_000) * 100));
   const promptLabel = props.prompt.category === "consulting" ? "CONSULTING TERM" : props.prompt.reading;
+  const feedbackMessage =
+    props.feedback === "unsupported"
+      ? "かな入力を受け取りました — 英数字キーボードに切り替えてください"
+      : props.feedback === "miss"
+        ? "ミス — 正しいキーからそのまま続けられます"
+        : "";
   return (
     <main className={`game-shell feedback-${props.feedback ?? "none"}`}>
       <div className="game-meta">
         <div className="timer-block">
-          <span className="meta-label">TIME</span>
-          <strong>
-            {String(seconds).padStart(2, "0")}
-            <small>.{String(Math.floor((props.remainingMs % 1_000) / 100)).padStart(1, "0")}</small>
-          </strong>
+          <span className="meta-label">残り時間</span>
+          <strong>{String(seconds).padStart(2, "0")}</strong>
         </div>
         <div
           className="game-progress"
@@ -47,7 +50,7 @@ export function GameScreen(props: GameScreenProps) {
 
       <section className="prompt-stage" aria-labelledby="current-prompt">
         <div className="prompt-index">
-          <span>{String(props.completedPrompts + 1).padStart(2, "0")}</span> / SESSION
+          問題 <span>{String(props.completedPrompts + 1).padStart(2, "0")}</span>
         </div>
         <p className="prompt-reading">{promptLabel}</p>
         <h1 id="current-prompt">{props.prompt.displayText}</h1>
@@ -57,16 +60,19 @@ export function GameScreen(props: GameScreenProps) {
           <span className="roman-caret" aria-hidden="true" />
           <span className="roman-remaining">{props.guide.remaining}</span>
         </div>
-        <div className="feedback-line" aria-live="polite">
-          {props.feedback === "unsupported"
-            ? "かな入力を受け取りました — 英数字キーボードに切り替えてください"
-            : props.feedback === "miss"
-              ? "MISS — 正しいキーで続けよう"
-              : props.combo >= 10
+        <div className="feedback-line">
+          <span role="status" aria-live="polite">
+            {feedbackMessage}
+          </span>
+          {!feedbackMessage ? (
+            <span aria-hidden="true">
+              {props.combo >= 10
                 ? `${props.combo} COMBO`
                 : props.prompt.category === "consulting"
                   ? "英字で入力"
                   : "ローマ字で入力"}
+            </span>
+          ) : null}
         </div>
       </section>
 
@@ -87,7 +93,7 @@ export function GameScreen(props: GameScreenProps) {
           <strong>{props.misses}</strong>
         </div>
         <div className="combo-stat">
-          <span>COMBO</span>
+          <span>連続</span>
           <strong>{props.combo}</strong>
         </div>
       </div>

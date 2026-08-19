@@ -56,7 +56,10 @@ const screens: ReadonlyArray<{ name: string; open: (page: Page) => Promise<void>
 ];
 
 for (const screen of screens) {
-  test(`${screen.name} has no serious accessibility violations`, async ({ browser }) => {
+  test(`${screen.name} has no serious accessibility violations`, async ({ browser }, testInfo) => {
+    // Axe traverses all 446 takken entries. Shared Linux runners can exceed the
+    // default 30s here, so only this exhaustive screen receives a larger budget.
+    if (screen.name === "takken glossary") testInfo.setTimeout(60_000);
     // A phone viewport is the strict case: labels collapse and type shrinks there.
     const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true });
     const page = await context.newPage();
