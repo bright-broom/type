@@ -82,30 +82,24 @@ test("the manifest declares every dependency exactly once", async () => {
   }
 });
 
-test("Playwright system dependencies are installed outside retry loops", async () => {
-  // Retrying `install --with-deps` can overlap an orphaned apt process after a
-  // timeout. Keep the privileged package install single-shot and retry only the
-  // browser download, which does not hold the system package-manager lock.
+test("Playwright CI uses a version-matched image with browser dependencies", async () => {
+  // Installing OS packages from an Ubuntu mirror made E2E depend on apt latency
+  // and left an orphaned lock after timeout. The official image makes browsers
+  // and their OS packages immutable job infrastructure instead.
   const workflow = await readFile(resolve(repositoryRoot, ".github/workflows/ci.yml"), "utf8");
-  const systemDependencyCommands = workflow.match(/npx playwright install-deps/g) ?? [];
-  const systemDependencies = workflow.indexOf("npx playwright install-deps chromium webkit");
-  const retryLoop = workflow.indexOf("for attempt in 1 2 3; do");
-  const retryLoopEnd = workflow.indexOf("done", retryLoop);
-  const browserInstallStep = workflow
-    .split("- name: Install browsers")[1]
-    ?.split("- name: Build production application")[0];
+  const manifest = JSON.parse(await readFile(resolve(repositoryRoot, "package.json"), "utf8"));
+  const playwrightVersion = manifest.devDependencies?.["@playwright/test"];
+  const e2eJob = workflow.split("  e2e:")[1]?.split("  security:")[0] ?? "";
 
-  assert.equal(systemDependencyCommands.length, 1, "CI must run install-deps exactly once");
-  assert.doesNotMatch(workflow, /--with-deps/, "CI must not couple apt installation to a retried browser install");
-  assert.ok(systemDependencies >= 0, "CI must install the Playwright system dependencies");
-  assert.ok(retryLoop > systemDependencies, "the browser retry loop must start after install-deps");
-  assert.ok(retryLoopEnd > retryLoop, "the browser retry loop must have an explicit end");
-  assert.ok(browserInstallStep, "CI must keep a dedicated browser installation step");
-  assert.doesNotMatch(browserInstallStep, /install-deps|--with-deps/);
-
-  const retriedCommands = workflow.slice(retryLoop, retryLoopEnd);
-  assert.match(retriedCommands, /npx playwright install chromium webkit/);
-  assert.doesNotMatch(retriedCommands, /install-deps|--with-deps/);
+  assert.equal(typeof playwrightVersion, "string");
+  assert.match(
+    e2eJob,
+    new RegExp(`image: mcr\\.microsoft\\.com/playwright:v${playwrightVersion}-noble@sha256:[a-f0-9]{64}`),
+    "the CI image must match the installed Playwright version and pin a digest",
+  );
+  assert.match(e2eJob, /options: --user 1001 --ipc=host/);
+  assert.doesNotMatch(e2eJob, /playwright install(?:-deps|\s)/, "the image must own browser and OS installation");
+  assert.doesNotMatch(e2eJob, /ms-playwright|browser-cache/, "browser caching is redundant with the pinned image");
 });
 
 test("the ESLint runtime stays within every ESLint plugin's supported major", async () => {

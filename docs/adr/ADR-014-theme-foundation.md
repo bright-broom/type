@@ -18,12 +18,16 @@ and a persisted appearance must be restored as early as the framework allows.
 - Theme, density, and motion are independent axes. The initial themes are `modern`
   and `classic`; adding another theme extends the allow-list and CSS registry rather
   than screen components.
-- The existing repository remains the only settings persistence boundary.
-- Presentation writes validated identifiers to `data-theme`, `data-density`, and
-  `data-motion` on the document root. A small first-party script restores only
-  allow-listed values as the first thing React runs on the client.
+- Appearance is persisted in a validated cookie because the server needs it for
+  the first paint. Sound and history remain behind the existing local repository.
+- Server rendering writes validated identifiers to `data-theme`, `data-density`,
+  and `data-motion`; presentation updates the same attributes after an in-session
+  change.
 - Raw design values move to `app/styles/themes.css`. Global and component styles
   consume the stable token contract, and the existing CI guard follows the registry.
+- `app/styles/modern.css` is a theme-scoped product layer over the stable component
+  class contract. It contains no raw color, geometry, or motion values; those remain
+  globally adjustable in the registry.
 - The classic theme is a reversible visual fallback. Behavior, training data,
   storage keys, and session timing are not theme concerns.
 
@@ -49,9 +53,10 @@ sound preference. Invalid future or corrupt values fail closed to authored defau
 The app can switch themes without changing screen markup, and the modern redesign can
 land screen by screen while classic remains available for comparison and rollback.
 
-The next visual phase must extract semantic surface, content, action, and status
-tokens before adding dark mode. It should also continue splitting screen styles out
-of `globals.css` by responsibility rather than by arbitrary line count.
+The modern layer now owns the current product language while classic remains a
+rollback surface. Future visual phases should continue extracting screen styles out
+of `globals.css` by responsibility rather than by arbitrary line count. Dark mode
+still requires semantic content and status roles before palette inversion is safe.
 
 ## The restore is server-rendered, because no client script can beat the paint
 

@@ -87,6 +87,12 @@ test("critical flow stays operable from compact portrait through landscape and d
     await page.keyboard.type(fullInput[0]);
     await expect(page.locator(".roman-typed")).not.toHaveText("");
     await expectNoHorizontalOverflow(page);
+    if (viewport.name === "phone-landscape") {
+      const minimumStageHeight = await page
+        .locator(".prompt-stage")
+        .evaluate((element) => Number.parseFloat(getComputedStyle(element).minHeight));
+      expect(minimumStageHeight).toBeLessThanOrEqual(225);
+    }
 
     await page.getByRole("button", { name: /一時停止/ }).click();
     await expect(page.getByRole("dialog", { name: "ひと休み。" })).toBeVisible();

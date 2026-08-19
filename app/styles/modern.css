@@ -1,0 +1,346 @@
+/*
+ * Modern is a presentation layer over the stable component contract. Keeping it
+ * theme-scoped lets the classic option remain a compatibility surface while the
+ * product language can evolve without changing screen markup.
+ */
+
+:root[data-theme="modern"] body {
+  background: var(--modern-page-background);
+}
+
+:root[data-theme="modern"] button,
+:root[data-theme="modern"] input,
+:root[data-theme="modern"] select {
+  transition:
+    border-color var(--modern-transition),
+    background-color var(--modern-transition),
+    color var(--modern-transition),
+    box-shadow var(--modern-transition),
+    transform var(--modern-transition);
+}
+
+:root[data-theme="modern"] button:focus-visible,
+:root[data-theme="modern"] [tabindex]:focus-visible,
+:root[data-theme="modern"] input:focus-visible,
+:root[data-theme="modern"] select:focus-visible {
+  outline: var(--modern-focus-outline);
+  outline-offset: var(--modern-focus-offset);
+  box-shadow: var(--modern-focus-ring);
+}
+
+:root[data-theme="modern"] [tabindex="-1"]:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+:root[data-theme="modern"] .app-header {
+  height: var(--modern-header-height);
+  border-bottom: var(--modern-border);
+}
+
+:root[data-theme="modern"] .app-header--compact {
+  height: var(--modern-header-height-compact);
+}
+
+:root[data-theme="modern"] .brand {
+  gap: var(--space-1);
+  font-size: var(--modern-brand-font-size);
+  letter-spacing: var(--modern-brand-tracking);
+}
+
+:root[data-theme="modern"] .brand-mark {
+  width: var(--modern-brand-mark-width);
+  height: var(--modern-brand-mark-height);
+  gap: var(--modern-brand-mark-gap);
+  transform: none;
+}
+
+:root[data-theme="modern"] .brand-mark i {
+  border-radius: var(--radius-pill);
+}
+
+:root[data-theme="modern"] .header-actions {
+  gap: var(--space-0);
+}
+
+:root[data-theme="modern"] .header-link,
+:root[data-theme="modern"] .icon-button {
+  min-height: var(--tap-target);
+  border-radius: var(--radius-pill);
+}
+
+:root[data-theme="modern"] .header-link {
+  padding-inline: var(--space-2);
+}
+
+:root[data-theme="modern"] .icon-button {
+  border: var(--modern-border-strong);
+  background: var(--modern-surface-solid);
+  box-shadow: var(--modern-shadow-control);
+}
+
+:root[data-theme="modern"] .icon-button:hover {
+  border-color: var(--cyan-dark);
+  transform: translateY(var(--modern-hover-lift-small));
+}
+
+:root[data-theme="modern"] .home-shell {
+  grid-template-columns: var(--modern-progress-columns);
+  gap: var(--modern-home-gap);
+  padding: var(--modern-home-padding);
+}
+
+:root[data-theme="modern"] .hero {
+  padding: 0;
+}
+
+:root[data-theme="modern"] .eyebrow {
+  gap: var(--space-1);
+  color: var(--muted);
+  font-size: var(--font-label);
+  letter-spacing: var(--tracking-label);
+}
+
+:root[data-theme="modern"] .eyebrow > span {
+  width: var(--modern-eyebrow-line-width);
+  background: var(--cyan-dark);
+}
+
+:root[data-theme="modern"] .hero h1 {
+  max-width: var(--modern-hero-max-width);
+  margin: var(--space-3) 0 var(--space-2);
+  font-size: var(--modern-hero-size);
+  line-height: var(--modern-hero-leading);
+  letter-spacing: var(--modern-hero-tracking);
+}
+
+:root[data-theme="modern"] .hero h1 em {
+  color: var(--cyan-dark);
+}
+
+:root[data-theme="modern"] .hero h1 em::after {
+  display: none;
+}
+
+:root[data-theme="modern"] .hero-copy {
+  max-width: var(--modern-copy-max-width);
+  margin-bottom: var(--space-3);
+  color: var(--text-prose);
+  line-height: var(--modern-copy-leading);
+}
+
+:root[data-theme="modern"] .quick-start-panel,
+:root[data-theme="modern"] .settings-group,
+:root[data-theme="modern"] .settings-select,
+:root[data-theme="modern"] .glossary-filters,
+:root[data-theme="modern"] .playbook-controls,
+:root[data-theme="modern"] .history-overview,
+:root[data-theme="modern"] .pause-dialog {
+  border: var(--modern-border);
+  border-radius: var(--modern-card-radius);
+  background: var(--modern-surface);
+  box-shadow: var(--modern-shadow-card);
+  backdrop-filter: var(--modern-backdrop-blur);
+}
+
+:root[data-theme="modern"] .quick-start-panel {
+  padding: var(--modern-card-padding);
+}
+
+:root[data-theme="modern"] .quick-start-head h2,
+:root[data-theme="modern"] .resource-heading h2 {
+  font-size: var(--modern-section-heading-size);
+}
+
+:root[data-theme="modern"] .mode-picker {
+  grid-template-columns: var(--modern-option-columns);
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+:root[data-theme="modern"] .mode-option {
+  min-height: var(--modern-mode-min-height);
+  border: var(--modern-border-strong);
+  border-radius: var(--modern-control-radius);
+  padding: var(--space-2);
+  background: var(--modern-surface-solid);
+}
+
+:root[data-theme="modern"] .mode-option:hover {
+  border-color: var(--line-strong);
+  transform: translateY(var(--modern-hover-lift));
+}
+
+:root[data-theme="modern"] .mode-option--selected {
+  border-color: var(--cyan-dark);
+  background: var(--modern-surface-accent);
+  box-shadow: var(--modern-focus-ring);
+}
+
+:root[data-theme="modern"] .start-row {
+  margin-top: var(--space-2);
+}
+
+:root[data-theme="modern"] .primary-button {
+  min-height: var(--modern-primary-min-height);
+  border-radius: var(--modern-control-radius);
+  box-shadow: var(--modern-shadow-control);
+}
+
+:root[data-theme="modern"] .primary-button:hover {
+  box-shadow: var(--modern-shadow-hover);
+}
+
+:root[data-theme="modern"] .resource-hub {
+  margin-top: var(--space-4);
+}
+
+:root[data-theme="modern"] .resource-grid {
+  grid-template-columns: var(--modern-resource-columns);
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+:root[data-theme="modern"] .resource-grid button {
+  min-height: var(--modern-resource-min-height);
+  border: var(--modern-border);
+  border-radius: var(--modern-control-radius);
+  padding: var(--space-2);
+  background: var(--modern-surface-solid);
+}
+
+:root[data-theme="modern"] .resource-grid button:hover {
+  border-color: var(--cyan-dark);
+  box-shadow: var(--modern-shadow-control);
+  transform: translateY(var(--modern-hover-lift));
+}
+
+:root[data-theme="modern"] .progress-card {
+  min-height: var(--modern-progress-min-height);
+  border: var(--modern-border);
+  border-radius: var(--modern-card-radius);
+  padding: var(--modern-card-padding);
+  color: var(--ink);
+  background: var(--modern-surface-solid);
+  box-shadow: var(--modern-shadow-card);
+}
+
+:root[data-theme="modern"] .progress-card::after {
+  display: none;
+}
+
+:root[data-theme="modern"] .progress-kicker,
+:root[data-theme="modern"] .progress-primary strong,
+:root[data-theme="modern"] .onboarding-steps span {
+  color: var(--cyan-dark);
+}
+
+:root[data-theme="modern"] .progress-card h2,
+:root[data-theme="modern"] .progress-metrics strong,
+:root[data-theme="modern"] .onboarding-steps strong {
+  color: var(--ink-deep);
+}
+
+:root[data-theme="modern"] .progress-card header button,
+:root[data-theme="modern"] .progress-primary small,
+:root[data-theme="modern"] .progress-primary > span,
+:root[data-theme="modern"] .progress-metrics span,
+:root[data-theme="modern"] .progress-insight > span,
+:root[data-theme="modern"] .privacy-note {
+  color: var(--muted);
+}
+
+:root[data-theme="modern"] .progress-card header button:hover {
+  color: var(--cyan-dark);
+}
+
+:root[data-theme="modern"] .progress-metrics,
+:root[data-theme="modern"] .onboarding-steps {
+  border-color: var(--line-soft);
+}
+
+:root[data-theme="modern"] .progress-metrics > div + div,
+:root[data-theme="modern"] .onboarding-steps li {
+  border-color: var(--line-soft);
+}
+
+:root[data-theme="modern"] .progress-insight {
+  border-left-color: var(--cyan-dark);
+}
+
+:root[data-theme="modern"] .progress-insight p {
+  color: var(--text-prose);
+}
+
+:root[data-theme="modern"] .prompt-stage {
+  min-height: var(--modern-game-stage-height);
+  border: var(--modern-border);
+  border-radius: var(--modern-card-radius);
+  background: var(--modern-surface-solid);
+  box-shadow: var(--modern-shadow-card);
+}
+
+:root[data-theme="modern"] .roman-remaining,
+:root[data-theme="modern"] .exam-note strong {
+  color: var(--text-prose);
+}
+
+:root[data-theme="modern"] .live-stats,
+:root[data-theme="modern"] .history-table,
+:root[data-theme="modern"] .playbook-nav,
+:root[data-theme="modern"] .playbook-content,
+:root[data-theme="modern"] .glossary-list {
+  border: var(--modern-border);
+  border-radius: var(--modern-card-radius);
+  background: var(--modern-surface-solid);
+  box-shadow: var(--modern-shadow-control);
+  overflow: hidden;
+}
+
+:root[data-theme="modern"] .score-card {
+  border-radius: var(--modern-card-radius);
+  box-shadow: var(--modern-shadow-card);
+}
+
+:root[data-theme="modern"] .result-takeaway,
+:root[data-theme="modern"] .settings-option {
+  border: var(--modern-border);
+  border-radius: var(--modern-control-radius);
+  background: var(--modern-surface-solid);
+}
+
+:root[data-theme="modern"] .settings-option:has(input:checked) {
+  border-color: var(--cyan-dark);
+  background: var(--modern-surface-accent);
+  box-shadow: var(--modern-focus-ring);
+}
+
+:root[data-theme="modern"] .settings-option:focus-within,
+:root[data-theme="modern"] .settings-group--inline label:focus-within {
+  outline: var(--modern-focus-outline);
+  outline-offset: var(--modern-focus-offset);
+}
+
+:root[data-theme="modern"] .settings-select select,
+:root[data-theme="modern"] .glossary-filters input,
+:root[data-theme="modern"] .glossary-filters select,
+:root[data-theme="modern"] .playbook-controls input {
+  min-height: var(--modern-control-height);
+  border: var(--modern-input-border);
+  border-radius: var(--modern-small-radius);
+  background: var(--modern-surface-solid);
+}
+
+:root[data-theme="modern"] .glossary-entry,
+:root[data-theme="modern"] .playbook-rows article,
+:root[data-theme="modern"] .history-row {
+  border-color: var(--line-soft);
+}
+
+:root[data-theme="modern"] .section-index {
+  color: var(--cyan-dark);
+}
+
+:root[data-theme="modern"] .site-footer {
+  border-color: var(--line-soft);
+}

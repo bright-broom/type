@@ -74,7 +74,8 @@ Components reference `var(--token)`; translucent colors use the channel triplets
 tone is therefore an edit to one block, guarded three ways:
 
 - `npm run check:tokens` rejects color literals outside the registry, a second
-  unscoped `:root`, and any color literal in TSX.
+  unscoped `:root`, any color literal in TSX, and raw geometry or timing values in
+  the modern product layer.
 - `tests/design-tokens.test.mjs` asserts the core reading pairs meet WCAG AA and
   that `--*-rgb` triplets match their hex base, so a bad retune fails in
   milliseconds — before axe ever starts a browser.
@@ -93,6 +94,13 @@ to open a large glossary paid the compile cost — on a shared runner that pushe
 446-entry takken accessibility scan past the default timeout while it passed locally.
 Serving the build removes that variance and means the suite exercises what ships, so
 `npm run test:e2e` expects `npm run build` to have run (both `npm run check` and CI do).
+
+CI runs the browser job inside the version-matched, digest-pinned Playwright
+`noble` image. The image owns Chromium, WebKit, and their OS packages; do not add
+`playwright install-deps` or a browser cache to the job. Linux OS packages are not
+cacheable, and downloading them from the runner's APT mirror caused both timeout
+exit `124` and an orphaned APT lock. The repository convention test keeps the npm
+package version and image tag aligned.
 
 E2E runs on Chromium and WebKit. WebKit is not optional: the software-keyboard
 handling targets Safari's behaviour — `visualViewport` as the only keyboard signal,

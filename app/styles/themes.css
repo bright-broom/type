@@ -80,6 +80,61 @@
   --selection-ring: 0 0 0 2px rgb(var(--cyan-dark-rgb) / 16%);
   --classic-swatch-filter: saturate(72%) hue-rotate(8deg);
   --motion-reduced-duration: 0.01ms;
+
+  /* Modern product language */
+  --modern-page-background: linear-gradient(180deg, var(--paper-soft), var(--paper));
+  --modern-surface: rgb(var(--paper-soft-rgb) / 92%);
+  --modern-surface-solid: var(--paper-soft);
+  --modern-surface-accent: rgb(var(--cyan-rgb) / 12%);
+  --modern-surface-muted: rgb(var(--ink-rgb) / 4%);
+  --modern-border: 1px solid var(--line-soft);
+  --modern-border-strong: 1px solid var(--line);
+  --modern-header-height: 76px;
+  --modern-header-height-compact: 68px;
+  --modern-control-height: 48px;
+  --modern-brand-font-size: 1rem;
+  --modern-brand-mark-width: 26px;
+  --modern-brand-mark-height: 23px;
+  --modern-brand-mark-gap: 3px;
+  --modern-brand-tracking: -0.025em;
+  --modern-hover-lift-small: -1px;
+  --modern-hover-lift: -2px;
+  --modern-eyebrow-line-width: 20px;
+  --modern-hero-max-width: 720px;
+  --modern-hero-leading: 1.02;
+  --modern-hero-tracking: -0.065em;
+  --modern-copy-max-width: 600px;
+  --modern-copy-leading: 1.75;
+  --modern-section-heading-size: 1.05rem;
+  --modern-mode-min-height: 76px;
+  --modern-primary-min-height: 56px;
+  --modern-resource-min-height: 64px;
+  --modern-progress-min-height: 0;
+  --modern-backdrop-blur: blur(18px);
+  --modern-card-radius: 24px;
+  --modern-control-radius: 14px;
+  --modern-small-radius: 10px;
+  --modern-card-padding: clamp(20px, 3vw, 32px);
+  --modern-section-gap: clamp(24px, 4vw, 48px);
+  --modern-home-gap: clamp(32px, 6vw, 88px);
+  --modern-home-padding: clamp(36px, 6vw, 76px) 0 clamp(52px, 8vw, 96px);
+  --modern-hero-size: clamp(2.75rem, 6.2vw, 4.9rem);
+  --modern-heading-size: clamp(2.4rem, 5vw, 4.4rem);
+  --modern-shadow-card: 0 16px 48px rgb(var(--ink-deep-rgb) / 7%);
+  --modern-shadow-control: 0 8px 24px rgb(var(--ink-deep-rgb) / 6%);
+  --modern-shadow-hover: 0 18px 42px rgb(var(--ink-deep-rgb) / 10%);
+  --modern-transition: 160ms ease;
+  --modern-home-column-min: 320px;
+  --modern-option-column-min: 110px;
+  --modern-resource-column-min: 180px;
+  --modern-progress-columns: repeat(auto-fit, minmax(min(100%, var(--modern-home-column-min)), 1fr));
+  --modern-option-columns: repeat(auto-fit, minmax(min(100%, var(--modern-option-column-min)), 1fr));
+  --modern-resource-columns: repeat(auto-fit, minmax(min(100%, var(--modern-resource-column-min)), 1fr));
+  --modern-game-stage-height: clamp(225px, 48dvh, 420px);
+  --modern-input-border: 1px solid var(--line);
+  --modern-focus-outline: 3px solid var(--cyan-dark);
+  --modern-focus-offset: 2px;
+  --modern-focus-ring: 0 0 0 4px rgb(var(--cyan-rgb) / 24%);
 }
 
 /* Classic changes palette only; component geometry and behavior stay stable. */
