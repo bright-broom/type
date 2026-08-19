@@ -24,7 +24,11 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: `npm run dev -- --hostname 127.0.0.1 --port ${port}`,
+    // The production server, not `next dev`. In development the dictionary chunks are
+    // compiled on demand, so the first test to open a large glossary paid the compile
+    // cost and timed out on a shared runner. Serving the build also means the suite
+    // exercises what ships. `npm run check` builds before this step; CI does the same.
+    command: `npm run start -- --hostname 127.0.0.1 --port ${port}`,
     url: `http://127.0.0.1:${port}`,
     reuseExistingServer: process.env.PLAYWRIGHT_REUSE_SERVER === "1",
     timeout: 120_000,
