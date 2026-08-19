@@ -3,6 +3,7 @@ import { JAPANESE_PROMPTS } from "./japanese/japanese-prompts.ts";
 import { CONSULTING_PROMPTS } from "./consulting/consulting-prompts.ts";
 import { TAKKEN_PROMPTS } from "./takken/takken-prompts.ts";
 import { AIS_PROMPTS } from "./ais/ais-prompts.ts";
+import { GIT_COMMAND_PROMPTS } from "./git/git-commands.ts";
 
 /**
  * The catalogue of practisable datasets.
@@ -18,6 +19,7 @@ export const TRAINING_SET_PROMPTS: Record<TrainingSet, ReadonlyArray<TypingPromp
   consulting: CONSULTING_PROMPTS,
   takken: TAKKEN_PROMPTS,
   ais: AIS_PROMPTS,
+  git: GIT_COMMAND_PROMPTS,
 };
 
 export const TRAINING_SETS = Object.keys(TRAINING_SET_PROMPTS) as ReadonlyArray<TrainingSet>;

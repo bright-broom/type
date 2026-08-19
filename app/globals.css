@@ -2202,7 +2202,7 @@ button {
   border: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: var(--modern-option-columns);
   gap: 8px;
 }
 
@@ -2895,7 +2895,7 @@ button {
 
   .mode-picker {
     margin-top: 9px;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: var(--modern-option-columns);
     gap: 6px;
   }
 

@@ -78,6 +78,7 @@ src/
 npm run import:consulting -- "/path/to/Consulting_Playbook_Dictionary_JA.xlsx"
 npm run import:takken -- "/path/to/takken-glossary.tsv"
 npm run import:ais -- "/path/to/AIS_weekly_meeting_glossary.xlsx"
+npm run import:git
 ```
 
 生成物は `src/content/generated/` に出力されます。生成JSONを直接編集せず、取込スクリプトを再実行してください。取込データはローカル静的データとして保持され、外部へ送信されません。

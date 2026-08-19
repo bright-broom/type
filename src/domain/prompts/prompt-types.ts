@@ -1,5 +1,5 @@
 export type PromptCategory =
-  "basic" | "daily" | "sokuon" | "contracted" | "n-rule" | "phrase" | "consulting" | "takken" | "ais";
+  "basic" | "daily" | "sokuon" | "contracted" | "n-rule" | "phrase" | "consulting" | "takken" | "ais" | "git";
 
 /**
  * Identifier of a practisable prompt collection.
@@ -8,7 +8,7 @@ export type PromptCategory =
  * session concept. Keeping it in the domain lets `content` own the catalogue that
  * binds each identifier to its dataset while `application` only persists the name.
  */
-export type TrainingSet = "japanese" | "consulting" | "takken" | "ais";
+export type TrainingSet = "japanese" | "consulting" | "takken" | "ais" | "git";
 
 export type TypingPrompt = {
   id: string;
