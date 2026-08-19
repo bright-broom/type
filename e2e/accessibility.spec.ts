@@ -12,7 +12,17 @@ const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
 /** Impacts that fail the build. Moderate and minor findings are reported, not gated. */
 const GATED_IMPACTS = new Set(["critical", "serious"]);
 
-const screens: ReadonlyArray<{ name: string; open: (page: Page) => Promise<void> }> = [
+type AccessibilityScreen = { name: string; open: (page: Page) => Promise<void> };
+
+async function finishSession(page: Page): Promise<void> {
+  await page.getByRole("button", { name: /60秒トレーニング/ }).click();
+  await page.clock.fastForward(4_000);
+  await page.keyboard.type("a");
+  await page.clock.fastForward(61_000);
+  await page.getByRole("heading", { name: "おつかれさまでした。" }).waitFor();
+}
+
+const screens: ReadonlyArray<AccessibilityScreen> = [
   { name: "home", open: async () => {} },
   {
     name: "appearance settings",
@@ -52,23 +62,42 @@ const screens: ReadonlyArray<{ name: string; open: (page: Page) => Promise<void>
   },
   {
     name: "result",
+    open: finishSession,
+  },
+  {
+    name: "history",
     open: async (page) => {
-      await page.getByRole("button", { name: /60秒トレーニング/ }).click();
-      await page.clock.fastForward(4_000);
-      await page.keyboard.type("a");
-      await page.clock.fastForward(61_000);
-      await page.getByRole("heading", { name: "おつかれさまでした。" }).waitFor();
+      await finishSession(page);
+      await page.getByRole("button", { name: "練習履歴" }).click();
+      await page.getByRole("heading", { name: "練習の記録" }).waitFor();
     },
   },
 ];
 
-for (const screen of screens) {
-  test(`${screen.name} has no serious accessibility violations`, async ({ browser }, testInfo) => {
+const representativeThemeScreens = screens.filter(({ name }) => name === "appearance settings" || name === "result");
+const accessibilityCases: ReadonlyArray<AccessibilityScreen & { theme?: "modern" | "classic" }> = [
+  ...screens,
+  ...(["modern", "classic"] as const).flatMap((theme) =>
+    representativeThemeScreens.map((screen) => ({ ...screen, name: `${theme} ${screen.name}`, theme })),
+  ),
+];
+
+for (const screen of accessibilityCases) {
+  test(`${screen.name} has no serious accessibility violations`, async ({ browser, baseURL }, testInfo) => {
     // Axe traverses all 446 takken entries. Shared Linux runners can exceed the
     // default 30s here, so only this exhaustive screen receives a larger budget.
     if (screen.name === "takken glossary") testInfo.setTimeout(60_000);
     // A phone viewport is the strict case: labels collapse and type shrinks there.
     const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true });
+    if (screen.theme) {
+      await context.addCookies([
+        {
+          name: "typeloop-appearance",
+          value: `${screen.theme}.comfortable.system`,
+          url: baseURL ?? "http://127.0.0.1:4173",
+        },
+      ]);
+    }
     const page = await context.newPage();
     await page.clock.install();
     await page.goto("/");
@@ -101,7 +130,7 @@ test("keyboard focus remains visible on the full theme option", async ({ page })
   await page.goto("/");
   await page.getByRole("button", { name: "表示設定" }).click();
 
-  const themeInput = page.getByRole("radio", { name: /モダン/ });
+  const themeInput = page.getByRole("radio", { name: /ライト/ });
   const themeOption = page.locator("label.settings-option").filter({ has: themeInput });
   await themeInput.focus();
   await expect(themeInput).toBeFocused();

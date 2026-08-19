@@ -1,5 +1,7 @@
 # ADR-014: Validated appearance settings and a replaceable theme registry
 
+Status: Extended by [ADR-015](ADR-015-semantic-color-system.md).
+
 ## Context
 
 The first token guardrail made palette retuning safer, but all values and roughly

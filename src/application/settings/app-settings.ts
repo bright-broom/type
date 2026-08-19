@@ -1,4 +1,4 @@
-export const THEME_IDS = ["modern", "classic"] as const;
+export const THEME_IDS = ["noir", "modern", "classic"] as const;
 export type ThemeId = (typeof THEME_IDS)[number];
 
 export const DISPLAY_DENSITIES = ["comfortable", "compact"] as const;
@@ -23,7 +23,7 @@ export type AppSettings = {
 };
 
 export const DEFAULT_APPEARANCE: AppearanceSettings = {
-  themeId: "modern",
+  themeId: "noir",
   density: "comfortable",
   motion: "system",
 };

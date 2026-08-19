@@ -25,6 +25,14 @@ function themeToken(theme, name) {
   return declarations?.match(new RegExp(`--${name}:\\s*([^;]+);`))?.[1]?.trim() ?? token(name);
 }
 
+function resolvedThemeToken(theme, name, seen = new Set()) {
+  assert.ok(!seen.has(name), `token cycle while resolving --${name}`);
+  seen.add(name);
+  const value = themeToken(theme, name);
+  const alias = value.match(/^var\(--([a-z-]+)\)$/)?.[1];
+  return alias ? resolvedThemeToken(theme, alias, seen) : value;
+}
+
 function luminance(hex) {
   const value = hex.replace("#", "");
   const [r, g, b] = [0, 2, 4].map((i) => {
@@ -47,31 +55,25 @@ test("the token registry has one unscoped root contract", () => {
 // Pairs a tone retune must never break: body text, primary controls, and the
 // badges whose contrast already failed AA once (#f36f56 carried white at 2.9:1).
 const AA_PAIRS = [
-  ["ink", "paper"],
-  ["ink-deep", "paper-soft"],
-  ["muted", "paper"],
-  ["muted", "paper-soft"],
-  ["text-prose", "paper-soft"],
-  ["text-lede", "paper"],
-  ["white", "ink-deep"],
-  ["text-on-dark", "ink-deep"],
-  ["text-on-dark-muted", "ink-deep"],
-  ["ink-deep", "cyan"],
-  ["ink-deep", "coral"],
+  ["content-primary", "canvas"],
+  ["content-strong", "surface"],
+  ["content-muted", "canvas"],
+  ["content-muted", "surface"],
+  ["content-secondary", "surface"],
+  ["control-on-primary", "control-primary"],
+  ["content-on-inverse", "surface-inverse"],
+  ["content-on-accent", "accent-soft"],
+  ["content-on-accent", "status-attention"],
+  ["focus-accent", "canvas"],
 ];
 
-for (const [foreground, background] of AA_PAIRS) {
-  test(`--${foreground} on --${background} meets WCAG AA (4.5:1)`, () => {
-    const ratio = contrast(token(foreground), token(background));
-    assert.ok(ratio >= 4.5, `contrast is ${ratio.toFixed(2)}:1`);
-  });
-}
-
-for (const [foreground, background] of AA_PAIRS) {
-  test(`classic --${foreground} on --${background} meets WCAG AA`, () => {
-    const ratio = contrast(themeToken("classic", foreground), themeToken("classic", background));
-    assert.ok(ratio >= 4.5, `contrast is ${ratio.toFixed(2)}:1`);
-  });
+for (const theme of ["modern", "classic", "noir"]) {
+  for (const [foreground, background] of AA_PAIRS) {
+    test(`${theme} --${foreground} on --${background} meets WCAG AA`, () => {
+      const ratio = contrast(resolvedThemeToken(theme, foreground), resolvedThemeToken(theme, background));
+      assert.ok(ratio >= 4.5, `contrast is ${ratio.toFixed(2)}:1`);
+    });
+  }
 }
 
 test("every --*-rgb triplet matches its hex base in each theme block", () => {

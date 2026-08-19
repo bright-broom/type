@@ -10,6 +10,7 @@
 │   └── styles/                  Theme registry and global presentation styles
 ├── docs/
 │   ├── architecture.md         Runtime and dependency design
+│   ├── design-system.md        Visual language and token responsibilities
 │   ├── directory-structure.md  Placement and naming rules
 │   └── adr/                    Durable design decisions
 ├── scripts/                    Repeatable import and maintenance scripts

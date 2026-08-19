@@ -15,7 +15,8 @@ type SettingsScreenProps = {
 };
 
 const THEME_LABELS: Record<ThemeId, { label: string; detail: string }> = {
-  modern: { label: "モダン", detail: "余白と情報階層を重視した既定デザイン" },
+  noir: { label: "ノワール", detail: "黒を基調に、集中と視認性を高めた既定デザイン" },
+  modern: { label: "ライト", detail: "明るい背景と余白を活かしたモダンデザイン" },
   classic: { label: "クラシック", detail: "落ち着いた従来配色に近いデザイン" },
 };
 

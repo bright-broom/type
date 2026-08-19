@@ -18,5 +18,6 @@ ADRs capture durable decisions that constrain future implementation. They do not
 | [012](ADR-012-cross-browser-durability-and-budgets.md) | Cross-browser proof, storage durability, and budgets |
 | [013](ADR-013-design-tokens.md)                        | Single-source design tokens with enforced boundaries |
 | [014](ADR-014-theme-foundation.md)                     | Validated settings and replaceable theme registry    |
+| [015](ADR-015-semantic-color-system.md)                | Semantic color roles and noir as the default theme   |
 
 Add an ADR only for a decision with meaningful alternatives and long-lived consequences. Use the next number and include Context, Decision, Alternatives, and Consequences.

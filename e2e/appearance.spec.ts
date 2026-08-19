@@ -1,5 +1,38 @@
 import { expect, test } from "@playwright/test";
 
+test("noir is the server-rendered default and declares a dark color scheme", async ({ page }) => {
+  await page.goto("/");
+
+  const root = page.locator("html");
+  await expect(root).toHaveAttribute("data-theme", "noir");
+  await expect(root).toHaveCSS("color-scheme", "dark");
+
+  await page.getByRole("button", { name: "表示設定" }).click();
+  await expect(page.getByRole("radio", { name: /テーマ：\s*ノワール/ })).toBeChecked();
+  await expect(page.getByRole("radio", { name: /テーマ：\s*ライト/ })).toBeVisible();
+});
+
+test("noir and light both persist their native color scheme across reloads", async ({ page }) => {
+  await page.goto("/");
+  const root = page.locator("html");
+
+  await page.getByRole("button", { name: "表示設定" }).click();
+  await page.getByRole("radio", { name: /テーマ：\s*ライト/ }).check();
+  await expect(root).toHaveAttribute("data-theme", "modern");
+  await expect(root).toHaveCSS("color-scheme", "light");
+  await page.reload();
+  await expect(root).toHaveAttribute("data-theme", "modern");
+  await expect(root).toHaveCSS("color-scheme", "light");
+
+  await page.getByRole("button", { name: "表示設定" }).click();
+  await page.getByRole("radio", { name: /テーマ：\s*ノワール/ }).check();
+  await expect(root).toHaveAttribute("data-theme", "noir");
+  await expect(root).toHaveCSS("color-scheme", "dark");
+  await page.reload();
+  await expect(root).toHaveAttribute("data-theme", "noir");
+  await expect(root).toHaveCSS("color-scheme", "dark");
+});
+
 test("appearance changes immediately and survives a reload", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "表示設定" }).click();
@@ -68,7 +101,7 @@ test("a hand-edited cookie cannot put unvalidated values into the HTML", async (
   ]);
   const html = await (await context.request.get("/")).text();
   // Falls back per field, and the rendered attribute values stay allow-listed.
-  expect(html).toMatch(/<html[^>]*data-theme="modern"/);
+  expect(html).toMatch(/<html[^>]*data-theme="noir"/);
   expect(html).toMatch(/<html[^>]*data-motion="system"/);
   expect(html).not.toContain("evil");
   await context.close();

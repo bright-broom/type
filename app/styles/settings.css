@@ -104,11 +104,15 @@
   height: var(--settings-swatch-height);
   border: 1px solid var(--line);
   border-radius: var(--settings-swatch-radius);
-  background: linear-gradient(135deg, var(--paper) 0 55%, var(--cyan) 55% 75%, var(--ink-deep) 75%);
+  background: var(--swatch-modern);
+}
+
+.theme-swatch--noir {
+  background: var(--swatch-noir);
 }
 
 .theme-swatch--classic {
-  filter: var(--classic-swatch-filter);
+  background: var(--swatch-classic);
 }
 
 .settings-group--inline {

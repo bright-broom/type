@@ -44,6 +44,34 @@
   --surface-raised: #f8f6f0;
   --border-hover: var(--text-ghost);
 
+  /*
+   * Stable semantic roles. Components should prefer these over palette names.
+   * Palette aliases keep the light themes compatible while noir can assign roles
+   * independently where a literal inversion would make text and surfaces collide.
+   */
+  --canvas: var(--paper);
+  --canvas-rgb: var(--paper-rgb);
+  --surface: var(--paper-soft);
+  --surface-rgb: var(--paper-soft-rgb);
+  --surface-inverse: var(--ink-deep);
+  --surface-inverse-soft: var(--ink-deep-soft);
+  --content-primary: var(--ink);
+  --content-strong: var(--ink-deep);
+  --content-secondary: var(--text-prose);
+  --content-muted: var(--muted);
+  --content-on-inverse: var(--white);
+  --content-on-accent: var(--ink-deep);
+  --control-primary: var(--ink-deep);
+  --control-primary-hover: var(--ink-hover);
+  --control-on-primary: var(--white);
+  --focus-accent: var(--cyan-dark);
+  --focus-accent-rgb: var(--cyan-dark-rgb);
+  --accent-soft: var(--cyan);
+  --accent-soft-rgb: var(--cyan-rgb);
+  --status-attention: var(--coral);
+  --status-attention-rgb: var(--coral-rgb);
+  --backdrop-rgb: var(--ink-deep-rgb);
+
   /* Elevation */
   --shadow: 0 20px 60px rgb(var(--ink-rgb) / 10%);
   --shadow-soft: 0 16px 50px rgb(var(--ink-deep-rgb) / 8%);
@@ -79,6 +107,9 @@
   --settings-swatch-radius: 10px;
   --selection-ring: 0 0 0 2px rgb(var(--cyan-dark-rgb) / 16%);
   --classic-swatch-filter: saturate(72%) hue-rotate(8deg);
+  --swatch-noir: linear-gradient(135deg, #09090b 0 55%, #d4d4d8 55% 75%, #fafafa 75%);
+  --swatch-modern: linear-gradient(135deg, #f5f3ed 0 55%, #62e2d8 55% 75%, #142b39 75%);
+  --swatch-classic: linear-gradient(135deg, #eef3f5 0 55%, #78d8cc 55% 75%, #091f2c 75%);
   --motion-reduced-duration: 0.01ms;
 
   /* Modern product language */
@@ -135,6 +166,66 @@
   --modern-focus-outline: 3px solid var(--cyan-dark);
   --modern-focus-offset: 2px;
   --modern-focus-ring: 0 0 0 4px rgb(var(--cyan-rgb) / 24%);
+}
+
+/*
+ * Noir is intentionally near-monochrome rather than pure black. The stepped
+ * surfaces preserve depth without gradients, while status colors remain reserved
+ * for feedback that must be understood at a glance.
+ */
+:root[data-theme="noir"] {
+  color-scheme: dark;
+  --ink: #f4f4f5;
+  --ink-rgb: 244 244 245;
+  --ink-deep: #fafafa;
+  --ink-deep-rgb: 250 250 250;
+  --ink-deep-soft: #18181b;
+  --ink-hover: #e4e4e7;
+  --paper: #09090b;
+  --paper-rgb: 9 9 11;
+  --paper-soft: #111113;
+  --paper-soft-rgb: 17 17 19;
+  --line: #303034;
+  --line-soft: #252529;
+  --line-strong: #52525b;
+  --muted: #a1a1aa;
+  --cyan: #e7e7e9;
+  --cyan-rgb: 231 231 233;
+  --cyan-dark: #d4d4d8;
+  --cyan-dark-rgb: 212 212 216;
+  --coral: #b8b8bd;
+  --coral-rgb: 184 184 189;
+  --success: #86c7a8;
+  --danger: #ef7d78;
+  --danger-rgb: 239 125 120;
+  --text-prose: #c4c4ca;
+  --text-lede: #b4b4bc;
+  --text-caption: #8b8b94;
+  --text-dim: #92929b;
+  --text-ghost: #777781;
+  --text-on-dark: #ededf0;
+  --text-on-dark-muted: #c9c9cf;
+  --text-on-dark-faint: #a9a9b2;
+  --surface-raised: #161619;
+  --surface-inverse: var(--ink-deep-soft);
+  --surface-inverse-soft: #202024;
+  --control-primary: var(--ink-deep);
+  --control-primary-hover: var(--ink-hover);
+  --control-on-primary: var(--paper);
+  --content-on-accent: var(--paper);
+  --backdrop-rgb: var(--black-rgb);
+  --shadow: 0 24px 70px rgb(var(--black-rgb) / 38%);
+  --shadow-soft: 0 18px 54px rgb(var(--black-rgb) / 28%);
+  --modern-page-background:
+    radial-gradient(circle at 72% -10%, rgb(var(--white-rgb) / 7%), transparent 36rem), var(--paper);
+  --modern-surface: rgb(var(--paper-soft-rgb) / 88%);
+  --modern-surface-solid: var(--paper-soft);
+  --modern-surface-accent: rgb(var(--white-rgb) / 7%);
+  --modern-surface-muted: rgb(var(--white-rgb) / 4%);
+  --modern-shadow-card: 0 20px 56px rgb(var(--black-rgb) / 30%);
+  --modern-shadow-control: 0 10px 28px rgb(var(--black-rgb) / 22%);
+  --modern-shadow-hover: 0 20px 48px rgb(var(--black-rgb) / 36%);
+  --modern-focus-ring: 0 0 0 4px rgb(var(--white-rgb) / 12%);
 }
 
 /* Classic changes palette only; component geometry and behavior stay stable. */

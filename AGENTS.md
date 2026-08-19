@@ -7,6 +7,7 @@ TypeLoop is a local-first Next.js typing trainer. Before structural work, read:
 - `docs/architecture.md` — system boundaries and dependency direction
 - `docs/directory-structure.md` — placement and naming rules
 - `docs/quality-harness.md` — deterministic gates, bugfix flow, and review loop
+- `docs/design-system.md` — visual principles, semantic tokens, and theme quality bar
 - `docs/adr/README.md` — design-decision index
 - `.agents/skills/develop-typeloop/SKILL.md` — focused implementation and validation workflow
 - `.agents/skills/review-typeloop/SKILL.md` — read-only independent review contract
