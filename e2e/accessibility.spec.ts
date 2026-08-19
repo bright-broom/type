@@ -137,7 +137,9 @@ const screens: ReadonlyArray<AccessibilityScreen> = [
   },
 ];
 
-const representativeThemeScreens = screens.filter(({ name }) => name === "appearance settings" || name === "result");
+const representativeThemeScreens = screens.filter(
+  ({ name }) => name === "home" || name === "appearance settings" || name === "result",
+);
 const accessibilityCases: ReadonlyArray<AccessibilityScreen & { theme?: "modern" | "classic" }> = [
   ...screens,
   ...(["modern", "classic"] as const).flatMap((theme) =>

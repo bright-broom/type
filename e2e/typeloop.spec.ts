@@ -6,10 +6,11 @@ const viewports = [
   { name: "phone", width: 390, height: 844 },
   { name: "phone-landscape", width: 667, height: 375 },
   { name: "tablet", width: 768, height: 1024 },
+  { name: "laptop", width: 1280, height: 720 },
   { name: "desktop", width: 1440, height: 900 },
 ] as const;
 
-const criticalViewports = [viewports[0], viewports[2], viewports[4]];
+const criticalViewports = [viewports[0], viewports[2], viewports[5]];
 
 function observeFailures(page: Page) {
   const failures: string[] = [];
@@ -30,6 +31,26 @@ async function expectNoHorizontalOverflow(page: Page) {
     .toBe(true);
 }
 
+async function expectHomeActionsNotClipped(page: Page, viewportName: string) {
+  const clipped = await page.evaluate(() =>
+    [...document.querySelectorAll("main button, main a[href], main label[data-mode-option]")]
+      .map((element) => ({
+        element,
+        box: element.getBoundingClientRect(),
+      }))
+      .filter(
+        ({ element, box }) =>
+          box.width > 0 &&
+          (element.scrollWidth > element.clientWidth + 1 || element.scrollHeight > element.clientHeight + 1),
+      )
+      .map(
+        ({ element, box }) =>
+          `${element.getAttribute("aria-label") ?? element.textContent?.trim() ?? element.tagName} ${Math.round(box.width)}x${Math.round(box.height)}`,
+      ),
+  );
+  expect(clipped, `${viewportName} has a clipped home action`).toEqual([]);
+}
+
 async function expectNoFailures(page: Page, failures: string[]) {
   await page.waitForTimeout(150);
   expect(failures).toEqual([]);
@@ -43,25 +64,86 @@ test("home remains operable across layout equivalence classes", async ({ browser
 
     await page.goto("/");
     await expect(page.getByRole("heading", { name: /60秒で、.*昨日より軽く。/ })).toBeVisible();
+    await expect(page.getByText("迷う時間をなくして、正確さとリズムだけに集中するタイピング習慣。")).toBeVisible();
     const japaneseMode = page.getByRole("radio", { name: /日本語/ });
     const consultingMode = page.getByRole("radio", { name: /コンサル/ });
     await expect(japaneseMode).toBeChecked();
-    await page.locator("label.mode-option").filter({ hasText: "コンサル" }).click();
+    await page.locator("label[data-mode-option]").filter({ hasText: "コンサル" }).click();
     await expect(consultingMode).toBeChecked();
     await expect(japaneseMode).not.toBeChecked();
     await expect(page.getByRole("button", { name: /60秒トレーニングを始める/ })).toBeVisible();
     await expectNoHorizontalOverflow(page);
+    await expectHomeActionsNotClipped(page, viewport.name);
     await expectNoFailures(page, failures);
 
     await context.close();
   }
 });
 
+test("home fits within standard laptop first views", async ({ browser }) => {
+  for (const viewport of viewports.filter(({ name }) => name === "laptop" || name === "desktop")) {
+    const context = await browser.newContext({ viewport });
+    const page = await context.newPage();
+    await page.goto("/");
+
+    await expect(page.getByRole("button", { name: /60秒トレーニングを始める/ })).toBeInViewport();
+    await expect(page.getByRole("heading", { name: "言葉を見てから練習" })).toBeInViewport();
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight + 1))
+      .toBe(true);
+
+    await context.close();
+  }
+});
+
+test("returning-user progress also fits the laptop first view", async ({ browser }) => {
+  const context = await browser.newContext({ viewport: viewports[4] });
+  const page = await context.newPage();
+  await page.clock.install();
+  await page.goto("/");
+  await page.getByRole("button", { name: /60秒トレーニングを始める/ }).click();
+  await page.clock.fastForward(65_000);
+  await page.getByRole("button", { name: "ホームへ" }).click();
+
+  await expect(page.getByRole("heading", { name: "前回の60秒" })).toBeInViewport();
+  await expect(page.getByRole("heading", { name: "言葉を見てから練習" })).toBeInViewport();
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight + 1))
+    .toBe(true);
+  await expectHomeActionsNotClipped(page, "returning-user laptop");
+
+  await context.close();
+});
+
+test("keyboard navigation reaches the primary task before secondary controls", async ({ page, browserName }) => {
+  await page.goto("/");
+  // WebKit models Safari's macOS default, where Option+Tab opts into control
+  // navigation. In browsers with full keyboard access enabled, plain Tab is used.
+  const moveFocusForward = browserName === "webkit" ? "Alt+Tab" : "Tab";
+
+  const skipLink = page.getByRole("button", { name: "練習モードへ移動" });
+  await page.keyboard.press(moveFocusForward);
+  await expect(skipLink).toBeFocused();
+  await page.keyboard.press("Enter");
+  const quickStart = page.locator("#quick-start");
+  await expect(quickStart).toBeFocused();
+  await expect(quickStart).toHaveCSS("outline-style", "solid");
+  await expect(quickStart).toHaveCSS("outline-width", "3px");
+
+  await page.keyboard.press(moveFocusForward);
+  const japaneseMode = page.getByRole("radio", { name: /日本語/ });
+  await expect(japaneseMode).toBeFocused();
+  await page.keyboard.press("ArrowRight");
+  await expect(page.getByRole("radio", { name: /コンサル/ })).toBeChecked();
+  await page.keyboard.press(moveFocusForward);
+  await expect(page.getByRole("button", { name: /60秒トレーニングを始める/ })).toBeFocused();
+});
+
 test("Enter starts the mode selected in quick start", async ({ page }) => {
   await page.clock.install();
   await page.goto("/");
   const consultingMode = page.getByRole("radio", { name: /コンサル/ });
-  await page.locator("label.mode-option").filter({ hasText: "コンサル" }).click();
+  await page.locator("label[data-mode-option]").filter({ hasText: "コンサル" }).click();
   await consultingMode.focus();
   await expect(consultingMode).toBeFocused();
   await page.keyboard.press("Enter");
@@ -145,7 +227,7 @@ test("touch controls meet the minimum tap target on every phone size", async ({ 
     await page.goto("/");
     await expect(page.locator(".icon-button")).toBeVisible();
     const undersized = await page.evaluate(() =>
-      [...document.querySelectorAll("button, a[href], select, label.mode-option")]
+      [...document.querySelectorAll("button, a[href], select, label[data-mode-option]")]
         .map((element) => ({ element, box: element.getBoundingClientRect() }))
         .filter(({ box }) => box.width > 0 && (box.width < 44 || box.height < 44))
         .map(

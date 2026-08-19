@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { CompletedSession } from "../../../application/session/session-types.ts";
 import type { TrainingSet } from "../../../domain/prompts/prompt-types.ts";
+import styles from "./HomeScreen.module.css";
 
 type HomeScreenProps = {
   best: CompletedSession | null;
@@ -56,35 +57,41 @@ export function HomeScreen({
     : "まずは60秒。結果を見て次の一手を決めよう。";
 
   return (
-    <main className="home-shell focus-home" data-home-root tabIndex={-1}>
-      <section className="hero focus-hero" aria-labelledby="hero-title">
-        <div className="eyebrow">
-          <span /> NO LOGIN · START IN ONE TAP
+    <main className={styles.home} data-home-root tabIndex={-1}>
+      <section className={styles.primary} aria-labelledby="hero-title">
+        <div className={styles.intro}>
+          <div className={styles.eyebrow}>
+            <span /> NO LOGIN · START IN ONE TAP
+          </div>
+          <h1 className={styles.title} id="hero-title">
+            60秒で、
+            <br />
+            <em>昨日より軽く。</em>
+          </h1>
+          <p className={styles.lede}>迷う時間をなくして、正確さとリズムだけに集中するタイピング習慣。</p>
         </div>
-        <h1 id="hero-title">
-          60秒で、
-          <br />
-          <em>昨日より軽く。</em>
-        </h1>
-        <p className="hero-copy">迷う時間をなくして、正確さとリズムだけに集中するタイピング習慣。</p>
 
         {aborted ? (
-          <p className="notice" role="status">
+          <p className={styles.notice} role="status">
             セッションを終了しました。モードを選んですぐ再開できます。
           </p>
         ) : null}
 
-        <section className="quick-start-panel" aria-labelledby="mode-title">
-          <div className="quick-start-head">
+        <section className={styles.quickStart} id="quick-start" aria-labelledby="mode-title" tabIndex={-1}>
+          <div className={styles.sectionHeading}>
             <div>
-              <span className="section-index">QUICK START</span>
+              <span className={styles.sectionIndex}>QUICK START</span>
               <h2 id="mode-title">練習モードを選ぶ</h2>
             </div>
             <span>各60秒</span>
           </div>
-          <fieldset className="mode-picker" aria-label="練習モード">
+          <fieldset className={styles.modePicker} aria-label="練習モード">
             {MODES.map((mode) => (
-              <label className={`mode-option ${selectedMode === mode.id ? "mode-option--selected" : ""}`} key={mode.id}>
+              <label
+                className={`${styles.modeOption} ${selectedMode === mode.id ? styles.modeOptionSelected : ""}`}
+                data-mode-option
+                key={mode.id}
+              >
                 <input
                   type="radio"
                   name="training-mode"
@@ -98,8 +105,8 @@ export function HomeScreen({
               </label>
             ))}
           </fieldset>
-          <div className="start-row">
-            <button className="primary-button start-button" type="button" onClick={onStart}>
+          <div className={styles.startRow}>
+            <button className={`primary-button ${styles.startButton}`} type="button" onClick={onStart}>
               <span>60秒トレーニングを始める</span>
               <kbd>Enter</kbd>
             </button>
@@ -108,22 +115,86 @@ export function HomeScreen({
             </p>
           </div>
         </section>
+      </section>
 
-        <section className="resource-hub" aria-labelledby="resource-title">
-          <div className="resource-heading">
+      <div className={styles.support}>
+        <aside className={styles.progress} aria-label="トレーニング進捗">
+          <header className={styles.progressHeader}>
             <div>
-              <span className="section-index">REFERENCE</span>
+              <span className={styles.progressKicker}>YOUR PROGRESS</span>
+              <h2>{latest ? "前回の60秒" : "最初の60秒"}</h2>
+            </div>
+            {history.length > 0 ? (
+              <button data-focus-key="home-history" type="button" onClick={onShowHistory}>
+                すべて見る <span aria-hidden="true">→</span>
+              </button>
+            ) : null}
+          </header>
+
+          {latest ? (
+            <>
+              <div className={styles.progressPrimary}>
+                <span>LAST WPM</span>
+                <strong>{latest.metrics.wpm}</strong>
+                <small>{MODE_LABELS[latest.trainingSet ?? "japanese"]}</small>
+              </div>
+              <div className={styles.progressMetrics}>
+                <div>
+                  <span>精度</span>
+                  <strong>{latest.metrics.accuracy}%</strong>
+                </div>
+                <div>
+                  <span>日本語 BEST</span>
+                  <strong>{best?.metrics.wpm ?? "—"}</strong>
+                </div>
+                <div>
+                  <span>最近の記録</span>
+                  <strong>{history.length}</strong>
+                </div>
+              </div>
+            </>
+          ) : (
+            <ol className={styles.onboardingSteps}>
+              <li>
+                <span>01</span>
+                <strong>モードを選ぶ</strong>
+              </li>
+              <li>
+                <span>02</span>
+                <strong>60秒だけ集中</strong>
+              </li>
+              <li>
+                <span>03</span>
+                <strong>結果から1つ改善</strong>
+              </li>
+            </ol>
+          )}
+
+          <div className={styles.progressInsight}>
+            <span>NEXT FOCUS</span>
+            <p>{nextFocus}</p>
+          </div>
+          <p className={styles.privacyNote}>
+            <span aria-hidden="true">●</span> アカウント不要。入力内容と記録はこのデバイスだけに保存されます。
+          </p>
+        </aside>
+
+        <section className={styles.resources} aria-labelledby="resource-title">
+          <div className={styles.sectionHeading}>
+            <div>
+              <span className={styles.sectionIndex}>REFERENCE</span>
               <h2 id="resource-title">言葉を見てから練習</h2>
             </div>
-            <span>すべて端末内で検索</span>
+            <span>端末内で検索</span>
           </div>
-          <div className="resource-grid">
-            <Link className="takken-exam-link" href="/takken" aria-label="宅建試験対策を開く">
+          <div className={styles.resourceGrid}>
+            <Link className={styles.resourceItem} href="/takken" aria-label="宅建試験対策を開く">
               <span>宅建試験対策</span>
               <small>10問演習・本番模試</small>
               <i aria-hidden="true">→</i>
             </Link>
             <button
+              className={styles.resourceItem}
               data-focus-key="home-playbook"
               type="button"
               onClick={onShowPlaybook}
@@ -134,6 +205,7 @@ export function HomeScreen({
               <i aria-hidden="true">→</i>
             </button>
             <button
+              className={styles.resourceItem}
               data-focus-key="home-takken"
               type="button"
               onClick={onShowTakkenGlossary}
@@ -144,6 +216,7 @@ export function HomeScreen({
               <i aria-hidden="true">→</i>
             </button>
             <button
+              className={styles.resourceItem}
               data-focus-key="home-ais"
               type="button"
               onClick={onShowAisGlossary}
@@ -155,68 +228,7 @@ export function HomeScreen({
             </button>
           </div>
         </section>
-      </section>
-
-      <aside className="progress-card" aria-label="トレーニング進捗">
-        <header>
-          <div>
-            <span className="progress-kicker">YOUR PROGRESS</span>
-            <h2>{latest ? "前回の60秒" : "最初の60秒"}</h2>
-          </div>
-          {history.length > 0 ? (
-            <button data-focus-key="home-history" type="button" onClick={onShowHistory}>
-              すべて見る <span aria-hidden="true">→</span>
-            </button>
-          ) : null}
-        </header>
-
-        {latest ? (
-          <>
-            <div className="progress-primary">
-              <span>LAST WPM</span>
-              <strong>{latest.metrics.wpm}</strong>
-              <small>{MODE_LABELS[latest.trainingSet ?? "japanese"]}</small>
-            </div>
-            <div className="progress-metrics">
-              <div>
-                <span>精度</span>
-                <strong>{latest.metrics.accuracy}%</strong>
-              </div>
-              <div>
-                <span>日本語 BEST</span>
-                <strong>{best?.metrics.wpm ?? "—"}</strong>
-              </div>
-              <div>
-                <span>最近の記録</span>
-                <strong>{history.length}</strong>
-              </div>
-            </div>
-          </>
-        ) : (
-          <ol className="onboarding-steps">
-            <li>
-              <span>01</span>
-              <strong>モードを選ぶ</strong>
-            </li>
-            <li>
-              <span>02</span>
-              <strong>60秒だけ集中</strong>
-            </li>
-            <li>
-              <span>03</span>
-              <strong>結果から1つ改善</strong>
-            </li>
-          </ol>
-        )}
-
-        <div className="progress-insight">
-          <span>NEXT FOCUS</span>
-          <p>{nextFocus}</p>
-        </div>
-        <p className="privacy-note">
-          <span aria-hidden="true">●</span> アカウント不要。入力内容と記録はこのデバイスだけに保存されます。
-        </p>
-      </aside>
+      </div>
     </main>
   );
 }

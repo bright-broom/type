@@ -8,49 +8,6 @@
   text-decoration: none;
 }
 
-.resource-grid .takken-exam-link {
-  min-width: 0;
-  min-height: var(--modern-resource-min-height);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-0) var(--space-1);
-  border: var(--modern-border);
-  border-radius: var(--modern-control-radius);
-  padding: var(--space-2);
-  color: var(--content-primary);
-  background: var(--modern-surface-solid);
-  text-align: left;
-  text-decoration: none;
-}
-
-.resource-grid .takken-exam-link:hover {
-  border-color: var(--focus-accent);
-  box-shadow: var(--modern-shadow-control);
-  transform: translateY(var(--modern-hover-lift));
-}
-
-.resource-grid .takken-exam-link > span {
-  overflow: hidden;
-  color: var(--content-strong);
-  font-size: 0.72rem;
-  font-weight: 760;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.resource-grid .takken-exam-link small {
-  color: var(--content-muted);
-  font-size: 0.58rem;
-}
-
-.resource-grid .takken-exam-link i {
-  grid-column: 2;
-  grid-row: 1 / 3;
-  color: var(--focus-accent);
-  font-style: normal;
-}
-
 .assessment-reading-shell,
 .assessment-session-shell {
   width: min(var(--assessment-reading-width), calc(100% - (var(--page-gutter) * 2)));

@@ -1,0 +1,27 @@
+.skipControl {
+  position: fixed;
+  inset-block-start: var(--space-1);
+  inset-inline-start: var(--space-1);
+  z-index: var(--home-skip-layer);
+  min-height: var(--tap-target);
+  padding: var(--space-1) var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  border: var(--modern-border-strong);
+  border-radius: var(--modern-small-radius);
+  color: var(--control-on-primary);
+  background: var(--control-primary);
+  box-shadow: var(--modern-shadow-card);
+  font-size: var(--home-body-size);
+  font-weight: 750;
+  text-decoration: none;
+  transform: translateY(var(--home-skip-hidden-offset));
+  transition: transform var(--modern-transition);
+}
+
+.skipControl:focus-visible {
+  outline: var(--modern-focus-outline);
+  outline-offset: var(--modern-focus-offset);
+  box-shadow: var(--modern-focus-ring);
+  transform: none;
+}

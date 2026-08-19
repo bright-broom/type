@@ -1,9 +1,12 @@
+import styles from "./AppHeader.module.css";
+
 type AppHeaderProps = {
   soundEnabled: boolean;
   onToggleSound: () => void;
   onShowHome?: () => void;
   onShowHistory?: () => void;
   onShowSettings?: () => void;
+  showQuickStartShortcut?: boolean;
   compact?: boolean;
 };
 
@@ -13,10 +16,18 @@ export function AppHeader({
   onShowHome,
   onShowHistory,
   onShowSettings,
+  showQuickStartShortcut = false,
   compact = false,
 }: AppHeaderProps) {
+  const focusQuickStart = () => document.querySelector<HTMLElement>("#quick-start")?.focus();
+
   return (
     <header className={`app-header ${compact ? "app-header--compact" : ""}`}>
+      {showQuickStartShortcut ? (
+        <button className={styles.skipControl} type="button" onClick={focusQuickStart}>
+          練習モードへ移動
+        </button>
+      ) : null}
       <button className="brand" type="button" onClick={onShowHome} disabled={!onShowHome} aria-label="TypeLoop ホーム">
         <span className="brand-mark" aria-hidden="true">
           <i />

@@ -84,16 +84,6 @@
   transform: translateY(var(--modern-hover-lift-small));
 }
 
-:root:is([data-theme="modern"], [data-theme="noir"]) .home-shell {
-  grid-template-columns: var(--modern-progress-columns);
-  gap: var(--modern-home-gap);
-  padding: var(--modern-home-padding);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .hero {
-  padding: 0;
-}
-
 :root:is([data-theme="modern"], [data-theme="noir"]) .eyebrow {
   gap: var(--space-1);
   color: var(--muted);
@@ -106,30 +96,6 @@
   background: var(--cyan-dark);
 }
 
-:root:is([data-theme="modern"], [data-theme="noir"]) .hero h1 {
-  max-width: var(--modern-hero-max-width);
-  margin: var(--space-3) 0 var(--space-2);
-  font-size: var(--modern-hero-size);
-  line-height: var(--modern-hero-leading);
-  letter-spacing: var(--modern-hero-tracking);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .hero h1 em {
-  color: var(--cyan-dark);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .hero h1 em::after {
-  display: none;
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .hero-copy {
-  max-width: var(--modern-copy-max-width);
-  margin-bottom: var(--space-3);
-  color: var(--text-prose);
-  line-height: var(--modern-copy-leading);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .quick-start-panel,
 :root:is([data-theme="modern"], [data-theme="noir"]) .settings-group,
 :root:is([data-theme="modern"], [data-theme="noir"]) .settings-select,
 :root:is([data-theme="modern"], [data-theme="noir"]) .glossary-filters,
@@ -143,44 +109,6 @@
   backdrop-filter: var(--modern-backdrop-blur);
 }
 
-:root:is([data-theme="modern"], [data-theme="noir"]) .quick-start-panel {
-  padding: var(--modern-card-padding);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .quick-start-head h2,
-:root:is([data-theme="modern"], [data-theme="noir"]) .resource-heading h2 {
-  font-size: var(--modern-section-heading-size);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .mode-picker {
-  grid-template-columns: var(--modern-option-columns);
-  gap: var(--space-1);
-  margin-top: var(--space-2);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .mode-option {
-  min-height: var(--modern-mode-min-height);
-  border: var(--modern-border-strong);
-  border-radius: var(--modern-control-radius);
-  padding: var(--space-2);
-  background: var(--modern-surface-solid);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .mode-option:hover {
-  border-color: var(--line-strong);
-  transform: translateY(var(--modern-hover-lift));
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .mode-option--selected {
-  border-color: var(--cyan-dark);
-  background: var(--modern-surface-accent);
-  box-shadow: var(--modern-focus-ring);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .start-row {
-  margin-top: var(--space-2);
-}
-
 :root:is([data-theme="modern"], [data-theme="noir"]) .primary-button {
   min-height: var(--modern-primary-min-height);
   border-radius: var(--modern-control-radius);
@@ -189,87 +117,6 @@
 
 :root:is([data-theme="modern"], [data-theme="noir"]) .primary-button:hover {
   box-shadow: var(--modern-shadow-hover);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .resource-hub {
-  margin-top: var(--space-4);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .resource-grid {
-  grid-template-columns: var(--modern-resource-columns);
-  gap: var(--space-1);
-  margin-top: var(--space-2);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .resource-grid button {
-  min-height: var(--modern-resource-min-height);
-  border: var(--modern-border);
-  border-radius: var(--modern-control-radius);
-  padding: var(--space-2);
-  background: var(--modern-surface-solid);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .resource-grid button:hover {
-  border-color: var(--cyan-dark);
-  box-shadow: var(--modern-shadow-control);
-  transform: translateY(var(--modern-hover-lift));
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .progress-card {
-  min-height: var(--modern-progress-min-height);
-  border: var(--modern-border);
-  border-radius: var(--modern-card-radius);
-  padding: var(--modern-card-padding);
-  color: var(--ink);
-  background: var(--modern-surface-solid);
-  box-shadow: var(--modern-shadow-card);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .progress-card::after {
-  display: none;
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .progress-kicker,
-:root:is([data-theme="modern"], [data-theme="noir"]) .progress-primary strong,
-:root:is([data-theme="modern"], [data-theme="noir"]) .onboarding-steps span {
-  color: var(--cyan-dark);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .progress-card h2,
-:root:is([data-theme="modern"], [data-theme="noir"]) .progress-metrics strong,
-:root:is([data-theme="modern"], [data-theme="noir"]) .onboarding-steps strong {
-  color: var(--ink-deep);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .progress-card header button,
-:root:is([data-theme="modern"], [data-theme="noir"]) .progress-primary small,
-:root:is([data-theme="modern"], [data-theme="noir"]) .progress-primary > span,
-:root:is([data-theme="modern"], [data-theme="noir"]) .progress-metrics span,
-:root:is([data-theme="modern"], [data-theme="noir"]) .progress-insight > span,
-:root:is([data-theme="modern"], [data-theme="noir"]) .privacy-note {
-  color: var(--muted);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .progress-card header button:hover {
-  color: var(--cyan-dark);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .progress-metrics,
-:root:is([data-theme="modern"], [data-theme="noir"]) .onboarding-steps {
-  border-color: var(--line-soft);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .progress-metrics > div + div,
-:root:is([data-theme="modern"], [data-theme="noir"]) .onboarding-steps li {
-  border-color: var(--line-soft);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .progress-insight {
-  border-left-color: var(--cyan-dark);
-}
-
-:root:is([data-theme="modern"], [data-theme="noir"]) .progress-insight p {
-  color: var(--text-prose);
 }
 
 :root:is([data-theme="modern"], [data-theme="noir"]) .prompt-stage {
