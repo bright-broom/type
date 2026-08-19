@@ -23,6 +23,7 @@ const MODES: ReadonlyArray<{
   { id: "consulting", label: "コンサル", detail: "実務用語" },
   { id: "takken", label: "宅建", detail: "試験用語" },
   { id: "ais", label: "会議", detail: "定例会議用語" },
+  { id: "git", label: "Git", detail: "公式コマンド" },
 ];
 
 const MODE_LABELS: Record<TrainingSet, string> = {
@@ -30,6 +31,7 @@ const MODE_LABELS: Record<TrainingSet, string> = {
   consulting: "コンサル用語",
   takken: "宅建用語",
   ais: "会議用語",
+  git: "Gitコマンド",
 };
 
 export function HomeScreen({

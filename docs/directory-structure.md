@@ -23,6 +23,7 @@
 │   │   ├── generated/          Versioned JSON with scoped agent guidance
 │   │   ├── ais/                One directory per dataset: types, filters,
 │   │   ├── consulting/         prompt adapter, and dataset tests
+│   │   ├── git/                Versioned official Git command source and prompts
 │   │   ├── japanese/
 │   │   └── takken/
 │   ├── domain/                 Pure business rules by capability

@@ -3,6 +3,11 @@ import type { TypingGuide } from "../../../domain/typing/typing-types.ts";
 import type { SessionMetrics } from "../../../domain/scoring/metrics.ts";
 import type { TypingFeedback } from "../../../application/session/session-types.ts";
 
+const DIRECT_INPUT_LABELS = {
+  consulting: "CONSULTING TERM",
+  git: "GIT COMMAND",
+} as const;
+
 type GameScreenProps = {
   prompt: TypingPrompt;
   guide: TypingGuide;
@@ -18,7 +23,8 @@ type GameScreenProps = {
 export function GameScreen(props: GameScreenProps) {
   const seconds = Math.max(0, Math.ceil(props.remainingMs / 1_000));
   const progress = Math.max(0, Math.min(100, (props.remainingMs / 60_000) * 100));
-  const promptLabel = props.prompt.category === "consulting" ? "CONSULTING TERM" : props.prompt.reading;
+  const directInputLabel = DIRECT_INPUT_LABELS[props.prompt.category as keyof typeof DIRECT_INPUT_LABELS];
+  const promptLabel = directInputLabel ?? props.prompt.reading;
   const feedbackMessage =
     props.feedback === "unsupported"
       ? "かな入力を受け取りました — 英数字キーボードに切り替えてください"
@@ -66,11 +72,7 @@ export function GameScreen(props: GameScreenProps) {
           </span>
           {!feedbackMessage ? (
             <span aria-hidden="true">
-              {props.combo >= 10
-                ? `${props.combo} COMBO`
-                : props.prompt.category === "consulting"
-                  ? "英字で入力"
-                  : "ローマ字で入力"}
+              {props.combo >= 10 ? `${props.combo} COMBO` : directInputLabel ? "英字で入力" : "ローマ字で入力"}
             </span>
           ) : null}
         </div>

@@ -77,12 +77,14 @@ TypeLoop is a local-first Next.js typing trainer. Before structural work, read:
 - Browser/E2E: `npm run test:e2e`
 - Dead code: `npm run check:dead-code`
 - Security: `npm run check:security`
+- Generated content: `npm run check:generated`
 - Full local validation: `npm run check`
 - CI-equivalent validation: `npm run check:ci`
 - Architecture only: `npm run test:architecture`
 - Consulting import: `npm run import:consulting -- "/path/to/source.xlsx"`
 - Takken import: `npm run import:takken -- "/path/to/source.tsv"`
 - AIS meeting glossary import: `npm run import:ais -- "/path/to/source.xlsx"`
+- Git command import: `npm run import:git`
 
 ## Definition of Done
 
