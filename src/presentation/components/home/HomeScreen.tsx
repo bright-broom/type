@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { CompletedSession } from "../../../application/session/session-types.ts";
 import type { TrainingSet } from "../../../domain/prompts/prompt-types.ts";
 
@@ -117,6 +118,11 @@ export function HomeScreen({
             <span>すべて端末内で検索</span>
           </div>
           <div className="resource-grid">
+            <Link className="takken-exam-link" href="/takken" aria-label="宅建試験対策を開く">
+              <span>宅建試験対策</span>
+              <small>10問演習・本番模試</small>
+              <i aria-hidden="true">→</i>
+            </Link>
             <button
               data-focus-key="home-playbook"
               type="button"

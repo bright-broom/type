@@ -17,6 +17,7 @@
 ├── src/
 │   ├── application/
 │   │   ├── ports/              Interfaces required by the application
+│   │   ├── assessment/         Assessment lifecycle and persisted attempt types
 │   │   ├── settings/           Persisted application preferences and validation
 │   │   └── session/            Session state and transitions
 │   ├── content/
@@ -27,7 +28,7 @@
 │   │   ├── git/                Versioned official Git command source and prompts
 │   │   ├── japanese/
 │   │   └── takken/
-│   ├── domain/                 Pure business rules by capability
+│   ├── domain/                 Pure business rules by capability, including typing and assessment
 │   ├── infrastructure/         Browser adapters by capability
 │   └── presentation/
 │       ├── components/         React components by screen/capability

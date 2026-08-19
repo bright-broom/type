@@ -22,6 +22,18 @@ async function finishSession(page: Page): Promise<void> {
   await page.getByRole("heading", { name: "おつかれさまでした。" }).waitFor();
 }
 
+async function finishTakkenPractice(page: Page): Promise<void> {
+  await page.goto("/takken/practice");
+  await page.getByRole("button", { name: "10問演習を始める" }).click();
+  for (let index = 0; index < 10; index += 1) {
+    await page.keyboard.press("1");
+    if (index < 9) await page.getByRole("button", { name: /次の問題/ }).click();
+  }
+  await page.getByRole("button", { name: "採点する" }).click();
+  await page.getByRole("button", { name: "提出して採点" }).click();
+  await page.locator(".assessment-result-shell").waitFor();
+}
+
 const screens: ReadonlyArray<AccessibilityScreen> = [
   { name: "home", open: async () => {} },
   {
@@ -70,6 +82,57 @@ const screens: ReadonlyArray<AccessibilityScreen> = [
       await finishSession(page);
       await page.getByRole("button", { name: "練習履歴" }).click();
       await page.getByRole("heading", { name: "練習の記録" }).waitFor();
+    },
+  },
+  {
+    name: "takken assessment hub",
+    open: async (page) => {
+      await page.goto("/takken");
+      await page.getByRole("heading", { name: /覚える。解く。/ }).waitFor();
+    },
+  },
+  {
+    name: "takken practice launcher",
+    open: async (page) => {
+      await page.goto("/takken/practice");
+      await page.getByRole("heading", { name: /理解を確かめる/ }).waitFor();
+    },
+  },
+  {
+    name: "takken practice question",
+    open: async (page) => {
+      await page.goto("/takken/practice");
+      await page.getByRole("button", { name: "10問演習を始める" }).click();
+      await page.getByRole("group", { name: "選択肢を1つ選んでください" }).waitFor();
+    },
+  },
+  {
+    name: "takken submission dialog",
+    open: async (page) => {
+      await page.goto("/takken/practice");
+      await page.getByRole("button", { name: "10問演習を始める" }).click();
+      await page.getByText("解答状況を見る").click();
+      await page.getByRole("button", { name: "現在の回答を提出" }).click();
+      await page.getByRole("dialog", { name: "この内容で採点しますか？" }).waitFor();
+    },
+  },
+  {
+    name: "takken assessment result",
+    open: finishTakkenPractice,
+  },
+  {
+    name: "takken assessment history",
+    open: async (page) => {
+      await finishTakkenPractice(page);
+      await page.goto("/takken/history");
+      await page.getByRole("heading", { name: "試験記録" }).waitFor();
+    },
+  },
+  {
+    name: "takken mock launcher",
+    open: async (page) => {
+      await page.goto("/takken/mock");
+      await page.getByRole("heading", { name: /本番と同じ時間配分で/ }).waitFor();
     },
   },
 ];

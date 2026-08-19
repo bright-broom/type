@@ -24,9 +24,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function Home() {
+export default async function Home({ searchParams }: { searchParams: Promise<{ training?: string | string[] }> }) {
   // The same cookie the layout used for the root attributes, so the client tree starts
   // from the value already painted instead of discovering it after hydration.
   const appearance = parseAppearance((await cookies()).get(APPEARANCE_COOKIE)?.value);
-  return <TypingApp initialAppearance={appearance} />;
+  const training = (await searchParams).training;
+  return (
+    <TypingApp initialAppearance={appearance} initialTrainingSet={training === "takken" ? "takken" : "japanese"} />
+  );
 }

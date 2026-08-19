@@ -10,6 +10,7 @@
 - Local-first personal best, history, weak-key analysis, and settings
 - Excel由来のConsulting Playbook全17セクション検索と327件の用語練習
 - 令和8年度向け宅建用語446語の検索・分野/重要度/出典フィルター・用語練習
+- 宅建10問演習と50問/45問の本番模試、見直し・時間切れ提出・再読み込み復旧・端末内履歴・弱点優先出題
 - AIS週次定例会議の用語154語を、カテゴリ・確度・種別・確認待ちで絞り込み＆練習（顧客名・個人名・金額は取込時に非開示化）
 - Keyboard-first operation, IME protection, reduced motion, and optional sound
 - スマホ対応入力：開始タップと同時にソフトウェアキーボードが開き、キーボードが覆う高さに合わせて出題・ローマ字ガイド・入力欄を保持。かな入力時は英数字への切り替えを案内（ミス加算はしない）
@@ -63,13 +64,13 @@ This is a standard Next.js App Router application and can be deployed to Vercel 
 app/                         Next.js routes and metadata
 src/
 ├── presentation/            React components and browser-facing hooks
-├── application/             Session orchestration, state, and ports
-├── domain/                  Pure typing, scoring, prompt, and analytics rules
+├── application/             Typing/assessment session orchestration, state, and ports
+├── domain/                  Pure typing, assessment, scoring, prompt, and analytics rules
 ├── infrastructure/          Browser adapters for audio and persistence
 └── content/                 Authored loaders and generated learning content
 ```
 
-依存方向と各層の責務は [`docs/architecture.md`](docs/architecture.md) を正とします。境界違反と配置ルールはテストで機械的に検出します。セッション履歴と設定は端末内にのみ保存されます。
+依存方向と各層の責務は [`docs/architecture.md`](docs/architecture.md) を正とします。境界違反と配置ルールはテストで機械的に検出します。タイピング履歴、宅建試験履歴、設定は端末内にのみ保存されます。
 
 ## Content import
 

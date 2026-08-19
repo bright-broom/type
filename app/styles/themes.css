@@ -166,6 +166,19 @@
   --modern-focus-outline: 3px solid var(--cyan-dark);
   --modern-focus-offset: 2px;
   --modern-focus-ring: 0 0 0 4px rgb(var(--cyan-rgb) / 24%);
+
+  /* Takken assessment experience */
+  --assessment-reading-width: 980px;
+  --assessment-session-width: 1120px;
+  --assessment-page-padding: clamp(36px, 7vw, 84px) 0 clamp(64px, 9vw, 112px);
+  --assessment-hero-size: clamp(2.8rem, 7vw, 5.7rem);
+  --assessment-question-size: clamp(1.35rem, 2.7vw, 2rem);
+  --assessment-score-size: clamp(4.5rem, 13vw, 8rem);
+  --assessment-choice-min-height: 72px;
+  --assessment-overview-cell: 42px;
+  --assessment-card-padding: clamp(20px, 4vw, 42px);
+  --assessment-grid-min: 230px;
+  --assessment-transition: 160ms ease;
 }
 
 /*
