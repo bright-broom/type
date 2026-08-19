@@ -82,6 +82,32 @@ test("the manifest declares every dependency exactly once", async () => {
   }
 });
 
+test("Playwright system dependencies are installed outside retry loops", async () => {
+  // Retrying `install --with-deps` can overlap an orphaned apt process after a
+  // timeout. Keep the privileged package install single-shot and retry only the
+  // browser download, which does not hold the system package-manager lock.
+  const workflow = await readFile(resolve(repositoryRoot, ".github/workflows/ci.yml"), "utf8");
+  const systemDependencyCommands = workflow.match(/npx playwright install-deps/g) ?? [];
+  const systemDependencies = workflow.indexOf("npx playwright install-deps chromium webkit");
+  const retryLoop = workflow.indexOf("for attempt in 1 2 3; do");
+  const retryLoopEnd = workflow.indexOf("done", retryLoop);
+  const browserInstallStep = workflow
+    .split("- name: Install browsers")[1]
+    ?.split("- name: Build production application")[0];
+
+  assert.equal(systemDependencyCommands.length, 1, "CI must run install-deps exactly once");
+  assert.doesNotMatch(workflow, /--with-deps/, "CI must not couple apt installation to a retried browser install");
+  assert.ok(systemDependencies >= 0, "CI must install the Playwright system dependencies");
+  assert.ok(retryLoop > systemDependencies, "the browser retry loop must start after install-deps");
+  assert.ok(retryLoopEnd > retryLoop, "the browser retry loop must have an explicit end");
+  assert.ok(browserInstallStep, "CI must keep a dedicated browser installation step");
+  assert.doesNotMatch(browserInstallStep, /install-deps|--with-deps/);
+
+  const retriedCommands = workflow.slice(retryLoop, retryLoopEnd);
+  assert.match(retriedCommands, /npx playwright install chromium webkit/);
+  assert.doesNotMatch(retriedCommands, /install-deps|--with-deps/);
+});
+
 test("the ESLint runtime stays within every ESLint plugin's supported major", async () => {
   // `npm ci` fails on this mismatch, but a red dependency PR can still be merged.
   // Naming the constraint here makes the reason visible in the failing assertion.
