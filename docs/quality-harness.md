@@ -8,6 +8,7 @@ TypeLoop treats command output, tests, and CI status as evidence. An agent's sta
 | ----------- | -------------------------- | -------------------------------------------------------------------- |
 | Deps        | `npm run check:deps`       | Every declared peer range is satisfiable by the pinned versions      |
 | Bundle      | `npm run check:bundle`     | Shipped JavaScript stays inside its first-load and referenced budget |
+| Tokens      | `npm run check:tokens`     | Design colors exist only inside the token block; TSX carries none    |
 | Format      | `npm run format:check`     | Deterministic authored-file formatting                               |
 | Lint        | `npm run lint`             | TypeScript, React, hooks, accessibility, and Next.js rules           |
 | Typecheck   | `npm run typecheck`        | Strict TypeScript contracts                                          |
@@ -28,7 +29,7 @@ integration tests. The runner fails when either group is empty, rejects TSX test
 Node strip-types does not transform JSX. UI behavior belongs in Playwright unless a JSX-capable unit runner is deliberately
 introduced.
 
-Use `npm run check:quick` while iterating, `npm run check` before review, and `npm run check:ci` for the complete local CI equivalent. Install Chromium once with `npm run e2e:install`.
+Use `npm run check:quick` while iterating, `npm run check` before review, and `npm run check:ci` for the complete local CI equivalent. Install the browsers once with `npm run e2e:install` (Chromium and WebKit).
 
 ## Bug fixes
 
@@ -63,6 +64,25 @@ CodeQL, native Secret Scanning, push protection, branch rulesets, and Vercel pro
 ## Dead-code cleanup
 
 Knip findings are candidates, not deletion instructions. Confirm framework conventions, lazy imports, generated data, public assets, and runtime entry points before removal. Use the sequence: static finding → reference check → deletion plan → smallest deletion → full regression.
+
+## Design tokens
+
+Every color is declared once, inside the `@tokens-begin` block of `app/globals.css`.
+Components reference `var(--token)`; translucent colors use the channel triplets
+(`rgb(var(--ink-rgb) / 8%)`) so they stay tied to their base. Retuning the app's
+tone is therefore an edit to one block, guarded three ways:
+
+- `npm run check:tokens` rejects color literals outside the block, a second
+  `:root`, and any color literal in TSX.
+- `tests/design-tokens.test.mjs` asserts the core reading pairs meet WCAG AA and
+  that `--*-rgb` triplets match their hex base, so a bad retune fails in
+  milliseconds — before axe ever starts a browser.
+- The axe E2E suite then verifies the rendered result.
+
+This block exists because the palette had already forked once: a second `:root`
+silently overrode nine tokens, stale rgb() literals kept spelling the old palette,
+and four near-identical grays accumulated. The duplicate-value test keeps that
+from recurring.
 
 ## Browser matrix
 

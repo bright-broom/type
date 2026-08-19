@@ -16,5 +16,6 @@ ADRs capture durable decisions that constrain future implementation. They do not
 | [010](ADR-010-software-keyboard-input.md)              | Software keyboard input on touch devices             |
 | [011](ADR-011-dataset-ownership-and-catalogue.md)      | Dataset ownership and the training set catalogue     |
 | [012](ADR-012-cross-browser-durability-and-budgets.md) | Cross-browser proof, storage durability, and budgets |
+| [013](ADR-013-design-tokens.md)                        | Single-source design tokens with enforced boundaries |
 
 Add an ADR only for a decision with meaningful alternatives and long-lived consequences. Use the next number and include Context, Decision, Alternatives, and Consequences.
