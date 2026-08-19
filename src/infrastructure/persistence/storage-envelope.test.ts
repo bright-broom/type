@@ -19,7 +19,6 @@ test("reads the current envelope unchanged", () => {
     ["a", "b"],
   );
   assert.equal(envelope.settings.soundEnabled, false);
-  assert.equal(envelope.settings.appearance.themeId, "modern");
 });
 
 test("an envelope from a newer build keeps its sessions instead of wiping them", () => {
@@ -74,19 +73,15 @@ test("settings fall back per field rather than as a whole", () => {
   assert.equal(migrateEnvelope({ settings: { soundEnabled: "yes" } }).settings.soundEnabled, true);
   assert.equal(migrateEnvelope({ settings: {} }).settings.soundEnabled, true);
   assert.equal(migrateEnvelope({ settings: { soundEnabled: false } }).settings.soundEnabled, false);
-  assert.deepEqual(migrateEnvelope({ settings: { soundEnabled: false } }).settings.appearance, {
-    themeId: "modern",
-    density: "comfortable",
-    motion: "system",
-  });
+  // A stored appearance is stale once the cookie owns it, so reading drops it.
   assert.deepEqual(
     migrateEnvelope({
       settings: {
         soundEnabled: false,
         appearance: { themeId: "classic", density: "compact", motion: "reduced" },
       },
-    }).settings.appearance,
-    { themeId: "classic", density: "compact", motion: "reduced" },
+    }).settings,
+    { soundEnabled: false },
   );
 });
 

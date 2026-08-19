@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
 import type { CompletedSession } from "../../application/session/session-types.ts";
-import { DEFAULT_APPEARANCE } from "../../application/settings/app-settings.ts";
 import type { TrainingSet } from "../../domain/prompts/prompt-types.ts";
 import { LocalSessionRepository, STORAGE_KEY } from "./local-session-repository.ts";
 
@@ -52,7 +51,7 @@ test("recovers from corrupt persisted data", async () => {
 
   storage.values.set(STORAGE_KEY, "not-json");
   assert.deepEqual(await repository.getRecent(10), []);
-  assert.deepEqual(await repository.getSettings(), { soundEnabled: true, appearance: DEFAULT_APPEARANCE });
+  assert.deepEqual(await repository.getSettings(), { soundEnabled: true });
 });
 
 test("history written by a different envelope version is kept, not discarded", async () => {
@@ -92,7 +91,7 @@ test("persists settings and treats unavailable storage as non-fatal", async () =
   const repository = new LocalSessionRepository();
   useStorage(storage);
 
-  const settings = { soundEnabled: false, appearance: { ...DEFAULT_APPEARANCE, density: "compact" as const } };
+  const settings = { soundEnabled: false };
   await repository.saveSettings(settings);
   assert.deepEqual(await repository.getSettings(), settings);
 

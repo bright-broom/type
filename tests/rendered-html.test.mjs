@@ -15,7 +15,7 @@ test("declares an App Router home route and finished TypeLoop shell", async () =
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     readFile(new URL("../app/styles/themes.css", import.meta.url), "utf8"),
   ]);
-  assert.match(page, /export default function Home/);
+  assert.match(page, /export default async function Home/);
   assert.match(page, /TypingApp/);
   assert.match(layout, /<html lang="ja"[^>]*>/);
   assert.match(playbook, /コンサル実務辞典/);
@@ -31,6 +31,9 @@ test("declares an App Router home route and finished TypeLoop shell", async () =
   assert.match(keyboardInput, /isTypingField/);
   assert.match(styles, /--keyboard-inset/);
   assert.match(themes, /--page-gutter/);
-  assert.match(layout, /APPEARANCE_BOOTSTRAP_SCRIPT/);
+  // The attributes must come from the server: a client script cannot beat the paint.
+  assert.match(layout, /appearanceDataAttributes/);
+  assert.match(layout, /cookies\(\)/);
+  assert.doesNotMatch(layout, /next\/script/);
   assert.match(styles, /pointer: coarse/);
 });

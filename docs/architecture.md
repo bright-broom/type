@@ -36,19 +36,19 @@ The active typing path stays in memory. Persistence happens after session comple
 
 ## Appearance flow
 
-Appearance preferences are application settings, persisted through the existing
-`SessionRepository` without introducing a second localStorage owner. Presentation
-applies validated theme, density, and motion identifiers to the document root; CSS
-themes implement the stable token contract under `app/styles`.
+Appearance is the one preference the server must know before it renders, so it is
+persisted in a cookie and applied to the document root during SSR. The first paint
+already carries the stored theme; no client script is involved, because React
+serialises one into its flight payload where it runs too late (see
+[ADR-014](adr/ADR-014-theme-foundation.md)).
 
 ```text
-settings UI → AppSettings → SessionRepository → localStorage
-                    ↓
-              document data attributes → theme token registry → screens
+settings UI → cookie → SSR reads it → <html data-theme/density/motion> → CSS themes
 ```
 
-The pre-hydration bootstrap accepts only values from the same authored allow-lists.
-Unknown or older settings fall back per field, preserving sound settings and history.
+Sound and session history stay in `SessionRepository`/localStorage, which the server
+never needs to read. Each preference has exactly one owner. Cookie values are three
+allow-listed identifiers, validated per field before they reach the rendered HTML.
 
 ## Content flow
 

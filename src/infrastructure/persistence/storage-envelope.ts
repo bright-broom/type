@@ -24,7 +24,7 @@ export function emptyEnvelope(): StorageEnvelope {
   return {
     version: STORAGE_VERSION,
     sessions: [],
-    settings: { ...DEFAULT_APP_SETTINGS, appearance: { ...DEFAULT_APP_SETTINGS.appearance } },
+    settings: { ...DEFAULT_APP_SETTINGS },
   };
 }
 

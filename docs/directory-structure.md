@@ -41,7 +41,7 @@
 - Session orchestration and capability interfaces belong in `application`.
 - Browser or vendor-specific implementations belong in `infrastructure`.
 - React rendering and browser event composition belong in `presentation`.
-- Theme identifiers and defaults belong in `application/settings`; DOM application belongs in `presentation/theme`; raw visual values belong in `app/styles/themes.css`.
+- Theme identifiers, defaults, and cookie encoding belong in `application/settings`; DOM application belongs in `presentation/theme`; raw visual values belong in `app/styles/themes.css`.
 - Learning material and prompt adapters belong in `content`, one directory per dataset. A dataset directory owns its types, filters, prompt adapter, and tests, and must not import another dataset.
 - `content/training-set-catalog.ts` is the only module that reaches across datasets. It is the seam where a `TrainingSet` identifier is bound to its prompts.
 - Pure rules over domain types belong in `domain` even when only `content` calls them, as with `domain/prompts/validate-prompts.ts`.

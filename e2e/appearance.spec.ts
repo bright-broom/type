@@ -1,7 +1,5 @@
 import { expect, test } from "@playwright/test";
 
-const STORAGE_KEY = "typeloop:data";
-
 test("appearance changes immediately and survives a reload", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "表示設定" }).click();
@@ -47,38 +45,43 @@ test("appearance settings remain usable on a phone viewport", async ({ browser }
   await context.close();
 });
 
-test("the appearance bootstrap ships in the document and restores only allow-listed values", async ({
-  page,
-  request,
-}) => {
-  // The bootstrap runs before hydration but after the first paint: React serialises a
-  // script authored in a Server Component into its flight payload whatever position it
-  // is given. This records that ordering so ADR-014 cannot drift back to claiming a
-  // paint-blocking restore, and pins the allow-list behaviour that makes it safe.
-  const html = await (await request.get("/")).text();
-  const bootstrap = html.indexOf("typeloop-appearance");
-  expect(bootstrap, "the bootstrap must ship with the document").toBeGreaterThan(0);
-  expect(
-    bootstrap,
-    "still inside the flight payload; revisit ADR-014 if a paint-blocking placement became possible",
-  ).toBeGreaterThan(html.indexOf("app-frame"));
+test("the stored theme is in the server-rendered HTML, so nothing can flash", async ({ browser }) => {
+  // The definitive check: the attributes arrive with the document, before any script
+  // runs. A client-side restore could not do this — React serialises an inline script
+  // into its flight payload, which executes after the first paint (see ADR-014).
+  const context = await browser.newContext();
+  await context.addCookies([
+    { name: "typeloop-appearance", value: "classic.compact.reduced", url: "http://127.0.0.1:4173" },
+  ]);
+  const html = await (await context.request.get("/")).text();
+  expect(html).toMatch(/<html[^>]*data-theme="classic"/);
+  expect(html).toMatch(/<html[^>]*data-density="compact"/);
+  expect(html).toMatch(/<html[^>]*data-motion="reduced"/);
+  expect(html, "no bootstrap script should remain").not.toContain("typeloop-appearance=");
+  await context.close();
+});
 
-  // A stored value outside the allow-list must fall back, never reach the DOM.
-  await page.addInitScript(
-    ([key]) =>
-      localStorage.setItem(
-        key,
-        JSON.stringify({
-          version: 1,
-          sessions: [],
-          settings: { soundEnabled: true, appearance: { themeId: "../evil", density: "huge", motion: "none" } },
-        }),
-      ),
-    [STORAGE_KEY],
-  );
+test("a hand-edited cookie cannot put unvalidated values into the HTML", async ({ browser }) => {
+  const context = await browser.newContext();
+  await context.addCookies([
+    { name: "typeloop-appearance", value: '../evil."><script>.none', url: "http://127.0.0.1:4173" },
+  ]);
+  const html = await (await context.request.get("/")).text();
+  // Falls back per field, and the rendered attribute values stay allow-listed.
+  expect(html).toMatch(/<html[^>]*data-theme="modern"/);
+  expect(html).toMatch(/<html[^>]*data-motion="system"/);
+  expect(html).not.toContain("evil");
+  await context.close();
+});
+
+test("choosing a theme persists it for the next server render", async ({ page, context }) => {
   await page.goto("/");
-  const root = page.locator("html");
-  await expect(root).toHaveAttribute("data-theme", "modern");
-  await expect(root).toHaveAttribute("data-density", "comfortable");
-  await expect(root).toHaveAttribute("data-motion", "system");
+  await page.getByRole("button", { name: "表示設定" }).click();
+  await page.getByRole("radio", { name: /テーマ：\s*クラシック/ }).check();
+
+  const cookie = (await context.cookies()).find((entry) => entry.name === "typeloop-appearance");
+  expect(cookie?.value, "the choice must reach the cookie the server reads").toMatch(/^classic\./);
+
+  const html = await (await context.request.get("/")).text();
+  expect(html).toMatch(/<html[^>]*data-theme="classic"/);
 });

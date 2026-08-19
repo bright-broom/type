@@ -18,11 +18,7 @@ import * as sessionClock from "../../application/session/session-reducer.ts";
 import { applyTypingText } from "../../application/session/apply-typing-text.ts";
 import { completeSession } from "../../application/session/complete-session.ts";
 import { tallyTypingSteps } from "../../application/session/tally-typing-steps.ts";
-import {
-  DEFAULT_APP_SETTINGS,
-  type AppearanceSettings,
-  type AppSettings,
-} from "../../application/settings/app-settings.ts";
+import { DEFAULT_APP_SETTINGS, type AppSettings } from "../../application/settings/app-settings.ts";
 import type * as Session from "../../application/session/session-types.ts";
 
 const repository = new LocalSessionRepository();
@@ -235,14 +231,6 @@ export function useTypingSession() {
       return next;
     });
   }, []);
-  const updateAppearance = useCallback((appearance: AppearanceSettings) => {
-    setSettings((current) => {
-      const next = { ...current, appearance };
-      void repository.saveSettings(next);
-      return next;
-    });
-  }, []);
-
   const elapsedMs = sessionClock.getElapsedMs(clock, now);
   const liveMetrics = useMemo(
     () => calculateMetrics({ correct, incorrect: misses, elapsedMs }),
@@ -278,6 +266,5 @@ export function useTypingSession() {
     escape,
     enter,
     toggleSound,
-    updateAppearance,
   };
 }

@@ -53,30 +53,42 @@ The next visual phase must extract semantic surface, content, action, and status
 tokens before adding dark mode. It should also continue splitting screen styles out
 of `globals.css` by responsibility rather than by arbitrary line count.
 
-## Measured limitation: the restore is not paint-blocking
+## The restore is server-rendered, because no client script can beat the paint
 
-The bootstrap runs before hydration but **not before the first paint**, so a narrow
-flash of the default theme is possible. This was measured on the built app, not
-assumed. Serving the document truncated just before the bootstrap and reading the
-computed style showed `data-theme` unset and `--paper` still at the default value:
+Appearance is persisted in a cookie and the server sets `data-theme`, `data-density`,
+and `data-motion` on `<html>` while rendering. The attributes therefore arrive with
+the document and the first paint already uses the stored theme.
+
+A client-side restore was tried first and measured on the built app, not assumed.
+Serving the document truncated just before the app markup showed the default theme
+painting:
 
 ```text
-bootstrap到達前: {"theme":"(unset)","bg":"rgb(245, 243, 237)"}   // default --paper
-classic --paper: rgb(238, 243, 245)
+before:  {"theme":"(unset)", "bg":"rgb(245, 243, 237)"}   // default --paper
+after:   {"theme":"classic", "bg":"rgb(238, 243, 245)"}   // classic --paper
 ```
 
-Three placements were tried and all produced the same output at the same byte
-offset: `next/script` with `strategy="beforeInteractive"`, a plain `<script>` inside
-`<head>`, and `<script dangerouslySetInnerHTML>` as the first child of `<body>`.
-React 19 serialises a script authored in a Server Component into its flight payload
-regardless of position, so it executes through the client runtime after the initial
-HTML has painted. No JSX placement avoids this on Next 16 / React 19.
+Three placements produced identical output at the same byte offset: `next/script`
+with `strategy="beforeInteractive"`, a plain `<script>` inside `<head>`, and
+`<script dangerouslySetInnerHTML>` as the first child of `<body>`. React 19
+serialises a script authored in a Server Component into its flight payload wherever
+it sits, so it runs through the client runtime after the initial HTML has painted. No
+JSX placement avoids this on Next 16 / React 19, which is why the cookie is not a
+convenience but the only mechanism that works.
 
-`e2e/appearance.spec.ts` records the ordering so the claim cannot drift back.
+### Why a cookie does not create a second owner
 
-Closing the window entirely requires the server to know the preference before it
-renders, which means persisting appearance in a cookie and setting the attributes
-during SSR. That is deliberately **not** done here: it would add a second storage
-owner beside `SessionRepository`, and cookies leave the device on every request,
-which the local-first boundary treats as a decision needing its own ADR. The flash
-window is one paint on a cold load and only when a non-default theme is stored.
+Appearance was **moved**, not copied: `AppSettings` no longer carries it, and reading
+an envelope that still does drops the stale value. Sound and history stay in
+localStorage because the server never needs them. Each preference has exactly one
+owner, split by a real criterion — whether the server must know it before painting.
+
+The cookie holds three dot-separated allow-listed identifiers, no personal data. It
+is `SameSite=Lax` and `Secure` outside development, and is not `HttpOnly` because the
+settings screen writes it. `parseAppearance` falls back per field, so a truncated or
+hand-edited value never reaches the rendered attributes; `appearance-cookie.test.ts`
+and `e2e/appearance.spec.ts` both assert that, including a `"><script>` payload.
+
+Reading a cookie makes the route dynamic. It already was, so nothing was lost; a
+future static export would have to fall back to a client-side restore and accept the
+flash.

@@ -2,38 +2,30 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { DEFAULT_APP_SETTINGS, normalizeAppSettings } from "./app-settings.ts";
 
-test("normalizes every appearance field independently", () => {
-  assert.deepEqual(
-    normalizeAppSettings({
-      soundEnabled: false,
-      appearance: { themeId: "classic", density: "compact", motion: "reduced" },
-    }),
-    {
-      soundEnabled: false,
-      appearance: { themeId: "classic", density: "compact", motion: "reduced" },
-    },
-  );
+test("keeps a stored sound preference and defaults anything else", () => {
+  assert.deepEqual(normalizeAppSettings({ soundEnabled: false }), { soundEnabled: false });
+  assert.deepEqual(normalizeAppSettings({ soundEnabled: true }), { soundEnabled: true });
+  assert.deepEqual(normalizeAppSettings({}), DEFAULT_APP_SETTINGS);
 });
 
-test("keeps valid fields when another persisted field is invalid", () => {
-  assert.deepEqual(
-    normalizeAppSettings({
-      soundEnabled: false,
-      appearance: { themeId: "unknown", density: "compact", motion: 42 },
-    }),
-    {
-      soundEnabled: false,
-      appearance: {
-        themeId: DEFAULT_APP_SETTINGS.appearance.themeId,
-        density: "compact",
-        motion: DEFAULT_APP_SETTINGS.appearance.motion,
-      },
-    },
-  );
+test("a non-boolean sound value falls back instead of leaking through", () => {
+  for (const soundEnabled of ["true", 1, null, {}]) {
+    assert.deepEqual(normalizeAppSettings({ soundEnabled }), DEFAULT_APP_SETTINGS);
+  }
 });
 
-test("upgrades sound-only settings without losing the preference", () => {
-  const settings = normalizeAppSettings({ soundEnabled: false });
-  assert.equal(settings.soundEnabled, false);
-  assert.deepEqual(settings.appearance, DEFAULT_APP_SETTINGS.appearance);
+test("an appearance left in storage is dropped rather than carried forward", () => {
+  // Appearance moved to a cookie so the server can read it. Copying a stale localStorage
+  // copy forward is exactly how the two stores would drift apart.
+  const settings = normalizeAppSettings({
+    soundEnabled: false,
+    appearance: { themeId: "classic", density: "compact", motion: "reduced" },
+  });
+  assert.deepEqual(settings, { soundEnabled: false });
+});
+
+test("unusable payloads produce the documented defaults", () => {
+  for (const payload of [null, undefined, 42, "settings", []]) {
+    assert.deepEqual(normalizeAppSettings(payload), DEFAULT_APP_SETTINGS);
+  }
 });

@@ -13,9 +13,13 @@ export type AppearanceSettings = {
   motion: MotionPreference;
 };
 
+/**
+ * Preferences the client alone needs. Appearance is deliberately absent: the server
+ * must know it before it renders, so it lives in a cookie (`appearance-cookie.ts`).
+ * Keeping a second copy here is what would let the two drift apart.
+ */
 export type AppSettings = {
   soundEnabled: boolean;
-  appearance: AppearanceSettings;
 };
 
 export const DEFAULT_APPEARANCE: AppearanceSettings = {
@@ -26,27 +30,12 @@ export const DEFAULT_APPEARANCE: AppearanceSettings = {
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   soundEnabled: true,
-  appearance: DEFAULT_APPEARANCE,
 };
-
-function includes<T extends string>(values: readonly T[], value: unknown): value is T {
-  return typeof value === "string" && values.includes(value as T);
-}
 
 export function normalizeAppSettings(value: unknown): AppSettings {
   const settings = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
-  const appearance =
-    settings.appearance && typeof settings.appearance === "object"
-      ? (settings.appearance as Record<string, unknown>)
-      : {};
-
   return {
     soundEnabled:
       typeof settings.soundEnabled === "boolean" ? settings.soundEnabled : DEFAULT_APP_SETTINGS.soundEnabled,
-    appearance: {
-      themeId: includes(THEME_IDS, appearance.themeId) ? appearance.themeId : DEFAULT_APPEARANCE.themeId,
-      density: includes(DISPLAY_DENSITIES, appearance.density) ? appearance.density : DEFAULT_APPEARANCE.density,
-      motion: includes(MOTION_PREFERENCES, appearance.motion) ? appearance.motion : DEFAULT_APPEARANCE.motion,
-    },
   };
 }

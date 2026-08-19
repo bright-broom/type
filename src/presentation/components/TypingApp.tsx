@@ -7,6 +7,8 @@ import type { CompletedSession } from "../../application/session/session-types.t
 import type { TrainingSet } from "../../domain/prompts/prompt-types.ts";
 import { BrowserSessionArchiveSink } from "../../infrastructure/persistence/browser-session-archive-sink.ts";
 import { LocalSessionRepository } from "../../infrastructure/persistence/local-session-repository.ts";
+import type { AppearanceSettings } from "../../application/settings/app-settings.ts";
+import { writeAppearanceCookie } from "../../infrastructure/persistence/browser-appearance-cookie.ts";
 import { useKeyboardInput } from "../hooks/useKeyboardInput.ts";
 import { useKeyboardInset } from "../hooks/useKeyboardInset.ts";
 import { useTypingSession } from "../hooks/useTypingSession.ts";
@@ -33,9 +35,16 @@ const AisGlossary = lazy(() => import("./ais/AisGlossary.tsx").then((module) => 
 type Overlay = "none" | "history" | "playbook" | "takken" | "ais" | "settings";
 type FocusReturn = { key: string | null; fallback: "home" | "result" };
 
-export function TypingApp() {
+export function TypingApp({ initialAppearance }: { initialAppearance: AppearanceSettings }) {
   const session = useTypingSession();
-  useAppearance(session.settings.appearance, session.settingsReady);
+  const [appearance, setAppearance] = useState(initialAppearance);
+  useAppearance(appearance);
+
+  /** Persist where the server can read it, so the next load paints this theme first. */
+  const updateAppearance = useCallback((next: AppearanceSettings) => {
+    setAppearance(next);
+    writeAppearanceCookie(next);
+  }, []);
   const [overlay, setOverlay] = useState<Overlay>("none");
   const [selectedTrainingSet, setSelectedTrainingSet] = useState<TrainingSet>("japanese");
   const [previousBest, setPreviousBest] = useState<CompletedSession | null>(null);
@@ -181,11 +190,7 @@ export function TypingApp() {
       />
 
       {overlay === "settings" ? (
-        <SettingsScreen
-          appearance={session.settings.appearance}
-          onChange={session.updateAppearance}
-          onBack={() => navigateOverlay("none")}
-        />
+        <SettingsScreen appearance={appearance} onChange={updateAppearance} onBack={() => navigateOverlay("none")} />
       ) : overlay === "ais" ? (
         <Suspense
           fallback={
