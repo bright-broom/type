@@ -19,6 +19,8 @@
 
 ## Safety
 
+- [ ] This change was submitted from a feature branch; no commit was pushed directly to `main`.
+- [ ] All required GitHub Actions checks are green. The PR remains unmerged for a human owner.
 - [ ] No generated JSON was hand-edited.
 - [ ] No secret, `.env`, credential, or production data is included.
 - [ ] No unapproved production, database, migration, or destructive operation is required.

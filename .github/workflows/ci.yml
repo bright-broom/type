@@ -13,6 +13,41 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  pr-policy:
+    name: PR-only policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Accept pull request validation
+        if: github.event_name == 'pull_request'
+        run: echo "Changes are being validated through a pull request."
+      - name: Reject a direct push to main
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          BASE_BRANCH: ${{ github.ref_name }}
+        run: |
+          for attempt in 1 2 3 4 5; do
+            pulls="$(curl --fail-with-body --silent --show-error \
+              --header "Authorization: Bearer ${GH_TOKEN}" \
+              --header "Accept: application/vnd.github+json" \
+              --header "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/${REPOSITORY}/commits/${SHA}/pulls")"
+            if jq --exit-status --arg base "${BASE_BRANCH}" \
+              'any(.[]; .merged_at != null and .base.ref == $base)' <<<"${pulls}" >/dev/null; then
+              echo "The main update is associated with a merged pull request."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::Direct pushes to ${BASE_BRANCH} are prohibited. Submit a pull request and let a human owner merge it."
+          exit 1
+
   deps:
     name: Dependency compatibility
     runs-on: ubuntu-latest

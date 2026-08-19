@@ -29,6 +29,7 @@ npm run dev
 実装前に [`AGENTS.md`](AGENTS.md) を入口として、必要に応じて
 [`docs/architecture.md`](docs/architecture.md) と
 [`docs/directory-structure.md`](docs/directory-structure.md) を参照してください。
+変更の提出手順は [`CONTRIBUTING.md`](CONTRIBUTING.md) に従い、`main`へ直接pushしないでください。
 
 ## Quality gates
 
@@ -48,7 +49,7 @@ PRレビューはCodeRabbitなどの外部レビューボットに依存しま�
 2. `.agents/skills/review-typeloop` を使い、コードを編集しない独立レビュアーに差分を確認させる
 3. [`AGENTS.md`](AGENTS.md) のCode Review Rulesに沿って、互換性・依存境界・local-first制約を確認する
 4. Critical / High finding を修正し、初回レビュー後は最大2回まで修正・再レビューを行う
-5. GitHubへpushしてPRを作成し、CI成功と人間の最終判断を経てマージする（branch protection はGitHub planとowner設定が必要）
+5. feature branchだけをGitHubへpushしてPRを作成し、全CI成功後もマージせず、人間の最終判断へ引き渡す
 
 AIレビューは、CIで判定できないリポジトリ固有のリスクを補完するために使います。自動生成された指摘だけをマージ判断の根拠にはしません。
 

@@ -6,6 +6,7 @@ import test from "node:test";
 const repositoryRoot = resolve(".");
 const requiredDocuments = [
   "AGENTS.md",
+  "CONTRIBUTING.md",
   "README.md",
   ".agents/skills/develop-typeloop/SKILL.md",
   ".agents/skills/review-typeloop/SKILL.md",
@@ -39,6 +40,8 @@ test("agent entry documents are present", async () => {
 test("agent instructions stay concise and the repository skill is valid", async () => {
   const agentGuide = await readFile(resolve(repositoryRoot, "AGENTS.md"), "utf8");
   assert.ok(agentGuide.split(/\r?\n/).length <= 120, "AGENTS.md must stay below 120 lines");
+  assert.match(agentGuide, /Never commit or push directly to `main`/);
+  assert.match(agentGuide, /Never merge a pull request or enable auto-merge/);
 
   const skill = await readFile(resolve(repositoryRoot, ".agents/skills/develop-typeloop/SKILL.md"), "utf8");
   assert.match(skill, /^---\nname: develop-typeloop\ndescription: .+\n---\n/);
@@ -100,6 +103,16 @@ test("Playwright CI uses a version-matched image with browser dependencies", asy
   assert.match(e2eJob, /options: --user 1001 --ipc=host/);
   assert.doesNotMatch(e2eJob, /playwright install(?:-deps|\s)/, "the image must own browser and OS installation");
   assert.doesNotMatch(e2eJob, /ms-playwright|browser-cache/, "browser caching is redundant with the pinned image");
+});
+
+test("CI keeps a visible backstop against direct default-branch pushes", async () => {
+  const workflow = await readFile(resolve(repositoryRoot, ".github/workflows/ci.yml"), "utf8");
+  const policyJob = workflow.split("  pr-policy:")[1]?.split("  deps:")[0] ?? "";
+
+  assert.match(policyJob, /name: PR-only policy/);
+  assert.match(policyJob, /if: github\.event_name == 'push'/);
+  assert.match(policyJob, /commits\/\$\{SHA\}\/pulls/);
+  assert.match(policyJob, /Direct pushes to \$\{BASE_BRANCH\} are prohibited/);
 });
 
 test("the ESLint runtime stays within every ESLint plugin's supported major", async () => {
