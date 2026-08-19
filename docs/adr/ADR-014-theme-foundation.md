@@ -9,7 +9,7 @@ performed directly in that shape would either erase the previous visual baseline
 spread theme choices through React components.
 
 TypeLoop is local-first. Existing history and settings must survive schema growth,
-and a persisted appearance must apply before hydration to avoid a visible flash.
+and a persisted appearance must be restored as early as the framework allows.
 
 ## Decision
 
@@ -20,8 +20,8 @@ and a persisted appearance must apply before hydration to avoid a visible flash.
   than screen components.
 - The existing repository remains the only settings persistence boundary.
 - Presentation writes validated identifiers to `data-theme`, `data-density`, and
-  `data-motion` on the document root. A small first-party `beforeInteractive` script
-  restores only allow-listed values before hydration.
+  `data-motion` on the document root. A small first-party script restores only
+  allow-listed values as the first thing React runs on the client.
 - Raw design values move to `app/styles/themes.css`. Global and component styles
   consume the stable token contract, and the existing CI guard follows the registry.
 - The classic theme is a reversible visual fallback. Behavior, training data,
@@ -52,3 +52,31 @@ land screen by screen while classic remains available for comparison and rollbac
 The next visual phase must extract semantic surface, content, action, and status
 tokens before adding dark mode. It should also continue splitting screen styles out
 of `globals.css` by responsibility rather than by arbitrary line count.
+
+## Measured limitation: the restore is not paint-blocking
+
+The bootstrap runs before hydration but **not before the first paint**, so a narrow
+flash of the default theme is possible. This was measured on the built app, not
+assumed. Serving the document truncated just before the bootstrap and reading the
+computed style showed `data-theme` unset and `--paper` still at the default value:
+
+```text
+bootstrap到達前: {"theme":"(unset)","bg":"rgb(245, 243, 237)"}   // default --paper
+classic --paper: rgb(238, 243, 245)
+```
+
+Three placements were tried and all produced the same output at the same byte
+offset: `next/script` with `strategy="beforeInteractive"`, a plain `<script>` inside
+`<head>`, and `<script dangerouslySetInnerHTML>` as the first child of `<body>`.
+React 19 serialises a script authored in a Server Component into its flight payload
+regardless of position, so it executes through the client runtime after the initial
+HTML has painted. No JSX placement avoids this on Next 16 / React 19.
+
+`e2e/appearance.spec.ts` records the ordering so the claim cannot drift back.
+
+Closing the window entirely requires the server to know the preference before it
+renders, which means persisting appearance in a cookie and setting the attributes
+during SSR. That is deliberately **not** done here: it would add a second storage
+owner beside `SessionRepository`, and cookies leave the device on every request,
+which the local-first boundary treats as a decision needing its own ADR. The flash
+window is one paint on a cold load and only when a non-default theme is stored.

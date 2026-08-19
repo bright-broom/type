@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+const STORAGE_KEY = "typeloop:data";
+
 test("appearance changes immediately and survives a reload", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "表示設定" }).click();
@@ -43,4 +45,40 @@ test("appearance settings remain usable on a phone viewport", async ({ browser }
   );
   expect(hasOverflow).toBe(false);
   await context.close();
+});
+
+test("the appearance bootstrap ships in the document and restores only allow-listed values", async ({
+  page,
+  request,
+}) => {
+  // The bootstrap runs before hydration but after the first paint: React serialises a
+  // script authored in a Server Component into its flight payload whatever position it
+  // is given. This records that ordering so ADR-014 cannot drift back to claiming a
+  // paint-blocking restore, and pins the allow-list behaviour that makes it safe.
+  const html = await (await request.get("/")).text();
+  const bootstrap = html.indexOf("typeloop-appearance");
+  expect(bootstrap, "the bootstrap must ship with the document").toBeGreaterThan(0);
+  expect(
+    bootstrap,
+    "still inside the flight payload; revisit ADR-014 if a paint-blocking placement became possible",
+  ).toBeGreaterThan(html.indexOf("app-frame"));
+
+  // A stored value outside the allow-list must fall back, never reach the DOM.
+  await page.addInitScript(
+    ([key]) =>
+      localStorage.setItem(
+        key,
+        JSON.stringify({
+          version: 1,
+          sessions: [],
+          settings: { soundEnabled: true, appearance: { themeId: "../evil", density: "huge", motion: "none" } },
+        }),
+      ),
+    [STORAGE_KEY],
+  );
+  await page.goto("/");
+  const root = page.locator("html");
+  await expect(root).toHaveAttribute("data-theme", "modern");
+  await expect(root).toHaveAttribute("data-density", "comfortable");
+  await expect(root).toHaveAttribute("data-motion", "system");
 });
