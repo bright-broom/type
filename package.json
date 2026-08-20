@@ -31,14 +31,15 @@
     "check:dead-code": "knip",
     "check:secrets": "node scripts/check-secrets.mjs",
     "check:deps": "node scripts/check-dependency-compatibility.mjs",
-    "check:generated": "node scripts/import_git_commands.mjs --check && node scripts/generate-browser-theme-colors.mjs --check",
+    "check:generated": "node scripts/import_git_commands.mjs --check && node scripts/import_takken_glossary.mjs --check && node scripts/generate-browser-theme-colors.mjs --check",
+    "check:content": "node --experimental-strip-types scripts/check-takken-governance.mjs",
     "check:tokens": "node scripts/check-design-tokens.mjs",
     "check:bundle": "node scripts/check-bundle-budget.mjs",
     "check:static": "node scripts/check-static-routes.mjs",
     "check:security": "npm run check:secrets && npm run audit:dependencies",
     "audit:dependencies": "npm audit --audit-level=high",
-    "check:quick": "npm run format:check && npm run check:generated && npm run check:tokens && npm run lint && npm run typecheck && npm run test",
-    "check": "npm run format:check && npm run check:generated && npm run check:tokens && npm run lint && npm run typecheck && npm run test:coverage && npm run check:dead-code && npm run build && npm run check:static && npm run check:bundle && npm run test:e2e",
+    "check:quick": "npm run format:check && npm run check:generated && npm run check:content && npm run check:tokens && npm run lint && npm run typecheck && npm run test",
+    "check": "npm run format:check && npm run check:generated && npm run check:content && npm run check:tokens && npm run lint && npm run typecheck && npm run test:coverage && npm run check:dead-code && npm run build && npm run check:static && npm run check:bundle && npm run test:e2e",
     "check:ci": "npm run check:deps && npm run check && npm run check:security"
   },
   "dependencies": {
@@ -66,7 +67,8 @@
     "react-server-dom-webpack": "19.2.8",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.67.0"
+    "typescript-eslint": "8.67.0",
+    "yaml": "2.9.0"
   },
   "type": "module"
 }

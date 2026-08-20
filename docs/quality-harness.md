@@ -8,6 +8,7 @@ TypeLoop treats command output, tests, and CI status as evidence. An agent's sta
 | ----------- | -------------------------- | ------------------------------------------------------------------------- |
 | Deps        | `npm run check:deps`       | Every declared peer range is satisfiable by the pinned versions           |
 | Bundle      | `npm run check:bundle`     | JavaScript, CSS, social art, and install icons stay inside named budgets  |
+| Content     | `npm run check:content`    | Takken source provenance and qualified publication evidence               |
 | Tokens      | `npm run check:tokens`     | Design colors exist only inside the theme registry; TSX carries none      |
 | Format      | `npm run format:check`     | Deterministic authored-file formatting                                    |
 | Lint        | `npm run lint`             | TypeScript, React, hooks, accessibility, and Next.js rules                |
@@ -31,6 +32,12 @@ Node strip-types does not transform JSX. UI behavior belongs in Playwright unles
 introduced.
 
 Use `npm run check:quick` while iterating, `npm run check` before review, and `npm run check:ci` for the complete local CI equivalent. Install the browsers once with `npm run e2e:install` (Chromium and WebKit).
+
+## Takken content governance
+
+`check:generated` reproduces the glossary byte-for-byte from its tracked normalized TSV. `check:content` then joins that artifact to the authored edition and official-source registries. Every source ID must resolve to an allowlisted RETIO, MLIT, or e-Gov HTTPS snapshot with retrieval and as-of dates plus a SHA-256 digest. Exam and legal-basis dates are manifest data, never importer literals.
+
+The weekly `Takken official source monitor` workflow compares stable content windows on the highest-risk official pages and reconciles one deduplicated Issue on drift. It reports only URLs, dates, digests, and missing markers; it does not copy official text, alter the glossary, change an answer, or promote a question. Redirects and non-default-branch manual runs are rejected. `published` questions are accepted only when exact question and registry digests have an Ed25519 review attestation signed by a reviewer whose qualification and category scope are stored in the owner-managed `TAKKEN_REVIEWER_KEYS_JSON` repository variable. An absent trust registry is an intentional default-deny state.
 
 ## Bug fixes
 
@@ -61,6 +68,8 @@ scanning or push protection. `npm audit` is registry-backed and may fail for ope
 security job so the failure is explicit.
 
 CodeQL, native Secret Scanning, push protection, branch rulesets, and Vercel production controls are repository/workspace settings. They must be verified by an owner before being described as enabled. Never print `.env`, credentials, tokens, or production data while diagnosing a gate.
+
+Dependabot vulnerability alerts and automated security fixes were enabled on 2026-08-20. Repository Actions were restricted the same day to GitHub-owned actions plus the documented `openai/codex-action@*` exception, with full commit SHA pinning required. `tests/security-headers.test.mjs` guards the authored policy and `e2e/security-headers.spec.ts` verifies the effective production response in Chromium and WebKit. Re-check external settings with `docs/security-control-checklist.md` because repository code cannot make them immutable.
 
 ## Dead-code cleanup
 
@@ -101,8 +110,8 @@ includes main-thread scheduling delay, so co-scheduling the probe beside full-sc
 runner contention instead of the page. The gate therefore records two signals: product-owned event processing must remain
 at or below 100 ms, while full Event Timing has a 500 ms hosted-runner safety ceiling that catches major regressions without
 misrepresenting a shared VM as field INP. A 200 ms end-to-end target belongs to real-user monitoring if that privacy boundary
-is introduced later; this local-first product does not currently send telemetry. Full all-screen fluid traversals have a
-60-second per-viewport budget because each test intentionally visits up to sixteen application states in one browser context.
+is introduced later; this local-first product does not currently send telemetry. Fluid-layout cases are isolated by screen,
+so a slow or stateful route cannot consume the timeout budget or browser state of the rest of the viewport matrix.
 
 CI runs the browser job inside the version-matched, digest-pinned Playwright
 `noble` image. The image owns Chromium, WebKit, and their OS packages; do not add
@@ -155,22 +164,27 @@ Runs on `workflow_run` after CI finishes, so it executes the classifier from the
 default branch and never checks out the branch whose CI failed. That keeps it safe
 to run for forks and for dependabot, which is precisely where the reporting matters.
 
-`scripts/triage-ci-failure.mjs` maps the failed job log onto a known cause, states
-whether it is mechanically fixable, and comments the evidence and the next command
-on the pull request. Causes marked blocking — dependency conflicts, tracked
-secrets, high-severity advisories — also fail the triage job, so "do not merge" is
-visible as a check and not only inside a log.
+`scripts/triage-ci-failure.mjs` maps the failed job log onto a known cause and states
+whether it is mechanically fixable. Pull-request and Autofix-dispatched failures
+receive a PR comment. `scripts/ci-triage-contract.mjs` fails closed on unexpected
+classifier exits and owns incident identity. A repository-scoped serial reconciler
+re-reads the latest `main` CI run before it opens, updates, or closes the one marked
+Production Health issue; stale workflow completions cannot mutate it.
 
 ### Autofix (`.github/workflows/autofix.yml`)
 
-Applies `npm run format` and `eslint --fix`, verifies the result with
-`npm run check:quick`, then pushes an `[autofix]` commit to the same branch. It is
-limited to same-repository branches, skips its own commits, and skips dependabot
-branches. Nothing that needs a decision is ever rewritten.
+The trusted `pull_request_target` workflow has three capability-separated jobs. A
+read-only prepare job checks out the exact PR SHA without credentials, applies
+`npm run format` and `eslint --fix`, verifies `npm run check:quick`, and uploads only
+a short-lived patch. A writer job executes no PR code: it rechecks the SHA, applies
+the patch only to files already changed by the PR, and pushes an `[autofix]` commit.
+A final job owns only Actions dispatch and PR notification.
 
-A `GITHUB_TOKEN` push does not start a new workflow run, so the job comments that CI
-needs re-running on the new commit. Add `[skip autofix]` to a pull request title to
-opt out.
+A `GITHUB_TOKEN` push does not start a new workflow run, so Autofix dispatches CI
+explicitly with the new commit SHA. CI rejects a dispatched run if GitHub resolves
+the branch to a different SHA, preventing a stale green check from being mistaken
+for validation of the Autofix commit. Add `[skip autofix]` to a pull request title
+to opt out.
 
 ### What the automation deliberately does not do
 
@@ -179,3 +193,30 @@ and upgrading the whole constraint is a judgement about the toolchain, and guess
 would produce a green build on a tree nobody chose. `npm run check:deps` names the
 conflict, dependabot ignores keep known-incompatible majors out, and the triage
 comment marks the pull request unmergeable — the decision stays with a person.
+
+## Agent control plane
+
+`.codex/hooks.json` gives trusted Codex clients an early local stop before a protected-branch push, PR merge, protected-ref
+API mutation, or any Vercel CLI invocation while that tool's dependency audit is blocked. It complements GitHub rules; it
+does not replace them and cannot govern other clients. Review repository hooks with `/hooks` before trusting a checkout.
+
+`Codex CI advisory` is an optional second opinion after the deterministic classifier. It reads only the default branch and
+failed-job artifact, runs with `contents: read` and the `:read-only` permission profile, and writes only a 14-day artifact.
+It cannot change or comment on a pull request. The owner must explicitly set both `CODEX_CI_ADVISORY_ENABLED=true` and the
+`OPENAI_API_KEY` Actions secret; otherwise no model call occurs. ADR-020's external Actions baseline must also be narrowed
+to the single `openai/codex-action@*` pattern while full-SHA pinning remains required; `docs/agent-control-checklist.md`
+records that prerequisite and keeps the switch disabled until it is verified.
+
+`Quality metrics` runs weekly and can also be dispatched manually. Its 28-day artifact defines each denominator and reports
+`n/a` instead of manufacturing a zero. The signals are initial CI success, median time to first green run, distinct reviewed
+revision rounds, default-branch CI failures, the share of failures caught on PRs, and the merge rate of closed `codex/*`
+pull requests. Closed PRs are associated to historical CI through their commit SHAs because GitHub removes the
+`pull_requests` association from some completed run responses. They measure the delivery system, not people.
+All merged PRs remain in the initial-CI denominator; an unassociated run is shown as missing and is not successful. Re-run
+attempt 1 is recovered from its jobs endpoint, and failure detection counts a workflow run when any observed attempt failed.
+API queries are date-bounded before pagination so report cost does not grow with repository age.
+
+No Vercel CLI runner is exposed while the evaluated `59.1.4` dependency graph fails the High/Critical audit. `npm exec`
+would not solve that problem because it re-resolves an unaudited transitive graph. Repository hooks deny every Vercel CLI
+command; previews continue through the GitHub integration, and production remains human-owned. Revisit only with an isolated
+lockfile or digest-pinned image and a dedicated audit gate. No repository workflow may merge or weaken a required gate.

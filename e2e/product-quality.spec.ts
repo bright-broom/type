@@ -121,10 +121,11 @@ test("the installed static shell remains interactive from root and deep URLs off
   page.on("pageerror", (error) => browserErrors.push(error.message));
   page.on("requestfailed", (request) => {
     const failure = request.failure()?.errorText ?? "unknown failure";
-    const expectedOfflineRsc =
+    const expectedOfflinePrefetch =
       request.url().includes("_rsc=") &&
+      request.headers()["next-router-prefetch"] === "1" &&
       (failure.includes("ERR_INTERNET_DISCONNECTED") || failure.includes("ERR_ABORTED"));
-    if (!expectedOfflineRsc) failedRequests.push(`${failure} ${request.url()}`);
+    if (!expectedOfflinePrefetch) failedRequests.push(`${failure} ${request.url()}`);
   });
   await page.goto("/");
   await expect(page.getByRole("heading", { name: /60秒で、.*昨日より軽く。/ })).toBeVisible();
@@ -155,6 +156,14 @@ test("the installed static shell remains interactive from root and deep URLs off
     await page.goto("/takken/glossary?concept=takken-term-001", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { name: "宅建試験 完全用語一覧" })).toBeVisible();
     await expect(page.locator(".glossary-entry")).toHaveCount(1);
+    await page.getByRole("button", { name: /ホームへ/ }).click();
+    await expect(page).toHaveURL(/\/takken$/);
+    await expect(page.getByRole("heading", { name: /覚える。解く。/ })).toBeVisible();
+
+    await page.goto("/takken/glossary?concept=takken-term-001", { waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: "用語を練習" }).click();
+    await expect(page).toHaveURL(/\/?training=takken$/);
+    await expect(page.getByRole("radio", { name: /宅建/ })).toBeChecked();
   } finally {
     await context.setOffline(false);
   }

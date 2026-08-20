@@ -1,8 +1,5 @@
 name: CI triage
 
-# Runs after CI finishes, in the base repository's context. `workflow_run` is used
-# deliberately: it never checks out the pull request's code, so commenting on a
-# fork or dependabot branch cannot execute anything from that branch.
 on:
   workflow_run:
     workflows: [CI]
@@ -11,25 +8,26 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: ci-triage-${{ github.event.workflow_run.head_sha }}
-  cancel-in-progress: true
-
 jobs:
-  triage:
-    name: Explain the failure
-    if: github.event.workflow_run.conclusion == 'failure'
+  pull-request-triage:
+    name: Explain pull request failure
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' &&
+      (github.event.workflow_run.event == 'pull_request' ||
+       github.event.workflow_run.event == 'workflow_dispatch')
+    concurrency:
+      group: ci-triage-pr-${{ github.event.workflow_run.head_sha }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       actions: read
+      contents: read
       pull-requests: write
     steps:
-      - name: Checkout the base repository
+      - name: Checkout the trusted classifier
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # The triage classifier must come from the target branch, never from the
-          # branch whose CI failed.
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
       - name: Set up Node.js
@@ -39,23 +37,28 @@ jobs:
       - name: Classify the failed jobs
         id: classify
         env:
+          CURRENT_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ github.event.workflow_run.id }}
         run: |
-          gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --log-failed > failure.log || true
+          gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --attempt "$CURRENT_ATTEMPT" \
+            --log-failed > failure.log || true
+          set +e
           node scripts/triage-ci-failure.mjs failure.log > triage.md
           status=$?
-          echo "blocking=$([ $status -eq 2 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-      - name: Comment on the pull request
+          set -e
+          blocking=$(node scripts/ci-triage-contract.mjs classifier "$status")
+          echo "blocking=$blocking" >> "$GITHUB_OUTPUT"
+      - name: Comment on the owning pull request
         env:
           GH_TOKEN: ${{ github.token }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           RUN_URL: ${{ github.event.workflow_run.html_url }}
         run: |
-          number=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --search "$HEAD_SHA" \
-            --json number --jq '.[0].number // empty')
-          if [ -z "$number" ]; then
-            echo "No open pull request for $HEAD_SHA; printing the triage instead."
+          numbers=$(gh api "repos/$GITHUB_REPOSITORY/commits/$HEAD_SHA/pulls" \
+            | node scripts/ci-triage-contract.mjs pull-requests)
+          if [ -z "$numbers" ]; then
+            echo "No open pull request owns $HEAD_SHA."
             cat triage.md
             exit 0
           fi
@@ -64,9 +67,108 @@ jobs:
             echo
             echo "失敗した実行: $RUN_URL"
           } > comment.md
-          gh pr comment "$number" --repo "$GITHUB_REPOSITORY" --body-file comment.md
+          while read -r number; do
+            gh pr comment "$number" --repo "$GITHUB_REPOSITORY" --body-file comment.md
+          done <<< "$numbers"
       - name: Fail when the cause must not be merged
         if: steps.classify.outputs.blocking == 'true'
+        run: exit 1
+
+  production-health:
+    name: Reconcile production health
+    if: >-
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == github.event.repository.default_branch
+    concurrency:
+      group: production-health-${{ github.repository }}-${{ github.event.repository.default_branch }}
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout the trusted health reconciler
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+      - name: Ignore stale workflow completion events
+        id: owner
+        env:
+          CURRENT_RUN_ID: ${{ github.event.workflow_run.id }}
+          CURRENT_SHA: ${{ github.event.workflow_run.head_sha }}
+          CURRENT_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+          CURRENT_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "::error::この失敗はマージ不可の分類です。詳細はPRコメントを参照してください。"
-          exit 1
+          latest=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml \
+            --branch "$DEFAULT_BRANCH" --event push --limit 1 \
+            --json databaseId,headSha,attempt,status,conclusion --jq '.[0]')
+          owns=$(node scripts/ci-triage-contract.mjs latest-run \
+            "$CURRENT_RUN_ID" "$CURRENT_SHA" "$CURRENT_ATTEMPT" "$CURRENT_CONCLUSION" "$latest")
+          echo "owns=$owns" >> "$GITHUB_OUTPUT"
+      - name: Classify the latest failure
+        if: steps.owner.outputs.owns == 'true' && github.event.workflow_run.conclusion != 'success'
+        env:
+          CURRENT_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --attempt "$CURRENT_ATTEMPT" \
+            --log-failed > failure.log || true
+          set +e
+          node scripts/triage-ci-failure.mjs failure.log > triage.md
+          status=$?
+          set -e
+          node scripts/ci-triage-contract.mjs classifier "$status" >/dev/null
+      - name: Reconcile the single production health issue
+        if: steps.owner.outputs.owns == 'true'
+        env:
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          CURRENT_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+          CURRENT_RUN_ID: ${{ github.event.workflow_run.id }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+        run: |
+          latest=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml \
+            --branch "$DEFAULT_BRANCH" --event push --limit 1 \
+            --json databaseId,headSha,attempt,status,conclusion --jq '.[0]')
+          owns=$(node scripts/ci-triage-contract.mjs latest-run \
+            "$CURRENT_RUN_ID" "$HEAD_SHA" "$CURRENT_ATTEMPT" "$CONCLUSION" "$latest")
+          if [ "$owns" != true ]; then
+            echo "A newer main CI run owns production health reconciliation."
+            exit 0
+          fi
+          number=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
+            --json number,body | node scripts/ci-triage-contract.mjs production-issue)
+          if [ "$CONCLUSION" = success ]; then
+            if [ -n "$number" ]; then
+              gh issue close "$number" --repo "$GITHUB_REPOSITORY" \
+                --comment "main の品質ゲートが復旧しました: $RUN_URL"
+            fi
+            exit 0
+          fi
+          {
+            node scripts/ci-triage-contract.mjs marker
+            echo '## main の品質ゲートが失敗しています'
+            echo
+            echo "対象コミット: \`$HEAD_SHA\`"
+            echo "失敗した実行: $RUN_URL"
+            echo
+            cat triage.md
+          } > issue.md
+          title='[Production Health] main CI is failing'
+          if [ -n "$number" ]; then
+            gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --title "$title" --body-file issue.md
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file issue.md
+          fi

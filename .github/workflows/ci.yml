@@ -4,6 +4,12 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: Commit SHA that requested this validation
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -47,9 +53,21 @@ jobs:
           done
           echo "::error::Direct pushes to ${BASE_BRANCH} are prohibited. Submit a pull request and let a human owner merge it."
           exit 1
+      - name: Verify a dispatched run targets the requesting commit
+        if: github.event_name == 'workflow_dispatch' && inputs.expected_sha != ''
+        env:
+          ACTUAL_SHA: ${{ github.sha }}
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: |
+          if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
+            echo "::error::Requested $EXPECTED_SHA, but workflow_dispatch resolved to $ACTUAL_SHA."
+            exit 1
+          fi
+          echo "Validating explicitly dispatched commit $ACTUAL_SHA."
 
   deps:
     name: Dependency compatibility
+    needs: pr-policy
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -83,6 +101,14 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Verify generated content
+        run: npm run check:generated
+      - name: Verify Takken content governance
+        env:
+          TAKKEN_REVIEWER_KEYS_JSON: ${{ vars.TAKKEN_REVIEWER_KEYS_JSON }}
+        run: npm run check:content
+      - name: Verify design token boundary
+        run: npm run check:tokens
       - name: Check formatting
         run: npm run format:check
       - name: Lint
@@ -95,6 +121,8 @@ jobs:
         run: npm run check:dead-code
       - name: Build production application
         run: npm run build
+      - name: Verify immutable static application routes
+        run: npm run check:static
       - name: Hold shipped JavaScript to its budget
         run: npm run check:bundle
 

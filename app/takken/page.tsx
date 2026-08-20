@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { formatEditionDate, TAKKEN_EDITION, TAKKEN_EXAM_YEAR } from "../../src/content/takken/takken-edition.ts";
 import { PageShell } from "../../src/presentation/components/layout/PageShell.tsx";
 
 export default function TakkenHomePage() {
   return (
     <PageShell width="assessment" className="takken-hub assessment-reading-shell">
       <section className="takken-hub-hero">
-        <span className="section-index">TYPELOOP / TAKKEN 2026</span>
+        <span className="section-index">TYPELOOP / TAKKEN {TAKKEN_EXAM_YEAR}</span>
         <h1>
           覚える。解く。
           <br />
@@ -29,7 +30,7 @@ export default function TakkenHomePage() {
         <Link href="/takken/glossary">
           <span>03 / REFERENCE</span>
           <h2>宅建用語集</h2>
-          <p>令和8年度向け446語を検索して確認。</p>
+          <p>{TAKKEN_EDITION.label}・全446語を検索して確認。</p>
           <strong>調べる →</strong>
         </Link>
         <Link href="/?training=takken">
@@ -42,7 +43,7 @@ export default function TakkenHomePage() {
       <aside className="takken-exam-facts">
         <div>
           <span>試験日</span>
-          <strong>2026.10.18</strong>
+          <strong>{formatEditionDate(TAKKEN_EDITION.examDate, "dots")}</strong>
         </div>
         <div>
           <span>形式</span>
@@ -50,7 +51,7 @@ export default function TakkenHomePage() {
         </div>
         <div>
           <span>法令基準日</span>
-          <strong>2026.04.01</strong>
+          <strong>{formatEditionDate(TAKKEN_EDITION.legalBasisDate, "dots")}</strong>
         </div>
       </aside>
     </PageShell>

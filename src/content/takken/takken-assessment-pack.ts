@@ -1,10 +1,10 @@
 import glossaryJson from "../generated/takken-glossary.json" with { type: "json" };
+import { TAKKEN_EDITION, TAKKEN_EXAM_YEAR, TAKKEN_PACK_SERIES } from "./takken-edition.ts";
 import type { AssessmentChoice, AssessmentQuestion } from "../../domain/assessment/assessment-types.ts";
 import type { TakkenGlossary, TakkenGlossaryEntry } from "./takken-glossary-types.ts";
 
-export const TAKKEN_LEGAL_BASIS_DATE = "2026-04-01";
+export const TAKKEN_LEGAL_BASIS_DATE = TAKKEN_EDITION.legalBasisDate;
 export const TAKKEN_PACK_REVIEW_STATUS = "provisional" as const;
-const TAKKEN_PACK_SERIES = "2026.1";
 const FNV_OFFSET_BASIS = 0x811c9dc5;
 const FNV_PRIME = 0x01000193;
 
@@ -57,7 +57,7 @@ function rotate<Entry>(values: readonly Entry[], places: number): Entry[] {
 function makeQuestion(target: TakkenGlossaryEntry, categoryId: string): AssessmentQuestion {
   const variant = target.id % 3;
   const entries = rotate([target, ...distractorsFor(target)], target.id % 4);
-  const id = `takken-2026-term-${String(target.id).padStart(3, "0")}-v${variant + 1}`;
+  const id = `takken-${TAKKEN_EXAM_YEAR}-term-${String(target.id).padStart(3, "0")}-v${variant + 1}`;
   const choices = entries.map((entry, index) => ({
     id: `${id}-choice-${index + 1}`,
     text: variant === 0 ? entry.definition : variant === 1 ? entry.term : entry.examNote,
