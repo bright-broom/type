@@ -2,7 +2,6 @@
 @import "./styles/themes.css";
 @import "./styles/settings.css";
 @import "./styles/modern.css";
-@import "./styles/takken-assessment.css";
 
 * {
   box-sizing: border-box;
@@ -155,7 +154,7 @@ kbd {
   color: var(--control-on-primary);
   background: rgb(var(--backdrop-rgb) / 10%);
   box-shadow: inset 0 -2px 0 rgb(var(--ink-rgb) / 20%);
-  font-size: 0.68rem;
+  font-size: var(--font-micro);
   letter-spacing: 0.04em;
 }
 .text-button {
@@ -207,14 +206,14 @@ kbd {
   color: var(--ink-deep);
   background: var(--cyan);
   font:
-    800 0.5rem var(--font-geist-mono),
+    800 var(--font-micro) var(--font-geist-mono),
     monospace;
 }
 .playbook-link i {
   margin-left: auto;
   color: var(--muted);
   font-style: normal;
-  font-size: 0.65rem;
+  font-size: var(--font-micro);
 }
 .takken-link {
   margin-top: 10px;
@@ -244,7 +243,7 @@ kbd {
   border-top: 1px solid var(--line);
   color: var(--text-caption);
   font:
-    600 0.56rem var(--font-geist-mono),
+    600 var(--font-micro) var(--font-geist-mono),
     monospace;
   letter-spacing: 0.12em;
 }
@@ -292,7 +291,7 @@ kbd {
 .meta-label {
   color: var(--muted);
   font:
-    700 0.6rem var(--font-geist-mono),
+    700 var(--font-micro) var(--font-geist-mono),
     monospace;
   letter-spacing: 0.14em;
 }
@@ -329,7 +328,7 @@ kbd {
   padding-inline: var(--space-1);
   background: none;
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: var(--font-micro);
   cursor: pointer;
 }
 .pause-button kbd {
@@ -357,7 +356,7 @@ kbd {
   left: 0;
   color: var(--muted);
   font:
-    650 0.55rem var(--font-geist-mono),
+    650 var(--font-micro) var(--font-geist-mono),
     monospace;
   letter-spacing: 0.13em;
 }
@@ -416,7 +415,7 @@ kbd {
   height: 26px;
   margin-top: 4px;
   color: var(--muted);
-  font-size: 0.65rem;
+  font-size: var(--font-micro);
   font-weight: 740;
   letter-spacing: 0.08em;
 }
@@ -449,7 +448,7 @@ kbd {
   color: var(--muted);
   display: block;
   font:
-    680 0.58rem var(--font-geist-mono),
+    680 var(--font-micro) var(--font-geist-mono),
     monospace;
   letter-spacing: 0.13em;
 }
@@ -489,7 +488,7 @@ kbd {
 .dialog-kicker {
   color: var(--cyan-dark);
   font:
-    750 0.62rem var(--font-geist-mono),
+    750 var(--font-micro) var(--font-geist-mono),
     monospace;
   letter-spacing: 0.15em;
 }
@@ -574,7 +573,7 @@ kbd {
   background: var(--accent-soft);
   color: var(--content-on-accent);
   font:
-    800 0.52rem var(--font-geist-mono),
+    800 var(--font-micro) var(--font-geist-mono),
     monospace;
   letter-spacing: 0.1em;
 }
@@ -588,7 +587,7 @@ kbd {
 .main-score span {
   color: var(--cyan);
   font:
-    700 0.62rem var(--font-geist-mono),
+    700 var(--font-micro) var(--font-geist-mono),
     monospace;
   letter-spacing: 0.14em;
 }
@@ -613,7 +612,7 @@ kbd {
 .metric-grid small {
   display: block;
   color: var(--text-dim);
-  font-size: 0.58rem;
+  font-size: var(--font-micro);
   letter-spacing: 0.09em;
 }
 .metric-grid strong {
@@ -646,7 +645,7 @@ kbd {
 .section-index {
   color: var(--cyan-dark);
   font:
-    750 0.58rem var(--font-geist-mono),
+    750 var(--font-micro) var(--font-geist-mono),
     monospace;
   letter-spacing: 0.13em;
 }
@@ -677,7 +676,7 @@ kbd {
 }
 .key-list small {
   color: var(--muted);
-  font-size: 0.56rem;
+  font-size: var(--font-micro);
 }
 .result-actions {
   margin-top: 28px;
@@ -715,7 +714,7 @@ kbd {
   min-height: 2.8em;
   margin: 0;
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: var(--font-micro);
   line-height: 1.4;
   text-align: center;
 }
@@ -740,7 +739,7 @@ kbd {
 .history-row i {
   color: var(--cyan-dark);
   font:
-    normal 650 0.63rem var(--font-geist-mono),
+    normal 650 var(--font-micro) var(--font-geist-mono),
     monospace;
 }
 .history-row strong {
@@ -750,7 +749,7 @@ kbd {
   min-height: 38px;
   color: var(--muted);
   font:
-    680 0.56rem var(--font-geist-mono),
+    680 var(--font-micro) var(--font-geist-mono),
     monospace;
   letter-spacing: 0.12em;
 }
@@ -803,7 +802,7 @@ kbd {
 .playbook-controls > span {
   color: var(--muted);
   font:
-    700 0.61rem var(--font-geist-mono),
+    700 var(--font-micro) var(--font-geist-mono),
     monospace;
   letter-spacing: 0.09em;
 }
@@ -858,7 +857,7 @@ kbd {
 .playbook-nav i {
   color: var(--cyan-dark);
   font:
-    normal 650 0.55rem var(--font-geist-mono),
+    normal 650 var(--font-micro) var(--font-geist-mono),
     monospace;
 }
 .playbook-nav span {
@@ -869,7 +868,7 @@ kbd {
   font-weight: 680;
 }
 .playbook-nav small {
-  font-size: 0.55rem;
+  font-size: var(--font-micro);
 }
 .playbook-content {
   min-width: 0;
@@ -889,7 +888,7 @@ kbd {
 .playbook-content > header strong {
   color: var(--muted);
   font:
-    650 0.58rem var(--font-geist-mono),
+    650 var(--font-micro) var(--font-geist-mono),
     monospace;
 }
 .playbook-rows {
@@ -908,7 +907,7 @@ kbd {
 .row-number {
   color: var(--cyan-dark);
   font:
-    650 0.58rem var(--font-geist-mono),
+    650 var(--font-micro) var(--font-geist-mono),
     monospace;
   padding-top: 4px;
 }
@@ -967,7 +966,7 @@ kbd {
 .glossary-filters label > span {
   color: var(--muted);
   font:
-    700 0.59rem var(--font-geist-mono),
+    700 var(--font-micro) var(--font-geist-mono),
     monospace;
   letter-spacing: 0.09em;
 }
@@ -1039,7 +1038,7 @@ kbd {
 }
 .glossary-entry-title span {
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: var(--font-micro);
   letter-spacing: 0.1em;
 }
 .glossary-entry-title h2 {
@@ -1062,7 +1061,7 @@ kbd {
 .exam-note strong {
   margin-right: 12px;
   color: var(--coral);
-  font-size: 0.68rem;
+  font-size: var(--font-micro);
 }
 .glossary-entry footer {
   margin-top: 14px;
@@ -1076,14 +1075,14 @@ kbd {
   padding: 4px 8px;
   color: var(--muted);
   background: var(--paper-soft);
-  font-size: 0.6rem;
+  font-size: var(--font-micro);
 }
 .importance {
   flex: none;
   border-radius: 999px;
   padding: 6px 9px;
   font:
-    normal 750 0.6rem var(--font-geist-mono),
+    normal 750 var(--font-micro) var(--font-geist-mono),
     monospace;
 }
 .importance-a {
@@ -1114,7 +1113,7 @@ kbd {
   margin-right: 10px;
   color: var(--ink-deep);
   font:
-    800 0.6rem var(--font-geist-mono),
+    800 var(--font-micro) var(--font-geist-mono),
     monospace;
   letter-spacing: 0.08em;
 }
@@ -1141,7 +1140,7 @@ kbd {
   border-radius: 999px;
   padding: 6px 9px;
   font:
-    normal 750 0.6rem var(--font-geist-mono),
+    normal 750 var(--font-micro) var(--font-geist-mono),
     monospace;
   white-space: nowrap;
 }
@@ -1166,7 +1165,7 @@ kbd {
 .meeting-context strong {
   margin-right: 12px;
   color: var(--cyan-dark);
-  font-size: 0.68rem;
+  font-size: var(--font-micro);
 }
 .glossary-entry-main .review-question {
   padding: 10px 12px;
@@ -1176,7 +1175,7 @@ kbd {
 .review-question strong {
   margin-right: 12px;
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: var(--font-micro);
 }
 .glossary-entry footer span.masked-chip {
   border-color: var(--ink-deep);
@@ -1321,7 +1320,7 @@ kbd {
   .touch-typing-input > span {
     color: var(--muted);
     font:
-      700 0.58rem var(--font-geist-mono),
+      700 var(--font-micro) var(--font-geist-mono),
       monospace;
     letter-spacing: 0.08em;
   }
@@ -1476,7 +1475,7 @@ kbd {
     font-size: clamp(1.2rem, 6vw, 1.6rem);
   }
   .live-stats span {
-    font-size: 0.5rem;
+    font-size: var(--font-micro);
     letter-spacing: 0.06em;
   }
   .dialog-backdrop {
@@ -1497,7 +1496,7 @@ kbd {
     right: -30px;
     width: 138px;
     padding: 6px 0;
-    font-size: 0.45rem;
+    font-size: var(--font-micro);
     letter-spacing: 0.06em;
   }
   .score-card {
@@ -1572,7 +1571,7 @@ kbd {
     content: attr(data-label);
     color: var(--muted);
     font:
-      680 0.52rem var(--font-geist-mono),
+      680 var(--font-micro) var(--font-geist-mono),
       monospace;
     letter-spacing: 0.1em;
   }
@@ -1664,7 +1663,7 @@ kbd {
 
 @media (max-width: 400px) {
   .eyebrow {
-    font-size: 0.64rem;
+    font-size: var(--font-micro);
     letter-spacing: 0.1em;
   }
   .playbook-link {
@@ -1952,7 +1951,7 @@ button {
   display: block;
   color: var(--muted);
   font:
-    680 0.56rem var(--font-geist-mono),
+    680 var(--font-micro) var(--font-geist-mono),
     monospace;
   letter-spacing: 0.1em;
 }
@@ -1967,7 +1966,7 @@ button {
 .history-overview p {
   margin: 0 0 0 24px;
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: var(--font-micro);
 }
 
 .history-overview p span {

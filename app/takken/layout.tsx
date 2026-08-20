@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { TakkenSiteShell } from "@/src/presentation/components/takken-assessment/TakkenSiteShell";
 import { TAKKEN_EXAM_YEAR } from "@/src/content/takken/takken-edition";
+import "../styles/takken-assessment.css";
 
 export const metadata: Metadata = {
   title: "宅建試験対策 — TypeLoop",

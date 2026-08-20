@@ -34,6 +34,14 @@ Next.js route
 
 The active typing path stays in memory. Persistence happens after session completion or a settings change, never on every keystroke.
 
+The distribution shell is also local-first. A production-only service worker atomically
+caches the root document and its same-origin build assets so an installed home screen
+remains interactive offline. It owns no product state, never handles non-GET or
+cross-origin requests, waits behind clients of the previous release, and is registered
+as a non-fatal progressive enhancement. A pre-paint script restores the validated
+appearance cookie when cached HTML is used. See
+[ADR-021](adr/ADR-021-product-quality-delivery.md).
+
 Assessment is a separate application capability. Its low-frequency answers are persisted after each transition so a long mock exam survives reload, while question content remains a versioned build artifact.
 
 ```text
@@ -136,6 +144,7 @@ When adding persistence or another external capability, define the required port
 - `tests/repository-conventions.test.mjs` enforces required documentation, precise directory names, and authored-file size limits.
 - The same repository guard requires every application screen to enter through the typed `PageShell` contract.
 - `scripts/check-design-tokens.mjs` keeps raw colors inside the theme registry and out of components.
+- `scripts/check-bundle-budget.mjs` bounds JavaScript, CSS, and public raster delivery weight.
 - `npm run check` is the canonical deterministic local validation command; CI adds the network-backed dependency audit with `npm run check:ci`.
 - `.agents/skills/develop-typeloop` provides a reusable, progressively loaded workflow for TypeLoop changes.
 - Root and nested `AGENTS.md` files hold a small number of consequential review invariants; mechanical rules remain in CI.
