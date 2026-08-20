@@ -159,6 +159,7 @@ const SCREENS: ReadonlyArray<LayoutScreen> = [
 ];
 
 const EVERY_SCREEN_VIEWPORTS = new Set(["compact-phone", "desktop"]);
+const EXHAUSTIVE_LAYOUT_TIMEOUT_MS = 90_000;
 const REPRESENTATIVE_SCREENS = new Set([
   "home",
   "settings",
@@ -175,7 +176,8 @@ async function resetLocalState(page: Page): Promise<void> {
 }
 
 for (const viewport of VIEWPORTS) {
-  test(`all layout variants remain fluid at ${viewport.name}`, async ({ browser }) => {
+  test(`all layout variants remain fluid at ${viewport.name}`, async ({ browser }, testInfo) => {
+    if (EVERY_SCREEN_VIEWPORTS.has(viewport.name)) testInfo.setTimeout(EXHAUSTIVE_LAYOUT_TIMEOUT_MS);
     const context = await browser.newContext({ viewport, hasTouch: viewport.width < 768 });
     const page = await context.newPage();
     await page.clock.install();
