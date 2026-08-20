@@ -8,13 +8,13 @@ TypeLoop is a local-first static-data application with no backend API, authentic
 
 Apply one same-origin browser policy to every route. Disable the framework identification header; deny framing, objects, forms outside the origin, external connections, sensitive device capabilities, and MIME sniffing; and isolate top-level browsing contexts. HSTS protects only the exact deployed HTTPS host; `includeSubDomains` and preload are withheld until an owner verifies every subdomain and records rollback ownership. The CSP deliberately omits `upgrade-insecure-requests`, because the production test harness serves HTTP and WebKit otherwise upgrades its same-origin assets to an unavailable HTTPS endpoint. Next.js hydration requires inline scripts and styles, so production permits `unsafe-inline` but never `unsafe-eval`. Development alone permits eval for the Next.js development runtime. Automated response tests verify the effective production headers on every route and a hydrated client interaction in both browser engines.
 
-Enable Dependabot vulnerability alerts and automated security fixes in GitHub. Restrict Actions to GitHub-owned actions and require every action reference to use a full commit SHA. These settings are owner-managed external controls; their verified state and date belong in `docs/security-control-checklist.md` rather than being inferred from workflow source.
+Enable Dependabot vulnerability alerts and automated security fixes in GitHub. Restrict Actions to GitHub-owned actions plus individually documented owner-managed exceptions, and require every action reference to use a full commit SHA. The current allowlist contains only `openai/codex-action@*`, reserved for the separately reviewed agent-control workflow; adding another pattern requires an ADR that names its consumer and trust boundary. These settings are owner-managed external controls; their verified state and date belong in `docs/security-control-checklist.md` rather than being inferred from workflow source.
 
 ## Alternatives
 
 - A nonce-based strict CSP was deferred because Next.js nonce rendering would force dynamic rendering and conflicts with the planned static-shell work.
 - Report-only CSP was rejected because the application has a closed runtime network boundary and can exercise the enforced policy in both browser engines before release.
-- Allowing all Marketplace actions was rejected because current workflows need only GitHub-owned actions.
+- Allowing all Marketplace actions was rejected because every non-GitHub-owned action must be individually justified, allowlisted, and SHA-pinned.
 
 ## Consequences
 
