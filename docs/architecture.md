@@ -89,6 +89,8 @@ source file → importer → generated JSON → typed content loader → present
 
 Generated artifacts are versioned for reproducible builds but are not hand-edited.
 
+Takken adds a tracked normalized TSV, authored edition manifest, and official-source registry before the importer. The generated artifact binds exact source and canonical registry digests. A scheduled, non-runtime monitor reads only default-branch code and allowlisted RETIO, MLIT, and e-Gov sources, rejects redirects, and opens a GitHub Issue when stable content windows drift. It never writes application content. A signed qualified-human attestation, verified against an owner-managed external trust registry, is the only path from a provisional assessment question to `published`.
+
 Confidentiality is an importer responsibility, not a UI one. When a source contains
 material that must not reach a deployed bundle, the importer de-identifies it and
 fails on any leak, so the generated artifact is already the publishable form. See
@@ -103,6 +105,18 @@ fails on any leak, so the generated artifact is already the publishable form. Se
 - Software-keyboard focus is owned by the presentation composition boundary because it must ride a user gesture; see [ADR-010](adr/ADR-010-software-keyboard-input.md).
 - Input the romanization engine cannot consume is reported, never silently dropped, and never counted as a typing mistake.
 - Domain modules remain deterministic and testable without React or browser mocks.
+
+## Release flow
+
+Release automation is a control plane outside the runtime modular monolith. A
+feature branch produces CI evidence and a Vercel Preview; a human performs the
+merge. Vercel Deployment Checks **must be configured and owner-verified** before
+the exact `main` SHA validation can be treated as a production-domain prerequisite;
+repository code alone does not provide that guarantee. CI failure reconciliation is
+serialized and latest-run/attempt owned, while production promotion and rollback
+remain human-only. Autofix separates untrusted pull-request execution from Git,
+Actions, and PR write capabilities. See [ADR-019](adr/ADR-019-release-safety.md) and
+the [release checklist](release-checklist.md).
 
 ## Extension rules
 

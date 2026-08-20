@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import glossaryJson from "../../../content/generated/takken-glossary.json";
 import { filterTakkenGlossary } from "../../../content/takken/filter-takken-glossary.ts";
+import { TAKKEN_EXAM_YEAR } from "../../../content/takken/takken-edition.ts";
 import type { TakkenGlossary as TakkenGlossaryData } from "../../../content/takken/takken-glossary-types.ts";
 import { PageShell } from "../layout/PageShell.tsx";
 
@@ -41,7 +42,7 @@ export function TakkenGlossary({
           ← ホームへ
         </button>
         <div>
-          <span className="section-index">TAKKEN MASTER GLOSSARY / 2026</span>
+          <span className="section-index">TAKKEN MASTER GLOSSARY / {TAKKEN_EXAM_YEAR}</span>
           <h1>宅建試験 完全用語一覧</h1>
           <p>
             {glossary.edition}・全{glossary.stats.entryCount}語を、分野・重要度・出典で絞り込めます。

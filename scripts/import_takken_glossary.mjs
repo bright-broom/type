@@ -1,15 +1,21 @@
+import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-
-const sourcePath = process.argv[2];
-if (!sourcePath) {
-  throw new Error("Usage: npm run import:takken -- /path/to/takken-glossary.tsv");
-}
+import { canonicalDigest } from "./takken-governance-contract.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
+const shouldCheck = process.argv.includes("--check");
+const explicitSourcePath = process.argv.slice(2).find((argument) => !argument.startsWith("--"));
+const sourcePath = explicitSourcePath
+  ? resolve(explicitSourcePath)
+  : resolve(scriptDir, "../src/content/takken/source/takken-glossary.tsv");
 const outputPath = resolve(scriptDir, "../src/content/generated/takken-glossary.json");
-const raw = await readFile(resolve(sourcePath), "utf8");
+const editionPath = resolve(scriptDir, "../src/content/takken/takken-edition.json");
+const registryPath = resolve(scriptDir, "../src/content/takken/takken-source-registry.json");
+const edition = JSON.parse(await readFile(editionPath, "utf8"));
+const registry = JSON.parse(await readFile(registryPath, "utf8"));
+const raw = await readFile(sourcePath, "utf8");
 const lines = raw.split(/\r?\n/);
 
 const entries = lines
@@ -47,15 +53,40 @@ const importanceLevels = [...new Set(entries.map((entry) => entry.importance))].
 const sourceIds = [...new Set(entries.map((entry) => entry.sourceId))].sort((a, b) =>
   a.localeCompare(b, "ja", { numeric: true }),
 );
+const mappedSourceIds = registry.sourceMappings
+  .map(({ sourceId }) => sourceId)
+  .sort((a, b) => a.localeCompare(b, "ja", { numeric: true }));
+if (JSON.stringify(mappedSourceIds) !== JSON.stringify(sourceIds)) {
+  throw new Error(`Source registry does not cover the imported source IDs: ${sourceIds.join(", ")}`);
+}
+const sourceRegistryDigest = canonicalDigest(registry);
+const sourceDigest = createHash("sha256").update(raw.replace(/\r\n/g, "\n")).digest("hex");
 
 const glossary = {
   title: "宅建試験 完全用語一覧",
-  edition: "令和8年度試験向け",
-  version: 1,
+  edition: edition.label,
+  examDate: edition.examDate,
+  legalBasisDate: edition.legalBasisDate,
+  version: 2,
+  provenance: {
+    sourceRegistryVersion: registry.schemaVersion,
+    sourceRegistryDigest,
+    sourceDigest,
+    retrievedAt: registry.retrievedAt,
+  },
   stats: { entryCount: entries.length },
   filters: { categories, importanceLevels, sourceIds },
   entries,
 };
 
-await writeFile(outputPath, `${JSON.stringify(glossary, null, 2)}\n`, "utf8");
-console.log(`Imported ${entries.length} entries to ${outputPath}`);
+const output = `${JSON.stringify(glossary, null, 2)}\n`;
+if (shouldCheck) {
+  const current = await readFile(outputPath, "utf8");
+  if (current !== output) {
+    throw new Error("Generated Takken glossary is stale. Run npm run import:takken and commit the result.");
+  }
+  console.log(`Verified ${entries.length} generated Takken entries against ${sourcePath}`);
+} else {
+  await writeFile(outputPath, output, "utf8");
+  console.log(`Imported ${entries.length} entries to ${outputPath}`);
+}
