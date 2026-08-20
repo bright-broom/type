@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { AssessmentAttempt } from "../../../application/assessment/assessment-attempt.ts";
 import { ASSESSMENT_PLANS } from "../../../domain/assessment/assessment-plans.ts";
 import type { AssessmentQuestion } from "../../../domain/assessment/assessment-types.ts";
+import { PageShell } from "../layout/PageShell.tsx";
 
 function formatTime(milliseconds: number | null): string {
   if (milliseconds === null) return "時間制限なし";
@@ -61,7 +62,7 @@ export function AssessmentQuestionScreen({
     }
   }, [confirmation]);
   return (
-    <main className="assessment-session-shell">
+    <PageShell width="session" spacing="compact" className="assessment-session-shell">
       <header className="assessment-session-status">
         <div>
           <span>QUESTION</span>
@@ -186,6 +187,6 @@ export function AssessmentQuestionScreen({
           </div>
         </dialog>
       ) : null}
-    </main>
+    </PageShell>
   );
 }

@@ -9,13 +9,6 @@
   border: 0;
 }
 
-.settings-shell {
-  flex: 1;
-  width: min(var(--content-settings), calc(100% - (var(--page-gutter) * 2)));
-  margin: 0 auto;
-  padding: var(--settings-page-top) 0 var(--space-5);
-}
-
 .settings-shell button {
   min-height: var(--tap-target);
 }

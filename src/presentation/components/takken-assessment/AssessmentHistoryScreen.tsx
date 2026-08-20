@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { summarizeCategoryProgress } from "../../../domain/assessment/assessment-progress.ts";
 import { useAssessmentSession } from "../../hooks/useAssessmentSession.ts";
+import { PageShell } from "../layout/PageShell.tsx";
 
 const MODE_LABELS = {
   practice: "10問演習",
@@ -14,14 +15,14 @@ export function AssessmentHistoryScreen() {
   const session = useAssessmentSession();
   if (!session.ready) {
     return (
-      <main className="assessment-loading" role="status">
+      <PageShell width="assessment" spacing="none" centered className="assessment-loading" role="status">
         試験記録を読み込んでいます…
-      </main>
+      </PageShell>
     );
   }
   const progress = summarizeCategoryProgress(session.history.map(({ score }) => score));
   return (
-    <main className="assessment-history-shell assessment-reading-shell">
+    <PageShell width="assessment" className="assessment-history-shell assessment-reading-shell">
       <span className="section-index">LOCAL HISTORY</span>
       <h1>試験記録</h1>
       <p className="assessment-lede">結果はこの端末だけに保存されます。</p>
@@ -74,6 +75,6 @@ export function AssessmentHistoryScreen() {
           ))}
         </ol>
       )}
-    </main>
+    </PageShell>
   );
 }

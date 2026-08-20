@@ -1,9 +1,6 @@
 .home {
-  flex: 1;
-  width: min(var(--content-wide), calc(100% - (var(--page-gutter) * 2)));
-  min-width: 0;
-  margin: 0 auto;
-  padding: var(--home-page-padding);
+  min-inline-size: 0;
+  padding-block: var(--home-page-padding-block);
   display: grid;
   grid-template-columns: var(--home-layout-columns);
   align-items: center;
@@ -520,8 +517,9 @@
 
 @media (max-width: 900px) {
   .home {
-    width: min(var(--content-settings), calc(100% - (var(--page-gutter) * 2)));
-    padding: var(--home-page-padding-single);
+    --page-shell-max-inline: var(--layout-content-compact);
+
+    padding-block: var(--home-page-padding-block-single);
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -543,7 +541,7 @@
 
 @media (max-width: 680px) {
   .home {
-    padding: var(--home-page-padding-mobile);
+    padding-block: var(--home-page-padding-block-mobile);
     gap: var(--space-3);
   }
 
@@ -605,7 +603,7 @@
 
 @media (max-height: 620px) and (orientation: landscape) {
   .home {
-    padding: var(--home-page-padding-short);
+    padding-block: var(--home-page-padding-block-short);
     align-items: start;
   }
 

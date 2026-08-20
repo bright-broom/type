@@ -21,5 +21,6 @@ ADRs capture durable decisions that constrain future implementation. They do not
 | [015](ADR-015-semantic-color-system.md)                | Semantic color roles and noir as the default theme   |
 | [016](ADR-016-assessment-experience.md)                | Separate assessment experience and deadline clock    |
 | [017](ADR-017-takken-question-governance.md)           | Versioned original takken question governance        |
+| [018](ADR-018-fluid-page-layout.md)                    | Typed fluid page layout contract                     |
 
 Add an ADR only for a decision with meaningful alternatives and long-lived consequences. Use the next number and include Context, Decision, Alternatives, and Consequences.

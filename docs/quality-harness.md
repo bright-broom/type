@@ -107,6 +107,13 @@ handling targets Safari's behaviour — `visualViewport` as the only keyboard si
 fixed content that Safari does not reflow for the keyboard, and focus that opens the
 keyboard only inside a gesture. Chromium cannot prove any of it.
 
+`e2e/fluid-layout.spec.ts` treats responsive geometry as a product contract. It
+traverses every screen at compact-phone and desktop widths, covers every semantic
+page-shell role at intermediate and wide viewports, rejects document overflow and
+internally clipped controls, and proves that root gutter and vertical-rhythm tokens
+change continuously. Intentional scrollable rails are validated as reachable
+overflow rather than mistaken for clipped controls.
+
 ## Accessibility
 
 `eslint-plugin-jsx-a11y` reads source and cannot see a contrast ratio, a label hidden

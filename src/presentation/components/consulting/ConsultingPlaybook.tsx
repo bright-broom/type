@@ -6,6 +6,7 @@ import type {
   ConsultingPlaybook as ConsultingPlaybookData,
   PlaybookRow,
 } from "../../../content/consulting/consulting-playbook-types.ts";
+import { PageShell } from "../layout/PageShell.tsx";
 
 const playbook = playbookJson as ConsultingPlaybookData;
 
@@ -29,7 +30,7 @@ export function ConsultingPlaybook({ onBack, onStart }: { onBack: () => void; on
   }, [activeSheet, normalizedQuery]);
 
   return (
-    <main className="playbook-shell" data-overlay-root tabIndex={-1}>
+    <PageShell width="wide" className="playbook-shell" data-overlay-root tabIndex={-1}>
       <div className="playbook-heading">
         <button className="text-button" type="button" onClick={onBack}>
           ← ホームへ
@@ -62,7 +63,7 @@ export function ConsultingPlaybook({ onBack, onStart }: { onBack: () => void; on
       </div>
 
       <div className="playbook-layout">
-        <nav className="playbook-nav" aria-label="Playbook セクション">
+        <nav className="playbook-nav" aria-label="Playbook セクション" data-horizontal-rail>
           {playbook.sheets.map((sheet, index) => (
             <button
               type="button"
@@ -104,6 +105,6 @@ export function ConsultingPlaybook({ onBack, onStart }: { onBack: () => void; on
           </div>
         </section>
       </div>
-    </main>
+    </PageShell>
   );
 }

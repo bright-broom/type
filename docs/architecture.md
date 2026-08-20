@@ -45,6 +45,24 @@ Takken route
     → infrastructure assessment repository
 ```
 
+## Layout flow
+
+Responsive page geometry is a presentation policy with one entry point. Routes and
+screens do not independently own viewport gutters or content maxima.
+
+```text
+viewport + safe-area insets
+  → fluid tokens in themes.css
+    → typed PageShell width/spacing role
+      → screen-owned Grid/Flex composition
+```
+
+`PageShell` is the only application-level `<main>` owner. Its semantic width roles
+keep catalogue, reading, assessment, session, game, and compact workspaces distinct
+without duplicating page geometry. It also establishes an inline-size container so
+components can evolve with their actual workspace. See
+[ADR-018](adr/ADR-018-fluid-page-layout.md).
+
 ## Appearance flow
 
 Appearance is the one preference the server must know before it renders, so it is
@@ -102,6 +120,7 @@ When adding persistence or another external capability, define the required port
 
 - `tests/architecture-boundaries.test.mjs` enforces layer dependencies, dataset self-containment, and that React hooks stay in `presentation/hooks`.
 - `tests/repository-conventions.test.mjs` enforces required documentation, precise directory names, and authored-file size limits.
+- The same repository guard requires every application screen to enter through the typed `PageShell` contract.
 - `scripts/check-design-tokens.mjs` keeps raw colors inside the theme registry and out of components.
 - `npm run check` is the canonical deterministic local validation command; CI adds the network-backed dependency audit with `npm run check:ci`.
 - `.agents/skills/develop-typeloop` provides a reusable, progressively loaded workflow for TypeLoop changes.
