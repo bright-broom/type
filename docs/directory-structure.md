@@ -32,6 +32,7 @@
 │   ├── infrastructure/         Browser adapters by capability
 │   └── presentation/
 │       ├── components/         React components by screen/capability
+│       │   └── layout/         Cross-screen page geometry contracts
 │       ├── hooks/              Browser-facing orchestration hooks
 │       └── theme/              Document theme application and bootstrap
 └── tests/                      Cross-layer and repository policy tests
@@ -44,6 +45,7 @@
 - Session orchestration and capability interfaces belong in `application`.
 - Browser or vendor-specific implementations belong in `infrastructure`.
 - React rendering and browser event composition belong in `presentation`.
+- Cross-screen page geometry belongs in `presentation/components/layout`; screens choose a typed `PageShell` role and retain ownership of their internal Grid/Flex composition.
 - Theme identifiers, defaults, and cookie encoding belong in `application/settings`; DOM application belongs in `presentation/theme`; raw visual values belong in `app/styles/themes.css`; the current product treatment belongs in the scoped `app/styles/modern.css` layer.
 - Learning material and prompt adapters belong in `content`, one directory per dataset. A dataset directory owns its types, filters, prompt adapter, and tests, and must not import another dataset.
 - `content/training-set-catalog.ts` is the only module that reaches across datasets. It is the seam where a `TrainingSet` identifier is bound to its prompts.
@@ -55,6 +57,7 @@ Do not create a generic `shared`, `common`, `utils`, or `helpers` bucket. A modu
 ## Naming rules
 
 - React component files: `PascalCase.tsx`.
+- Components that own a complete application work surface end in `Screen`, `App`, `Glossary`, `Playbook`, or `Launcher`; route wrappers end in `Route`. This lets repository policy discover every `PageShell` owner independently from its imports.
 - Other files under `src`, `app`, and `tests`: `kebab-case.ts`, `kebab-case.tsx`, or `kebab-case.mjs`.
 - Files under `scripts`: `snake_case`, named after the command that runs them, such as `import_ais_glossary.py` for `npm run import:ais`. Supporting policy or data modules keep the importer's prefix.
 - Tests: `<subject>.test.<extension>` beside the subject when layer-local.

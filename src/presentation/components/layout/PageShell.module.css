@@ -1,0 +1,56 @@
+.root {
+  --page-shell-max-inline: var(--layout-content-default);
+  --page-shell-block-start: var(--layout-page-block-start);
+  --page-shell-block-end: var(--layout-page-block-end);
+
+  flex: 1 0 auto;
+  inline-size: min(100%, calc(var(--page-shell-max-inline) + (var(--layout-page-gutter) * 2)));
+  min-inline-size: 0;
+  margin-inline: auto;
+  padding-block: var(--page-shell-block-start) var(--page-shell-block-end);
+  padding-inline-start: max(var(--layout-page-gutter), env(safe-area-inset-left));
+  padding-inline-end: max(var(--layout-page-gutter), env(safe-area-inset-right));
+  container: page-shell / inline-size;
+}
+
+.wide {
+  --page-shell-max-inline: var(--layout-content-wide);
+}
+
+.default {
+  --page-shell-max-inline: var(--layout-content-default);
+}
+
+.reading {
+  --page-shell-max-inline: var(--layout-content-reading);
+}
+
+.assessment {
+  --page-shell-max-inline: var(--layout-content-assessment);
+}
+
+.session,
+.game {
+  --page-shell-max-inline: var(--layout-content-session);
+}
+
+.compact {
+  --page-shell-max-inline: var(--layout-content-compact);
+}
+
+.compactSpacing {
+  --page-shell-block-start: var(--layout-page-block-start-compact);
+  --page-shell-block-end: var(--layout-page-block-end-compact);
+}
+
+.noSpacing {
+  --page-shell-block-start: 0;
+  --page-shell-block-end: 0;
+}
+
+.centered {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+}

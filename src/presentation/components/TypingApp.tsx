@@ -22,6 +22,7 @@ import { TypingInput } from "./game/TypingInput.tsx";
 import { ResultScreen } from "./result/ResultScreen.tsx";
 import { HistoryScreen } from "./history/HistoryScreen.tsx";
 import { SettingsScreen } from "./settings/SettingsScreen.tsx";
+import { PageShell } from "./layout/PageShell.tsx";
 
 const ConsultingPlaybook = lazy(() =>
   import("./consulting/ConsultingPlaybook.tsx").then((module) => ({ default: module.ConsultingPlaybook })),
@@ -203,9 +204,9 @@ export function TypingApp({
       ) : overlay === "ais" ? (
         <Suspense
           fallback={
-            <main className="playbook-loading" role="status">
+            <PageShell width="wide" spacing="none" centered className="playbook-loading" role="status">
               AIS会議用語辞典を読み込んでいます…
-            </main>
+            </PageShell>
           }
         >
           <AisGlossary onBack={() => navigateOverlay("none")} onStart={() => start("ais")} />
@@ -213,9 +214,9 @@ export function TypingApp({
       ) : overlay === "takken" ? (
         <Suspense
           fallback={
-            <main className="playbook-loading" role="status">
+            <PageShell width="wide" spacing="none" centered className="playbook-loading" role="status">
               宅建用語集を読み込んでいます…
-            </main>
+            </PageShell>
           }
         >
           <TakkenGlossary onBack={() => navigateOverlay("none")} onStart={() => start("takken")} />
@@ -223,9 +224,9 @@ export function TypingApp({
       ) : overlay === "playbook" ? (
         <Suspense
           fallback={
-            <main className="playbook-loading" role="status">
+            <PageShell width="wide" spacing="none" centered className="playbook-loading" role="status">
               実務辞典を読み込んでいます…
-            </main>
+            </PageShell>
           }
         >
           <ConsultingPlaybook onBack={() => navigateOverlay("none")} onStart={() => start("consulting")} />

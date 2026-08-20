@@ -2,6 +2,7 @@ import type { TypingPrompt } from "../../../domain/prompts/prompt-types.ts";
 import type { TypingGuide } from "../../../domain/typing/typing-types.ts";
 import type { SessionMetrics } from "../../../domain/scoring/metrics.ts";
 import type { TypingFeedback } from "../../../application/session/session-types.ts";
+import { PageShell } from "../layout/PageShell.tsx";
 
 const DIRECT_INPUT_LABELS = {
   consulting: "CONSULTING TERM",
@@ -32,7 +33,7 @@ export function GameScreen(props: GameScreenProps) {
         ? "ミス — 正しいキーからそのまま続けられます"
         : "";
   return (
-    <main className={`game-shell feedback-${props.feedback ?? "none"}`}>
+    <PageShell width="game" spacing="none" className={`game-shell feedback-${props.feedback ?? "none"}`}>
       <div className="game-meta">
         <div className="timer-block">
           <span className="meta-label">残り時間</span>
@@ -99,6 +100,6 @@ export function GameScreen(props: GameScreenProps) {
           <strong>{props.combo}</strong>
         </div>
       </div>
-    </main>
+    </PageShell>
   );
 }

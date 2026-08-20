@@ -7,6 +7,7 @@ import {
   type MotionPreference,
   type ThemeId,
 } from "../../../application/settings/app-settings.ts";
+import { PageShell } from "../layout/PageShell.tsx";
 
 type SettingsScreenProps = {
   appearance: AppearanceSettings;
@@ -36,7 +37,14 @@ export function SettingsScreen({ appearance, onChange, onBack }: SettingsScreenP
   };
 
   return (
-    <main className="settings-shell" data-overlay-root tabIndex={-1} aria-labelledby="settings-title">
+    <PageShell
+      width="compact"
+      spacing="compact"
+      className="settings-shell"
+      data-overlay-root
+      tabIndex={-1}
+      aria-labelledby="settings-title"
+    >
       <header className="settings-heading">
         <button className="text-button" type="button" onClick={onBack}>
           <span>←</span> 戻る
@@ -99,6 +107,6 @@ export function SettingsScreen({ appearance, onChange, onBack }: SettingsScreenP
           </select>
         </label>
       </div>
-    </main>
+    </PageShell>
   );
 }

@@ -6,6 +6,7 @@ import { useAssessmentSession } from "../../hooks/useAssessmentSession.ts";
 import { AssessmentLauncher } from "./AssessmentLauncher.tsx";
 import { AssessmentQuestionScreen } from "./AssessmentQuestionScreen.tsx";
 import { AssessmentResultScreen } from "./AssessmentResultScreen.tsx";
+import { PageShell } from "../layout/PageShell.tsx";
 
 export function TakkenAssessmentApp({ experience }: { experience: "practice" | "mock" }) {
   const session = useAssessmentSession();
@@ -14,9 +15,9 @@ export function TakkenAssessmentApp({ experience }: { experience: "practice" | "
   }, [session.result]);
   if (!session.ready) {
     return (
-      <main className="assessment-loading" role="status">
+      <PageShell width="assessment" spacing="none" centered className="assessment-loading" role="status">
         宅建問題を読み込んでいます…
-      </main>
+      </PageShell>
     );
   }
   if (session.result) {
@@ -28,14 +29,14 @@ export function TakkenAssessmentApp({ experience }: { experience: "practice" | "
   const currentExperience = session.attempt.mode === "practice" ? "practice" : "mock";
   if (currentExperience !== experience) {
     return (
-      <main className="assessment-reading-shell assessment-active-elsewhere">
+      <PageShell width="assessment" className="assessment-reading-shell assessment-active-elsewhere">
         <span className="section-index">ACTIVE SESSION</span>
         <h1>進行中のセッションがあります。</h1>
         <p>{currentExperience === "practice" ? "10問演習" : "本番模試"}を先に再開してください。</p>
         <Link className="primary-button" href={currentExperience === "practice" ? "/takken/practice" : "/takken/mock"}>
           セッションへ戻る
         </Link>
-      </main>
+      </PageShell>
     );
   }
   return (

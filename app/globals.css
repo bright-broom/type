@@ -53,16 +53,18 @@ button:disabled {
   overflow-x: clip;
 }
 .app-header {
-  width: min(var(--content-wide), calc(100% - (var(--page-gutter) * 2)));
+  width: min(100%, calc(var(--layout-content-default) + (var(--layout-page-gutter) * 2)));
   margin: 0 auto;
-  height: 102px;
+  height: var(--layout-header-height);
+  padding-inline-start: max(var(--layout-page-gutter), env(safe-area-inset-left));
+  padding-inline-end: max(var(--layout-page-gutter), env(safe-area-inset-right));
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--line);
 }
 .app-header--compact {
-  height: 78px;
+  height: var(--layout-header-height-compact);
 }
 .brand {
   display: inline-flex;
@@ -230,10 +232,12 @@ kbd {
 }
 
 .site-footer {
-  width: min(var(--content-wide), calc(100% - (var(--page-gutter) * 2)));
+  width: min(100%, calc(var(--layout-content-default) + (var(--layout-page-gutter) * 2)));
   margin: auto auto 0;
-  min-height: 45px;
-  padding-block: 10px;
+  min-height: var(--layout-footer-min-height);
+  padding-block: var(--layout-footer-padding-block);
+  padding-inline-start: max(var(--layout-page-gutter), env(safe-area-inset-left));
+  padding-inline-end: max(var(--layout-page-gutter), env(safe-area-inset-right));
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -246,11 +250,7 @@ kbd {
 }
 
 .countdown-shell {
-  flex: 1;
   min-height: 540px;
-  display: grid;
-  place-content: center;
-  justify-items: center;
 }
 .countdown-shell p,
 .countdown-shell span {
@@ -278,9 +278,6 @@ kbd {
 }
 
 .game-shell {
-  flex: 1;
-  width: min(var(--content-game), calc(100% - (var(--page-gutter) * 2)));
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -327,7 +324,9 @@ kbd {
 }
 .pause-button {
   justify-self: end;
+  min-height: var(--tap-target);
   border: 0;
+  padding-inline: var(--space-1);
   background: none;
   color: var(--muted);
   font-size: 0.68rem;
@@ -516,13 +515,6 @@ kbd {
   color: var(--danger);
 }
 
-.result-shell,
-.history-shell {
-  flex: 1;
-  width: min(var(--content-reading), calc(100% - (var(--page-gutter) * 2)));
-  margin: 0 auto;
-  padding: 58px 0 80px;
-}
 .result-heading {
   text-align: center;
 }
@@ -767,17 +759,8 @@ kbd {
   text-align: center;
   color: var(--muted);
 }
-.playbook-shell {
-  flex: 1;
-  width: min(1320px, calc(100% - (var(--page-gutter) * 2)));
-  margin: 0 auto;
-  padding: 42px 0 70px;
-}
 .playbook-loading {
-  flex: 1;
   min-height: 500px;
-  display: grid;
-  place-items: center;
   color: var(--muted);
   font-size: 0.8rem;
 }
@@ -945,12 +928,6 @@ kbd {
   color: var(--ink-deep);
   font-size: 0.9rem;
   font-weight: 750;
-}
-.glossary-shell {
-  flex: 1;
-  width: min(1320px, calc(100% - (var(--page-gutter) * 2)));
-  margin: 0 auto;
-  padding: 42px 0 70px;
 }
 .glossary-heading {
   display: grid;
@@ -1209,11 +1186,6 @@ kbd {
 }
 .error-shell {
   min-height: 100svh;
-  display: grid;
-  place-content: center;
-  justify-items: center;
-  text-align: center;
-  padding: 30px;
 }
 .error-shell > span {
   color: var(--cyan-dark);
@@ -1274,6 +1246,16 @@ kbd {
     border-right: 0;
     border-bottom: 1px solid var(--line);
   }
+  .playbook-nav button {
+    height: auto;
+    min-height: var(--tap-target);
+  }
+  .playbook-nav span {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
   .glossary-filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1330,7 +1312,7 @@ kbd {
   }
   .touch-typing-input {
     margin: 0 auto;
-    width: min(var(--content-game), 100%);
+    width: min(var(--layout-content-session), 100%);
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
@@ -1382,13 +1364,6 @@ kbd {
 }
 
 @media (max-width: 680px) {
-  :root {
-    --page-gutter: clamp(16px, 5vw, 24px);
-  }
-  .app-header,
-  .app-header--compact {
-    height: 70px;
-  }
   .brand {
     font-size: 1rem;
   }
@@ -1417,7 +1392,6 @@ kbd {
   }
   .countdown-shell {
     min-height: 0;
-    padding: 40px var(--page-gutter);
   }
   .game-meta {
     min-height: 84px;
@@ -1514,10 +1488,6 @@ kbd {
     overflow-y: auto;
     padding: 32px 22px;
   }
-  .result-shell,
-  .history-shell {
-    padding: 40px 0 60px;
-  }
   .result-heading h1,
   .history-heading h1 {
     font-size: clamp(2.25rem, 11vw, 3.25rem);
@@ -1610,10 +1580,6 @@ kbd {
     grid-column: 1 / -1;
     flex-direction: row;
     gap: 10px;
-  }
-  .playbook-shell,
-  .glossary-shell {
-    padding: 30px 0 50px;
   }
   .playbook-heading,
   .glossary-heading {
@@ -1755,7 +1721,7 @@ kbd {
   .state-countdown .app-header,
   .state-playing .app-header,
   .state-paused .app-header {
-    height: 58px;
+    height: var(--layout-header-height-short);
   }
   .state-countdown .site-footer,
   .state-playing .site-footer,
@@ -1819,11 +1785,11 @@ button {
 }
 
 .app-header {
-  height: 88px;
+  height: var(--layout-header-height);
 }
 
 .app-header--compact {
-  height: 68px;
+  height: var(--layout-header-height-compact);
 }
 
 .header-actions {
@@ -2025,11 +1991,6 @@ button {
 }
 
 @media (max-width: 680px) {
-  .app-header,
-  .app-header--compact {
-    height: 66px;
-  }
-
   .header-actions {
     gap: 2px;
   }
@@ -2106,7 +2067,7 @@ button {
 @media (max-height: 620px) and (orientation: landscape) {
   .state-idle .app-header,
   .state-aborted .app-header {
-    height: 58px;
+    height: var(--layout-header-height-short);
   }
 
   .prompt-stage {

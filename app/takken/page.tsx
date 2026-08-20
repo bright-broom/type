@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { PageShell } from "../../src/presentation/components/layout/PageShell.tsx";
 
 export default function TakkenHomePage() {
   return (
-    <main className="takken-hub assessment-reading-shell">
+    <PageShell width="assessment" className="takken-hub assessment-reading-shell">
       <section className="takken-hub-hero">
         <span className="section-index">TYPELOOP / TAKKEN 2026</span>
         <h1>
@@ -52,6 +53,6 @@ export default function TakkenHomePage() {
           <strong>2026.04.01</strong>
         </div>
       </aside>
-    </main>
+    </PageShell>
   );
 }

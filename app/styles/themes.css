@@ -89,18 +89,31 @@
   --space-3: 1.5rem;
   --space-4: 2rem;
   --space-5: 3rem;
-  --page-gutter: clamp(18px, 4vw, 32px);
-  --content-wide: 1240px;
-  --content-reading: 1050px;
-  --content-game: 1120px;
-  --content-settings: 760px;
+
+  /* Fluid layout foundation: viewport → page shell → screen composition. */
+  --layout-page-gutter: clamp(16px, 3.4vw, 40px);
+  --layout-content-wide: 1320px;
+  --layout-content-default: 1240px;
+  --layout-content-reading: 1050px;
+  --layout-content-assessment: 980px;
+  --layout-content-session: 1120px;
+  --layout-content-compact: 760px;
+  --layout-page-block-start: clamp(24px, 5dvh, 58px);
+  --layout-page-block-end: clamp(40px, 8dvh, 80px);
+  --layout-page-block-start-compact: clamp(16px, 3.5dvh, 36px);
+  --layout-page-block-end-compact: clamp(28px, 6dvh, 56px);
+  --layout-header-height: clamp(66px, 9dvh, 76px);
+  --layout-header-height-compact: clamp(58px, 8dvh, 68px);
+  --layout-header-height-short: 58px;
+  --layout-footer-min-height: 45px;
+  --layout-footer-padding-block: 10px;
+  --page-gutter: var(--layout-page-gutter);
   --tap-target: 44px;
   --font-display-settings: clamp(2.4rem, 6vw, 4.5rem);
   --font-label: 0.78rem;
   --tracking-tight: -0.06em;
   --tracking-label: 0.08em;
   --leading-copy: 1.8;
-  --settings-page-top: clamp(24px, 7vw, 72px);
   --settings-option-min: 280px;
   --settings-swatch-width: 48px;
   --settings-swatch-height: 36px;
@@ -120,8 +133,8 @@
   --modern-surface-muted: rgb(var(--ink-rgb) / 4%);
   --modern-border: 1px solid var(--line-soft);
   --modern-border-strong: 1px solid var(--line);
-  --modern-header-height: 76px;
-  --modern-header-height-compact: 68px;
+  --modern-header-height: var(--layout-header-height);
+  --modern-header-height-compact: var(--layout-header-height-compact);
   --modern-control-height: 48px;
   --modern-brand-font-size: 1rem;
   --modern-brand-mark-width: 26px;
@@ -160,10 +173,10 @@
   --home-layout-columns: minmax(0, 1.42fr) minmax(19rem, 0.88fr);
   --home-layout-columns-compact: minmax(0, 1.3fr) minmax(18rem, 0.8fr);
   --home-layout-gap: clamp(1.5rem, 3.75vw, 3.5rem);
-  --home-page-padding: clamp(1rem, 2.6vh, 1.75rem) 0;
-  --home-page-padding-single: var(--space-3) 0 var(--space-5);
-  --home-page-padding-mobile: var(--space-2) 0 var(--space-4);
-  --home-page-padding-short: var(--space-1) 0 var(--space-3);
+  --home-page-padding-block: clamp(1rem, 2.6vh, 1.75rem);
+  --home-page-padding-block-single: var(--space-3) var(--space-5);
+  --home-page-padding-block-mobile: var(--space-2) var(--space-4);
+  --home-page-padding-block-short: var(--space-1) var(--space-3);
   --home-primary-gap: clamp(1.125rem, 2.2vh, 1.5rem);
   --home-support-gap: clamp(0.75rem, 1.5vh, 1rem);
   --home-panel-padding: clamp(1rem, 1.8vw, 1.35rem);
@@ -206,9 +219,6 @@
   --home-skip-layer: 100;
 
   /* Takken assessment experience */
-  --assessment-reading-width: 980px;
-  --assessment-session-width: 1120px;
-  --assessment-page-padding: clamp(36px, 7vw, 84px) 0 clamp(64px, 9vw, 112px);
   --assessment-hero-size: clamp(2.8rem, 7vw, 5.7rem);
   --assessment-question-size: clamp(1.35rem, 2.7vw, 2rem);
   --assessment-score-size: clamp(4.5rem, 13vw, 8rem);
@@ -301,6 +311,6 @@
   --space-3: 1.125rem;
   --space-4: 1.5rem;
   --space-5: 2.25rem;
-  --page-gutter: clamp(14px, 3vw, 24px);
+  --layout-page-gutter: clamp(14px, 3vw, 24px);
 }
 /* @tokens-end */

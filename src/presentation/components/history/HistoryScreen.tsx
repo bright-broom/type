@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { CompletedSession } from "../../../application/session/session-types.ts";
+import { PageShell } from "../layout/PageShell.tsx";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("ja-JP", {
   month: "short",
@@ -28,7 +29,7 @@ export function HistoryScreen({ sessions, onBack, onSave }: HistoryScreenProps) 
   };
 
   return (
-    <main className="history-shell" data-overlay-root tabIndex={-1}>
+    <PageShell width="reading" className="history-shell" data-overlay-root tabIndex={-1}>
       <div className="history-heading">
         <button className="text-button" type="button" onClick={onBack}>
           ← 戻る
@@ -106,6 +107,6 @@ export function HistoryScreen({ sessions, onBack, onSave }: HistoryScreenProps) 
           ))}
         </div>
       )}
-    </main>
+    </PageShell>
   );
 }

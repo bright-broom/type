@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import glossaryJson from "../../../content/generated/takken-glossary.json";
 import { filterTakkenGlossary } from "../../../content/takken/filter-takken-glossary.ts";
 import type { TakkenGlossary as TakkenGlossaryData } from "../../../content/takken/takken-glossary-types.ts";
+import { PageShell } from "../layout/PageShell.tsx";
 
 const glossary = glossaryJson as TakkenGlossaryData;
 
@@ -34,7 +35,7 @@ export function TakkenGlossary({
   };
 
   return (
-    <main className="glossary-shell" data-overlay-root tabIndex={-1}>
+    <PageShell width="wide" className="glossary-shell" data-overlay-root tabIndex={-1}>
       <div className="glossary-heading">
         <button className="text-button" type="button" onClick={onBack}>
           ← ホームへ
@@ -131,6 +132,6 @@ export function TakkenGlossary({
         ))}
         {entries.length === 0 && <p className="empty-state">一致する用語はありません。</p>}
       </section>
-    </main>
+    </PageShell>
   );
 }

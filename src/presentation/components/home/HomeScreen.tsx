@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { CompletedSession } from "../../../application/session/session-types.ts";
 import type { TrainingSet } from "../../../domain/prompts/prompt-types.ts";
+import { PageShell } from "../layout/PageShell.tsx";
 import styles from "./HomeScreen.module.css";
 
 type HomeScreenProps = {
@@ -57,7 +58,7 @@ export function HomeScreen({
     : "まずは60秒。結果を見て次の一手を決めよう。";
 
   return (
-    <main className={styles.home} data-home-root tabIndex={-1}>
+    <PageShell width="default" spacing="none" className={styles.home} data-home-root tabIndex={-1}>
       <section className={styles.primary} aria-labelledby="hero-title">
         <div className={styles.intro}>
           <div className={styles.eyebrow}>
@@ -229,6 +230,6 @@ export function HomeScreen({
           </div>
         </section>
       </div>
-    </main>
+    </PageShell>
   );
 }

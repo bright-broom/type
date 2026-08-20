@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { AssessmentMode } from "../../../domain/assessment/assessment-types.ts";
 import { TAKKEN_ASSESSMENT_CATEGORIES } from "../../../content/takken/takken-assessment-pack.ts";
+import { PageShell } from "../layout/PageShell.tsx";
 
 export function AssessmentLauncher({
   experience,
@@ -14,7 +15,7 @@ export function AssessmentLauncher({
   const [category, setCategory] = useState("");
   if (experience === "practice") {
     return (
-      <main className="assessment-launcher assessment-reading-shell">
+      <PageShell width="assessment" className="assessment-launcher assessment-reading-shell">
         <span className="section-index">10 QUESTION PRACTICE</span>
         <h1>理解を確かめる、10問。</h1>
         <p className="assessment-lede">回答直後に正誤と解説を確認できます。間違えた概念から用語学習へ戻れます。</p>
@@ -34,11 +35,11 @@ export function AssessmentLauncher({
           10問演習を始める
         </button>
         <AssessmentNotice />
-      </main>
+      </PageShell>
     );
   }
   return (
-    <main className="assessment-launcher assessment-reading-shell">
+    <PageShell width="assessment" className="assessment-launcher assessment-reading-shell">
       <span className="section-index">FULL SIMULATION</span>
       <h1>本番と同じ時間配分で。</h1>
       <p className="assessment-lede">提出まで正解を表示せず、未回答と見直しを管理します。途中で時計は止まりません。</p>
@@ -55,7 +56,7 @@ export function AssessmentLauncher({
         </button>
       </div>
       <AssessmentNotice />
-    </main>
+    </PageShell>
   );
 }
 

@@ -141,6 +141,12 @@
   border-radius: var(--modern-card-radius);
   background: var(--modern-surface-solid);
   box-shadow: var(--modern-shadow-control);
+}
+
+:root:is([data-theme="modern"], [data-theme="noir"]) .live-stats,
+:root:is([data-theme="modern"], [data-theme="noir"]) .history-table,
+:root:is([data-theme="modern"], [data-theme="noir"]) .playbook-content,
+:root:is([data-theme="modern"], [data-theme="noir"]) .glossary-list {
   overflow: hidden;
 }
 

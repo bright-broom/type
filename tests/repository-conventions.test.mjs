@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { access, readdir, readFile } from "node:fs/promises";
-import { extname, relative, resolve, sep } from "node:path";
+import { basename, extname, relative, resolve, sep } from "node:path";
 import test from "node:test";
 
 const repositoryRoot = resolve(".");
@@ -20,6 +20,62 @@ const forbiddenDirectoryNames = new Set(["shared", "common", "utils", "helpers"]
 const authoredExtensions = new Set([".ts", ".tsx", ".mjs", ".py"]);
 const authoredRoots = ["app", "src", "scripts", "tests"];
 const maxAuthoredLines = 300;
+const applicationScreenFiles = [
+  "app/error.tsx",
+  "app/takken/page.tsx",
+  "src/presentation/components/TypingApp.tsx",
+  "src/presentation/components/ais/AisGlossary.tsx",
+  "src/presentation/components/consulting/ConsultingPlaybook.tsx",
+  "src/presentation/components/game/CountdownScreen.tsx",
+  "src/presentation/components/game/GameScreen.tsx",
+  "src/presentation/components/history/HistoryScreen.tsx",
+  "src/presentation/components/home/HomeScreen.tsx",
+  "src/presentation/components/result/ResultScreen.tsx",
+  "src/presentation/components/settings/SettingsScreen.tsx",
+  "src/presentation/components/takken-assessment/AssessmentHistoryScreen.tsx",
+  "src/presentation/components/takken-assessment/AssessmentLauncher.tsx",
+  "src/presentation/components/takken-assessment/AssessmentQuestionScreen.tsx",
+  "src/presentation/components/takken-assessment/AssessmentResultScreen.tsx",
+  "src/presentation/components/takken-assessment/TakkenAssessmentApp.tsx",
+  "src/presentation/components/takken/TakkenGlossary.tsx",
+];
+const routeScreenContracts = {
+  "app/error.tsx": [],
+  "app/page.tsx": ["src/presentation/components/TypingApp.tsx"],
+  "app/takken/glossary/page.tsx": [
+    "src/presentation/components/takken-assessment/TakkenGlossaryRoute.tsx",
+    "src/presentation/components/takken/TakkenGlossary.tsx",
+  ],
+  "app/takken/history/page.tsx": ["src/presentation/components/takken-assessment/AssessmentHistoryScreen.tsx"],
+  "app/takken/mock/page.tsx": ["src/presentation/components/takken-assessment/TakkenAssessmentApp.tsx"],
+  "app/takken/page.tsx": [],
+  "app/takken/practice/page.tsx": ["src/presentation/components/takken-assessment/TakkenAssessmentApp.tsx"],
+};
+
+function usesPageShell(source) {
+  return /import\s+\{\s*PageShell\s*\}/.test(source) && /<PageShell(?:\s|>)/.test(source);
+}
+
+function isScreenCandidate(path) {
+  return (
+    path.startsWith(`src${sep}presentation${sep}components${sep}`) &&
+    /(?:Screen|App|Glossary|Playbook|Launcher)\.tsx$/.test(basename(path))
+  );
+}
+
+function layoutViolations(entries) {
+  return entries
+    .filter(({ path, source }) => {
+      const normalizedPath = path.split(sep).join("/");
+      const isRoute = normalizedPath.endsWith("/page.tsx") || normalizedPath === "app/error.tsx";
+      return (
+        (normalizedPath !== "src/presentation/components/layout/PageShell.tsx" && /<main\b/.test(source)) ||
+        (isScreenCandidate(path) && !usesPageShell(source)) ||
+        (isRoute && !Object.hasOwn(routeScreenContracts, normalizedPath))
+      );
+    })
+    .map(({ path }) => path);
+}
 
 async function walk(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -58,6 +114,67 @@ test("source directories use responsibility-specific names", async () => {
     .filter((entry) => entry.directory && forbiddenDirectoryNames.has(entry.path.split(sep).at(-1)))
     .map((entry) => relative(repositoryRoot, entry.path));
   assert.deepEqual(violations, []);
+});
+
+test("every application screen enters through the fluid page shell", async () => {
+  const screenRoots = [resolve(repositoryRoot, "app"), resolve(repositoryRoot, "src/presentation/components")];
+  const screenEntries = [];
+  const discoveredConsumers = [];
+  for (const root of screenRoots) {
+    for (const entry of await walk(root)) {
+      if (entry.directory || !entry.path.endsWith(".tsx") || entry.path.endsWith(`${sep}PageShell.tsx`)) continue;
+      const source = await readFile(entry.path, "utf8");
+      const path = relative(repositoryRoot, entry.path);
+      screenEntries.push({ path, source });
+      if (usesPageShell(source)) discoveredConsumers.push(path);
+    }
+  }
+
+  assert.deepEqual(
+    layoutViolations(screenEntries),
+    [],
+    "application routes and screens must use the PageShell contract",
+  );
+  assert.deepEqual(discoveredConsumers.sort(), applicationScreenFiles.toSorted());
+  for (const path of applicationScreenFiles) {
+    assert.equal(
+      usesPageShell(await readFile(resolve(repositoryRoot, path), "utf8")),
+      true,
+      `${path} bypasses PageShell`,
+    );
+  }
+
+  const discoveredRouteEntries = screenEntries
+    .map(({ path }) => path.split(sep).join("/"))
+    .filter((path) => path.endsWith("/page.tsx") || path === "app/error.tsx");
+  assert.deepEqual(discoveredRouteEntries.sort(), Object.keys(routeScreenContracts).sort());
+  for (const [route, delegates] of Object.entries(routeScreenContracts)) {
+    let owner = route;
+    for (const delegate of delegates) {
+      const component = basename(delegate, ".tsx");
+      const ownerSource = await readFile(resolve(repositoryRoot, owner), "utf8");
+      assert.match(ownerSource, new RegExp(`<${component}(?:\\s|/?>)`), `${owner} must delegate to ${component}`);
+      owner = delegate;
+    }
+    assert.ok(applicationScreenFiles.includes(owner), `${route} must terminate at an inventoried screen`);
+    assert.equal(usesPageShell(await readFile(resolve(repositoryRoot, owner), "utf8")), true);
+  }
+
+  const brokenFixtures = [
+    { path: `app${sep}example${sep}page.tsx`, source: "export default function Page() { return <div />; }" },
+    {
+      path: `src${sep}presentation${sep}components${sep}example${sep}BrokenScreen.tsx`,
+      source: "export function BrokenScreen() { return <section />; }",
+    },
+  ];
+  assert.deepEqual(
+    layoutViolations(brokenFixtures),
+    brokenFixtures.map(({ path }) => path),
+  );
+
+  const pageShell = await readFile(resolve(repositoryRoot, "src/presentation/components/layout/PageShell.tsx"), "utf8");
+  assert.match(pageShell, /data-layout-shell/);
+  assert.match(pageShell, /width: PageShellWidth/);
 });
 
 test("authored code stays below the reviewability ceiling", async () => {

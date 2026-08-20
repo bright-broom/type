@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import glossaryJson from "../../../content/generated/ais-glossary.json";
 import { filterAisGlossary } from "../../../content/ais/filter-ais-glossary.ts";
 import type { AisConfidence, AisGlossary as AisGlossaryData } from "../../../content/ais/ais-glossary-types.ts";
+import { PageShell } from "../layout/PageShell.tsx";
 
 const glossary = glossaryJson as AisGlossaryData;
 
@@ -39,7 +40,7 @@ export function AisGlossary({ onBack, onStart }: { onBack: () => void; onStart: 
   };
 
   return (
-    <main className="glossary-shell" data-overlay-root tabIndex={-1}>
+    <PageShell width="wide" className="glossary-shell" data-overlay-root tabIndex={-1}>
       <div className="glossary-heading">
         <button className="text-button" type="button" onClick={onBack}>
           ← ホームへ
@@ -165,6 +166,6 @@ export function AisGlossary({ onBack, onStart }: { onBack: () => void; onStart: 
         ))}
         {entries.length === 0 && <p className="empty-state">一致する用語はありません。</p>}
       </section>
-    </main>
+    </PageShell>
   );
 }

@@ -8,17 +8,6 @@
   text-decoration: none;
 }
 
-.assessment-reading-shell,
-.assessment-session-shell {
-  width: min(var(--assessment-reading-width), calc(100% - (var(--page-gutter) * 2)));
-  margin: 0 auto;
-  padding: var(--assessment-page-padding);
-}
-
-.assessment-session-shell {
-  width: min(var(--assessment-session-width), calc(100% - (var(--page-gutter) * 2)));
-}
-
 .assessment-reading-shell > h1,
 .takken-hub-hero h1 {
   margin: var(--space-1) 0 var(--space-2);
@@ -124,7 +113,7 @@
 .assessment-field {
   display: grid;
   gap: var(--space-1);
-  max-width: var(--content-settings);
+  max-width: var(--layout-content-compact);
   margin-bottom: var(--space-2);
   color: var(--content-secondary);
   font-weight: 700;
@@ -140,7 +129,7 @@
 }
 
 .assessment-field-note {
-  max-width: var(--content-settings);
+  max-width: var(--layout-content-compact);
   margin: calc(var(--space-1) * -1) 0 var(--space-2);
   color: var(--content-muted);
   font-size: var(--font-label);
@@ -148,7 +137,7 @@
 }
 
 .assessment-start {
-  width: min(100%, var(--content-settings));
+  width: min(100%, var(--layout-content-compact));
 }
 
 .assessment-notice {
@@ -252,7 +241,7 @@
   position: fixed;
   z-index: 5;
   inset: 50% auto auto 50%;
-  width: min(var(--content-settings), calc(100% - (var(--page-gutter) * 2)));
+  width: min(var(--layout-content-compact), calc(100% - (var(--page-gutter) * 2)));
   margin: 0;
   border: var(--modern-border-strong);
   border-radius: var(--modern-card-radius);
@@ -582,8 +571,6 @@
 
 .assessment-loading {
   min-height: 60svh;
-  display: grid;
-  place-items: center;
   color: var(--content-muted);
 }
 

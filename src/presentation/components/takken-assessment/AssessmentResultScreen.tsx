@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { CompletedAssessment } from "../../../application/assessment/assessment-attempt.ts";
 import type { AssessmentQuestion } from "../../../domain/assessment/assessment-types.ts";
+import { PageShell } from "../layout/PageShell.tsx";
 
 export function AssessmentResultScreen({
   result,
@@ -16,7 +17,12 @@ export function AssessmentResultScreen({
   const resultById = new Map(result.score.results.map((item) => [item.questionId, item]));
   const review = questions.filter((question) => !resultById.get(question.id)?.correct);
   return (
-    <main className="assessment-result-shell assessment-reading-shell" data-result-root tabIndex={-1}>
+    <PageShell
+      width="assessment"
+      className="assessment-result-shell assessment-reading-shell"
+      data-result-root
+      tabIndex={-1}
+    >
       <span className="section-index">ASSESSMENT COMPLETE</span>
       <h1>
         {result.score.correct}
@@ -65,6 +71,6 @@ export function AssessmentResultScreen({
         <Link href="/takken/glossary">関連用語を確認</Link>
       </div>
       <p className="assessment-score-note">点数は学習状況の目安です。公式の合否判定ではありません。</p>
-    </main>
+    </PageShell>
   );
 }

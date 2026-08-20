@@ -1,4 +1,5 @@
 import type { CompletedSession } from "../../../application/session/session-types.ts";
+import { PageShell } from "../layout/PageShell.tsx";
 
 type ResultScreenProps = {
   result: CompletedSession;
@@ -22,7 +23,7 @@ export function ResultScreen({ result, previousBest, onRetry, onHome, onHistory 
           detail: "速さはそのままで大丈夫。正確な入力が増えるほど、スコアとWPMは自然に伸びます。",
         };
   return (
-    <main className="result-shell" data-result-root tabIndex={-1}>
+    <PageShell width="reading" className="result-shell" data-result-root tabIndex={-1}>
       <section className="result-heading">
         <div className="eyebrow">
           <span /> SESSION COMPLETE
@@ -111,6 +112,6 @@ export function ResultScreen({ result, previousBest, onRetry, onHome, onHistory 
           ホームへ
         </button>
       </div>
-    </main>
+    </PageShell>
   );
 }
