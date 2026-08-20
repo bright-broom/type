@@ -23,5 +23,6 @@ ADRs capture durable decisions that constrain future implementation. They do not
 | [017](ADR-017-takken-question-governance.md)           | Versioned original takken question governance        |
 | [018](ADR-018-fluid-page-layout.md)                    | Typed fluid page layout contract                     |
 | [019](ADR-019-release-safety.md)                       | Capability-separated release automation              |
+| [020](ADR-020-browser-security-boundary.md)            | Browser and supply-chain security boundary           |
 
 Add an ADR only for a decision with meaningful alternatives and long-lived consequences. Use the next number and include Context, Decision, Alternatives, and Consequences.
