@@ -111,6 +111,8 @@
   --tap-target: 44px;
   --font-display-settings: clamp(2.4rem, 6vw, 4.5rem);
   --font-label: 0.78rem;
+  --font-caption: 0.75rem;
+  --font-micro: 0.6875rem;
   --tracking-tight: -0.06em;
   --tracking-label: 0.08em;
   --leading-copy: 1.8;
@@ -173,7 +175,7 @@
   --home-layout-columns: minmax(0, 1.42fr) minmax(19rem, 0.88fr);
   --home-layout-columns-compact: minmax(0, 1.3fr) minmax(18rem, 0.8fr);
   --home-layout-gap: clamp(1.5rem, 3.75vw, 3.5rem);
-  --home-page-padding-block: clamp(1rem, 2.6vh, 1.75rem);
+  --home-page-padding-block: clamp(0.75rem, 1.8dvh, 1.5rem);
   --home-page-padding-block-single: var(--space-3) var(--space-5);
   --home-page-padding-block-mobile: var(--space-2) var(--space-4);
   --home-page-padding-block-short: var(--space-1) var(--space-3);
@@ -193,12 +195,12 @@
   --home-heading-leading: 1.35;
   --home-heading-tracking: -0.025em;
   --home-heading-meta-width: 7rem;
-  --home-overline-size: 0.56rem;
+  --home-overline-size: var(--font-micro);
   --home-overline-tracking: 0.12em;
   --home-body-size: 0.76rem;
-  --home-caption-size: 0.62rem;
+  --home-caption-size: var(--font-caption);
   --home-mode-label-size: 0.8rem;
-  --home-resource-label-size: 0.72rem;
+  --home-resource-label-size: var(--font-caption);
   --home-metric-size: 1.05rem;
   --home-progress-number-size: clamp(3.25rem, 6vw, 4.75rem);
   --home-progress-number-leading: 0.9;

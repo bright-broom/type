@@ -29,7 +29,7 @@
     "check:dead-code": "knip",
     "check:secrets": "node scripts/check-secrets.mjs",
     "check:deps": "node scripts/check-dependency-compatibility.mjs",
-    "check:generated": "node scripts/import_git_commands.mjs --check",
+    "check:generated": "node scripts/import_git_commands.mjs --check && node scripts/generate-browser-theme-colors.mjs --check",
     "check:tokens": "node scripts/check-design-tokens.mjs",
     "check:bundle": "node scripts/check-bundle-budget.mjs",
     "check:security": "npm run check:secrets && npm run audit:dependencies",
