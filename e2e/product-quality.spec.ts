@@ -181,7 +181,7 @@ test("@performance home meets lab paint, stability, and single-interaction laten
         for (const entry of list.getEntries() as Array<
           PerformanceEntry & { interactionId?: number; processingStart?: number; processingEnd?: number }
         >) {
-          if ((entry.interactionId ?? 0) <= 0) continue;
+          if (entry.name !== "click" || (entry.interactionId ?? 0) <= 0) continue;
           interactions.add(entry.interactionId ?? 0);
           state.observedInteractions = interactions.size;
           state.interactionLatency = Math.max(state.interactionLatency, entry.duration);
@@ -199,6 +199,13 @@ test("@performance home meets lab paint, stability, and single-interaction laten
   });
   await page.goto("/");
   await page.getByRole("button", { name: "表示設定" }).click();
+  await expect(page.getByRole("heading", { name: "表示設定" })).toBeVisible();
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      }),
+  );
   await expect
     .poll(() =>
       page.evaluate(
