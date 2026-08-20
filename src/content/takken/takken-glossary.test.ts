@@ -5,10 +5,16 @@ import type { TakkenGlossary } from "./takken-glossary-types.ts";
 import { TAKKEN_PROMPTS } from "./takken-prompts.ts";
 import { validatePrompts } from "../../domain/prompts/validate-prompts.ts";
 import { filterTakkenGlossary } from "./filter-takken-glossary.ts";
+import { TAKKEN_EDITION } from "./takken-edition.ts";
 
 const glossary = glossaryJson as TakkenGlossary;
 
 test("imports all 446 takken glossary entries and filter values", () => {
+  assert.equal(glossary.edition, TAKKEN_EDITION.label);
+  assert.equal(glossary.examDate, TAKKEN_EDITION.examDate);
+  assert.equal(glossary.legalBasisDate, TAKKEN_EDITION.legalBasisDate);
+  assert.match(glossary.provenance.sourceRegistryDigest, /^[a-f0-9]{64}$/);
+  assert.match(glossary.provenance.sourceDigest, /^[a-f0-9]{64}$/);
   assert.equal(glossary.stats.entryCount, 446);
   assert.equal(glossary.entries.length, 446);
   assert.deepEqual(glossary.filters.categories, ["権利関係", "税・その他", "宅建業法", "法令上の制限"]);

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { AssessmentMode } from "../../../domain/assessment/assessment-types.ts";
 import { TAKKEN_ASSESSMENT_CATEGORIES } from "../../../content/takken/takken-assessment-pack.ts";
+import { formatEditionDate, TAKKEN_EDITION } from "../../../content/takken/takken-edition.ts";
 import { PageShell } from "../layout/PageShell.tsx";
 
 export function AssessmentLauncher({
@@ -63,9 +64,10 @@ export function AssessmentLauncher({
 function AssessmentNotice() {
   return (
     <aside className="assessment-notice">
-      <strong>2026年度向け・専門家監修前のオリジナル問題</strong>
+      <strong>{TAKKEN_EDITION.label}・専門家監修前のオリジナル問題</strong>
       <p>
-        2026年4月1日時点の学習用語集から機械的に構成した暫定教材です。公式過去問ではなく、法的正確性や合格を保証するものではありません。
+        {formatEditionDate(TAKKEN_EDITION.legalBasisDate, "japanese")}
+        時点の学習用語集から機械的に構成した暫定教材です。公式過去問ではなく、法的正確性や合格を保証するものではありません。
       </p>
     </aside>
   );

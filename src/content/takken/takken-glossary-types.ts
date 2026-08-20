@@ -17,7 +17,15 @@ export type TakkenGlossaryEntry = {
 export type TakkenGlossary = {
   title: string;
   edition: string;
+  examDate: string;
+  legalBasisDate: string;
   version: number;
+  provenance: {
+    sourceRegistryVersion: number;
+    sourceRegistryDigest: string;
+    sourceDigest: string;
+    retrievedAt: string;
+  };
   stats: { entryCount: number };
   filters: {
     categories: ReadonlyArray<string>;
