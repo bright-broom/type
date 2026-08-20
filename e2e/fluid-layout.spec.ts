@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { expectFluidLayout, type LayoutScreen } from "./support/fluid-layout-assertions.ts";
+import { submitAnsweredPractice } from "./support/assessment-fixtures.ts";
 
 const VIEWPORTS = [
   { name: "compact-phone", width: 320, height: 568 },
@@ -17,18 +18,6 @@ async function finishSession(page: Page): Promise<void> {
   await page.keyboard.type("a");
   await page.clock.fastForward(61_000);
   await page.getByRole("heading", { name: "おつかれさまでした。" }).waitFor();
-}
-
-async function finishTakkenPractice(page: Page): Promise<void> {
-  await page.goto("/takken/practice");
-  await page.getByRole("button", { name: "10問演習を始める" }).click();
-  for (let index = 0; index < 10; index += 1) {
-    await page.keyboard.press("1");
-    if (index < 9) await page.getByRole("button", { name: /次の問題/ }).click();
-  }
-  await page.getByRole("button", { name: "採点する" }).click();
-  await page.getByRole("button", { name: "提出して採点" }).click();
-  await page.locator(".assessment-result-shell").waitFor();
 }
 
 const SCREENS: ReadonlyArray<LayoutScreen> = [
@@ -137,7 +126,7 @@ const SCREENS: ReadonlyArray<LayoutScreen> = [
       await page.getByRole("button", { name: "10問演習を始める" }).click();
     },
   },
-  { name: "assessment result", width: "assessment", open: finishTakkenPractice },
+  { name: "assessment result", width: "assessment", open: submitAnsweredPractice },
   {
     name: "error boundary",
     width: "compact",
