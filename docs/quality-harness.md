@@ -68,7 +68,7 @@ security job so the failure is explicit.
 
 CodeQL, native Secret Scanning, push protection, branch rulesets, and Vercel production controls are repository/workspace settings. They must be verified by an owner before being described as enabled. Never print `.env`, credentials, tokens, or production data while diagnosing a gate.
 
-Dependabot vulnerability alerts and automated security fixes were enabled on 2026-08-20. Repository Actions were restricted the same day to GitHub-owned actions with full commit SHA pinning required. `tests/security-headers.test.mjs` guards the authored policy and `e2e/security-headers.spec.ts` verifies the effective production response in Chromium and WebKit. Re-check external settings with `docs/security-control-checklist.md` because repository code cannot make them immutable.
+Dependabot vulnerability alerts and automated security fixes were enabled on 2026-08-20. Repository Actions were restricted the same day to GitHub-owned actions plus the documented `openai/codex-action@*` exception, with full commit SHA pinning required. `tests/security-headers.test.mjs` guards the authored policy and `e2e/security-headers.spec.ts` verifies the effective production response in Chromium and WebKit. Re-check external settings with `docs/security-control-checklist.md` because repository code cannot make them immutable.
 
 ## Dead-code cleanup
 
