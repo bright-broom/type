@@ -1,0 +1,64 @@
+name: Takken official source monitor
+
+on:
+  schedule:
+    - cron: "17 20 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: takken-official-source-monitor
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    name: Compare official Takken sources
+    if: github.event_name != 'workflow_dispatch' || github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout trusted monitor
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+      - name: Compare allowlisted official sources
+        id: compare
+        run: |
+          set +e
+          node scripts/monitor-takken-sources.mjs --output source-drift.md
+          status=$?
+          set -e
+          case "$status" in
+            0) echo "drift=false" >> "$GITHUB_OUTPUT" ;;
+            2) echo "drift=true" >> "$GITHUB_OUTPUT" ;;
+            *) exit "$status" ;;
+          esac
+      - name: Reconcile the source drift issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HAS_DRIFT: ${{ steps.compare.outputs.drift }}
+        run: |
+          number=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
+            --json number,body --jq '.[] | select(.body | contains("<!-- typeloop-takken-source-drift -->")) | .number' \
+            | head -n 1)
+          title='[Takken Source Drift] 公式情報の確認が必要です'
+          if [ "$HAS_DRIFT" = true ]; then
+            if [ -n "$number" ]; then
+              gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --title "$title" --body-file source-drift.md
+            else
+              gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file source-drift.md
+            fi
+          elif [ -n "$number" ]; then
+            gh issue close "$number" --repo "$GITHUB_REPOSITORY" \
+              --comment '登録済みの公式情報digestと再び一致しました。'
+          fi

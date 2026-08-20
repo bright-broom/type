@@ -89,6 +89,8 @@ source file → importer → generated JSON → typed content loader → present
 
 Generated artifacts are versioned for reproducible builds but are not hand-edited.
 
+Takken adds a tracked normalized TSV, authored edition manifest, and official-source registry before the importer. The generated artifact binds exact source and canonical registry digests. A scheduled, non-runtime monitor reads only default-branch code and allowlisted RETIO, MLIT, and e-Gov sources, rejects redirects, and opens a GitHub Issue when stable content windows drift. It never writes application content. A signed qualified-human attestation, verified against an owner-managed external trust registry, is the only path from a provisional assessment question to `published`.
+
 Confidentiality is an importer responsibility, not a UI one. When a source contains
 material that must not reach a deployed bundle, the importer de-identifies it and
 fails on any leak, so the generated artifact is already the publishable form. See

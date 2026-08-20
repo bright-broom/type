@@ -38,6 +38,7 @@ yarn-error.log*
 *.xlsx
 *.xlsm
 *.tsv
+!src/content/takken/source/takken-glossary.tsv
 
 # vercel
 .vercel

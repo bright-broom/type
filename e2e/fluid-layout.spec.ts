@@ -169,27 +169,20 @@ const REPRESENTATIVE_SCREENS = new Set([
   "assessment question",
 ]);
 
-async function resetLocalState(page: Page): Promise<void> {
-  await page.goto("/");
-  await page.evaluate(() => localStorage.clear());
-}
-
 for (const viewport of VIEWPORTS) {
-  test(`all layout variants remain fluid at ${viewport.name}`, async ({ browser }) => {
-    const context = await browser.newContext({ viewport, hasTouch: viewport.width < 768 });
-    const page = await context.newPage();
-    await page.clock.install();
-    const screens = EVERY_SCREEN_VIEWPORTS.has(viewport.name)
-      ? SCREENS
-      : SCREENS.filter(({ name }) => REPRESENTATIVE_SCREENS.has(name));
-
-    for (const screen of screens) {
-      await resetLocalState(page);
+  const screens = EVERY_SCREEN_VIEWPORTS.has(viewport.name)
+    ? SCREENS
+    : SCREENS.filter(({ name }) => REPRESENTATIVE_SCREENS.has(name));
+  for (const screen of screens) {
+    test(`${screen.name} remains fluid at ${viewport.name}`, async ({ browser }) => {
+      const context = await browser.newContext({ viewport, hasTouch: viewport.width < 768 });
+      const page = await context.newPage();
+      await page.clock.install();
       await screen.open(page);
       await expectFluidLayout(page, screen, viewport.name);
-    }
-    await context.close();
-  });
+      await context.close();
+    });
+  }
 }
 
 test("page gutters and vertical rhythm scale continuously from the root contract", async ({ page }) => {
