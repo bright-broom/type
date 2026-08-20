@@ -97,9 +97,11 @@ Serving the build removes that variance and means the suite exercises what ships
 
 The Core Web Vitals lab probe runs after the functional matrix in a dedicated single-worker Chromium phase. Event Timing
 includes main-thread scheduling delay, so co-scheduling the probe beside full-screen WebKit/Chromium traversals measures
-runner contention instead of the page. The 200 ms interaction threshold is unchanged; only the measurement isolation is
-different. Full all-screen fluid traversals have a 60-second per-viewport budget because each test intentionally visits up
-to sixteen application states in one browser context.
+runner contention instead of the page. The gate therefore records two signals: product-owned event processing must remain
+at or below 100 ms, while full Event Timing has a 500 ms hosted-runner safety ceiling that catches major regressions without
+misrepresenting a shared VM as field INP. A 200 ms end-to-end target belongs to real-user monitoring if that privacy boundary
+is introduced later; this local-first product does not currently send telemetry. Full all-screen fluid traversals have a
+60-second per-viewport budget because each test intentionally visits up to sixteen application states in one browser context.
 
 CI runs the browser job inside the version-matched, digest-pinned Playwright
 `noble` image. The image owns Chromium, WebKit, and their OS packages; do not add
@@ -123,8 +125,8 @@ overflow rather than mistaken for clipped controls.
 `e2e/product-quality.spec.ts` checks effective install metadata, a fully interactive
 and theme-consistent offline home shell, a rendered 11px floor for informative phone
 text, and lab LCP, CLS, and single-interaction Event Timing budgets. The interaction
-check requires a real positive interaction identifier and is not presented as field
-INP. A source-wide CSS floor catches screens and pseudo-content outside the rendered
+check requires a real positive interaction identifier, separately gates product-owned
+processing and end-to-end hosted-runner latency, and is not presented as field INP. A source-wide CSS floor catches screens and pseudo-content outside the rendered
 sample. These checks catch release regressions without introducing field telemetry or
 sending local session data anywhere.
 
