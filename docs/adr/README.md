@@ -22,5 +22,8 @@ ADRs capture durable decisions that constrain future implementation. They do not
 | [016](ADR-016-assessment-experience.md)                | Separate assessment experience and deadline clock    |
 | [017](ADR-017-takken-question-governance.md)           | Versioned original takken question governance        |
 | [018](ADR-018-fluid-page-layout.md)                    | Typed fluid page layout contract                     |
+| [022](ADR-022-agent-control-plane.md)                  | Human-owned agent control plane                      |
 
-Add an ADR only for a decision with meaningful alternatives and long-lived consequences. Use the next number and include Context, Decision, Alternatives, and Consequences.
+ADRs 019–021 are carried by prerequisite release, content, and product-quality pull requests. ADR-022 must be rebased after
+they land. Add an ADR only for a decision with meaningful alternatives and long-lived consequences. Use the next available
+number and include Context, Decision, Alternatives, and Consequences.

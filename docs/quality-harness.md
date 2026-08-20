@@ -157,3 +157,30 @@ and upgrading the whole constraint is a judgement about the toolchain, and guess
 would produce a green build on a tree nobody chose. `npm run check:deps` names the
 conflict, dependabot ignores keep known-incompatible majors out, and the triage
 comment marks the pull request unmergeable — the decision stays with a person.
+
+## Agent control plane
+
+`.codex/hooks.json` gives trusted Codex clients an early local stop before a protected-branch push, PR merge, protected-ref
+API mutation, or any Vercel CLI invocation while that tool's dependency audit is blocked. It complements GitHub rules; it
+does not replace them and cannot govern other clients. Review repository hooks with `/hooks` before trusting a checkout.
+
+`Codex CI advisory` is an optional second opinion after the deterministic classifier. It reads only the default branch and
+failed-job artifact, runs with `contents: read` and the `:read-only` permission profile, and writes only a 14-day artifact.
+It cannot change or comment on a pull request. The owner must explicitly set both `CODEX_CI_ADVISORY_ENABLED=true` and the
+`OPENAI_API_KEY` Actions secret; otherwise no model call occurs. ADR-020's external Actions baseline must also be narrowed
+to the single `openai/codex-action@*` pattern while full-SHA pinning remains required; `docs/agent-control-checklist.md`
+records that prerequisite and keeps the switch disabled until it is verified.
+
+`Quality metrics` runs weekly and can also be dispatched manually. Its 28-day artifact defines each denominator and reports
+`n/a` instead of manufacturing a zero. The signals are initial CI success, median time to first green run, distinct reviewed
+revision rounds, default-branch CI failures, the share of failures caught on PRs, and the merge rate of closed `codex/*`
+pull requests. Closed PRs are associated to historical CI through their commit SHAs because GitHub removes the
+`pull_requests` association from some completed run responses. They measure the delivery system, not people.
+All merged PRs remain in the initial-CI denominator; an unassociated run is shown as missing and is not successful. Re-run
+attempt 1 is recovered from its jobs endpoint, and failure detection counts a workflow run when any observed attempt failed.
+API queries are date-bounded before pagination so report cost does not grow with repository age.
+
+No Vercel CLI runner is exposed while the evaluated `59.1.4` dependency graph fails the High/Critical audit. `npm exec`
+would not solve that problem because it re-resolves an unaudited transitive graph. Repository hooks deny every Vercel CLI
+command; previews continue through the GitHub integration, and production remains human-owned. Revisit only with an isolated
+lockfile or digest-pinned image and a dedicated audit gate. No repository workflow may merge or weaken a required gate.
