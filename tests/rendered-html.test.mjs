@@ -31,9 +31,11 @@ test("declares an App Router home route and finished TypeLoop shell", async () =
   assert.match(keyboardInput, /isTypingField/);
   assert.match(styles, /--keyboard-inset/);
   assert.match(themes, /--page-gutter/);
-  // The attributes must come from the server: a client script cannot beat the paint.
+  // Online attributes come from the server; the same-origin beforeInteractive script
+  // only repairs a cached offline document from the current validated cookie.
   assert.match(layout, /appearanceDataAttributes/);
   assert.match(layout, /cookies\(\)/);
-  assert.doesNotMatch(layout, /next\/script/);
+  assert.match(layout, /src="\/theme-bootstrap\.js"/);
+  assert.match(layout, /strategy="beforeInteractive"/);
   assert.match(styles, /pointer: coarse/);
 });

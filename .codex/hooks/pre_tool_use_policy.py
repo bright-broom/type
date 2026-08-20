@@ -5,250 +5,20 @@ from __future__ import annotations
 
 import json
 import re
-import shlex
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+from urllib.parse import unquote
+
+from shell_structure import command_name, resolve_executable, shell_structure, tokens
 
 PROTECTED_BRANCHES = {"main", "master"}
-GITHUB_MERGE_ENDPOINT = re.compile(r"(?:^|/)pulls/\d+/merge(?:$|[?\s])", re.IGNORECASE)
+GITHUB_MERGE_ENDPOINT = re.compile(r"(?:^|/)pulls/[^/\s?#]+/merge(?:$|[?\s#])", re.IGNORECASE)
 GITHUB_PROTECTED_REF_ENDPOINT = re.compile(
-    r"(?:^|/)git/refs/heads/(?:main|master)(?:$|[?\s])", re.IGNORECASE
+    r"(?:^|/)git/refs/heads/(?:main|master|[^/\s?#]*[$`][^/\s?#]*)(?:$|[?\s#])", re.IGNORECASE
 )
-SHELL_ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
-ENV_OPTIONS_WITH_VALUE = {"-C", "--chdir", "-S", "--split-string", "-u", "--unset"}
-SUDO_OPTIONS_WITH_VALUE = {"-D", "--chdir", "-g", "--group", "-h", "--host", "-p", "--prompt", "-u", "--user"}
-SHELL_CONTROL_PREFIXES = {"!", "if", "then", "elif", "else", "do", "while", "until", "time"}
-
-
-def shell_structure(
-    command: str,
-) -> tuple[list[tuple[str, tuple[int, ...], str | None, str | None]], list[str]]:
-    """Return executable simple-command segments and nested command bodies.
-
-    This is deliberately smaller than a shell parser, but it models the syntax
-    that can start another process. Quotes are retained for shlex; operators are
-    boundaries only outside quotes; command/process substitutions are inspected
-    recursively instead of being mistaken for inert arguments.
-    """
-
-    normalized = command.replace("\\\n", " ")
-    segments: list[tuple[str, tuple[int, ...], str | None, str | None]] = []
-    substitutions: list[str] = []
-    current: list[str] = []
-    quote: str | None = None
-    escaped = False
-    index = 0
-    next_scope = 0
-    scope: list[int] = []
-    separator_before: str | None = None
-
-    def flush(separator_after: str | None = None) -> None:
-        nonlocal separator_before
-        segment = "".join(current).strip()
-        if segment:
-            segments.append((segment, tuple(scope), separator_before, separator_after))
-        current.clear()
-        separator_before = separator_after
-
-    while index < len(normalized):
-        character = normalized[index]
-        if escaped:
-            current.append(character)
-            escaped = False
-            index += 1
-            continue
-        if character == "\\" and quote != "'":
-            current.append(character)
-            escaped = True
-            index += 1
-            continue
-        if character == "'":
-            current.append(character)
-            if quote is None:
-                quote = "'"
-            elif quote == "'":
-                quote = None
-            index += 1
-            continue
-        if character == '"':
-            current.append(character)
-            if quote is None:
-                quote = '"'
-            elif quote == '"':
-                quote = None
-            index += 1
-            continue
-        if quote != "'" and character == "`":
-            end = index + 1
-            nested: list[str] = []
-            nested_escaped = False
-            while end < len(normalized):
-                nested_character = normalized[end]
-                if nested_escaped:
-                    nested.append(nested_character)
-                    nested_escaped = False
-                elif nested_character == "\\":
-                    nested.append(nested_character)
-                    nested_escaped = True
-                elif nested_character == "`":
-                    break
-                else:
-                    nested.append(nested_character)
-                end += 1
-            if end >= len(normalized):
-                raise ValueError("unterminated command substitution")
-            substitutions.append("".join(nested))
-            current.append("__command_substitution__")
-            index = end + 1
-            continue
-        opens_substitution = quote != "'" and (
-            normalized.startswith("$(", index)
-            or (quote is None and normalized.startswith("<(" , index))
-            or (quote is None and normalized.startswith(">(", index))
-        )
-        if opens_substitution:
-            open_index = index + 1
-            depth = 1
-            end = open_index + 1
-            nested_quote: str | None = None
-            nested_escaped = False
-            while end < len(normalized) and depth:
-                nested_character = normalized[end]
-                if nested_escaped:
-                    nested_escaped = False
-                elif nested_character == "\\" and nested_quote != "'":
-                    nested_escaped = True
-                elif nested_character == "'" and nested_quote != '"':
-                    nested_quote = None if nested_quote == "'" else "'"
-                elif nested_character == '"' and nested_quote != "'":
-                    nested_quote = None if nested_quote == '"' else '"'
-                elif nested_quote is None and nested_character == "(":
-                    depth += 1
-                elif nested_quote is None and nested_character == ")":
-                    depth -= 1
-                end += 1
-            if depth:
-                raise ValueError("unterminated command substitution")
-            substitutions.append(normalized[open_index + 1 : end - 1])
-            current.append("__command_substitution__")
-            index = end
-            continue
-        if quote is None and character in {";", "\n", "|", "&", "(", ")", "{", "}"}:
-            doubled = index + 1 < len(normalized) and normalized[index + 1] == character
-            if character == "|" and not doubled:
-                separator = "pipeline"
-            elif character == "&" and not doubled:
-                separator = "background"
-            else:
-                separator = "sequence"
-            flush(separator)
-            if character == "(":
-                next_scope += 1
-                scope.append(next_scope)
-            elif character == ")":
-                if not scope:
-                    raise ValueError("unbalanced subshell grouping")
-                scope.pop()
-            if doubled:
-                index += 1
-            index += 1
-            continue
-        current.append(character)
-        index += 1
-    if quote is not None or escaped or scope:
-        raise ValueError("unterminated shell quoting")
-    flush(None)
-    return segments, substitutions
-
-
-def tokens(segment: str) -> list[str]:
-    try:
-        return shlex.split(segment, posix=True)
-    except ValueError:
-        return segment.split()
-
-
-def command_name(token: str) -> str:
-    return Path(token).name.lower()
-
-
-def resolve_executable(parts: list[str], session_cwd: str) -> tuple[list[str], int | None, str]:
-    effective_cwd = Path(session_cwd)
-    index = 0
-    while index < len(parts):
-        while index < len(parts) and SHELL_ASSIGNMENT.match(parts[index]):
-            index += 1
-        if index >= len(parts):
-            return parts, None, str(effective_cwd)
-        name = command_name(parts[index])
-        if name in SHELL_CONTROL_PREFIXES:
-            index += 1
-            continue
-        if name in {"command", "nohup"}:
-            index += 1
-            while index < len(parts) and parts[index].startswith("-"):
-                index += 1
-            continue
-        if name == "env":
-            index += 1
-            while index < len(parts):
-                option = parts[index]
-                if option == "--":
-                    index += 1
-                    break
-                if SHELL_ASSIGNMENT.match(option):
-                    index += 1
-                    continue
-                option_name, separator, inline_value = option.partition("=")
-                compact_name = option[:2] if option.startswith(("-C", "-S", "-u")) else option_name
-                if compact_name not in ENV_OPTIONS_WITH_VALUE:
-                    if option.startswith("-"):
-                        index += 1
-                        continue
-                    break
-                if separator:
-                    value = inline_value
-                    index += 1
-                elif len(option) > 2 and compact_name in {"-C", "-S", "-u"}:
-                    value = option[2:]
-                    index += 1
-                else:
-                    if index + 1 >= len(parts):
-                        raise ValueError("environment wrapper option is missing its value")
-                    value = parts[index + 1]
-                    index += 2
-                if compact_name in {"-C", "--chdir"}:
-                    candidate = Path(value)
-                    effective_cwd = candidate if candidate.is_absolute() else effective_cwd / candidate
-                elif compact_name in {"-S", "--split-string"}:
-                    parts = tokens(value) + parts[index:]
-                    index = 0
-                    break
-            continue
-        if name == "sudo":
-            index += 1
-            while index < len(parts) and parts[index].startswith("-"):
-                option = parts[index]
-                option_name, separator, inline_value = option.partition("=")
-                if option_name in SUDO_OPTIONS_WITH_VALUE:
-                    if separator:
-                        value = inline_value
-                        index += 1
-                    else:
-                        if index + 1 >= len(parts):
-                            raise ValueError("sudo wrapper option is missing its value")
-                        value = parts[index + 1]
-                        index += 2
-                    if option_name in {"-D", "--chdir"}:
-                        candidate = Path(value)
-                        effective_cwd = candidate if candidate.is_absolute() else effective_cwd / candidate
-                else:
-                    index += 1
-            continue
-        return parts, index, str(effective_cwd)
-    return parts, None, str(effective_cwd)
+PROCESS_LAUNCHERS = {"find", "nice", "setsid", "timeout", "xargs"}
 
 
 def is_protected_ref(token: str) -> bool:
@@ -301,6 +71,46 @@ def git_push_reason(parts: list[str], git_index: int, session_cwd: str) -> str |
     return None
 
 
+def decoded_arguments(arguments: list[str]) -> str:
+    value = " ".join(arguments)
+    for _ in range(3):
+        decoded = unquote(value)
+        if decoded == value:
+            break
+        value = decoded
+    return value
+
+
+def wrapped_mutation_reason(parts: list[str], command_index: int) -> str | None:
+    """Reject visible release commands launched through process wrappers.
+
+    These launchers can alter scheduling or populate arguments dynamically, so
+    even an apparently safe wrapped Git push is ambiguous. Direct feature-branch
+    pushes remain available without a wrapper.
+    """
+
+    lowered = [part.lower() for part in parts]
+    wrapped_arguments = parts[command_index + 1 :]
+    if any("$" in argument or "`" in argument for argument in wrapped_arguments):
+        return "A process wrapper contains a dynamic argument, so the hook failed closed."
+    for index in range(command_index + 1, len(parts)):
+        candidate = command_name(parts[index])
+        if candidate in {"bash", "eval", "sh", "zsh"}:
+            return "A process wrapper launching a nested shell cannot be inspected safely, so the hook failed closed."
+        if candidate == "git" and "push" in lowered[index + 1 :]:
+            return "A wrapped Git push cannot be inspected safely. Run an explicit feature-branch push instead."
+        if candidate == "gh":
+            arguments = lowered[index + 1 :]
+            if "pr" in arguments and "merge" in arguments[arguments.index("pr") + 1 :]:
+                return "Agents never merge pull requests. Leave the green PR for the human repository owner."
+        if candidate.split("@", 1)[0] == "vercel":
+            return "Vercel CLI use is disabled until its isolated dependency graph passes the repository security audit."
+    joined = decoded_arguments(lowered[command_index + 1 :])
+    if GITHUB_MERGE_ENDPOINT.search(joined) or GITHUB_PROTECTED_REF_ENDPOINT.search(joined):
+        return "A wrapped GitHub mutation target cannot be inspected safely, so the hook failed closed."
+    return None
+
+
 def release_mutation_reason(command: str, session_cwd: str, nesting: int = 0) -> str | None:
     try:
         segments, substitutions = shell_structure(command)
@@ -327,6 +137,8 @@ def release_mutation_reason(command: str, session_cwd: str, nesting: int = 0) ->
             continue
         lowered = [part.lower() for part in parts]
         executable = command_name(parts[command_index])
+        if "$" in executable or "`" in executable:
+            return "A dynamic executable cannot be inspected safely, so the hook failed closed."
         if executable in {"cd", "pushd"} and command_index + 1 < len(parts):
             # Branching, pipelines, and background lists make path-sensitive cwd
             # propagation impossible without a complete shell AST. Remember the
@@ -368,10 +180,14 @@ def release_mutation_reason(command: str, session_cwd: str, nesting: int = 0) ->
             if reason:
                 return reason
         arguments = lowered[command_index + 1 :]
+        if executable in PROCESS_LAUNCHERS:
+            reason = wrapped_mutation_reason(parts, command_index)
+            if reason:
+                return reason
         if executable == "gh":
             if "pr" in arguments and "merge" in arguments[arguments.index("pr") + 1 :]:
                 return "Agents never merge pull requests. Leave the green PR for the human repository owner."
-        joined = " ".join(arguments)
+        joined = decoded_arguments(arguments)
         if executable in {"curl", "gh", "wget"} and GITHUB_MERGE_ENDPOINT.search(joined):
             return "GitHub's pull-request merge API is reserved for the human repository owner."
         if executable in {"curl", "gh", "wget"} and GITHUB_PROTECTED_REF_ENDPOINT.search(joined):

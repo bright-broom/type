@@ -113,7 +113,9 @@ export function calculateQualityMetrics({
     );
     if (runs.length === 0) missingInitialRuns += 1;
     else if (initialConclusion(runs[0]) === SUCCESS) initialSuccesses += 1;
-    const firstGreen = runs.find((run) => firstGreenAt(run) !== null);
+    const firstGreen = runs
+      .filter((run) => firstGreenAt(run) !== null)
+      .sort((left, right) => firstGreenAt(left) - firstGreenAt(right))[0];
     const createdAt = timestamp(field(pullRequest, "createdAt", "created_at"));
     if (firstGreen && createdAt !== null) {
       hoursToGreen.push((firstGreenAt(firstGreen) - createdAt) / 3_600_000);

@@ -12,13 +12,18 @@
  * writing. Raising one is a deliberate decision that belongs in a pull request.
  */
 
-import { readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const BUILD_DIR = ".next";
 const BUDGETS = {
   firstLoad: 480 * 1024,
   referenced: 640 * 1024,
+  cssTotal: 160 * 1024,
+  cssLargest: 128 * 1024,
+  publicRasterTotal: 300 * 1024,
+  socialImage: 150 * 1024,
+  appIcon: 64 * 1024,
 };
 const APP_ROUTE_BUDGETS = {
   "/takken": 80 * 1024,
@@ -33,6 +38,17 @@ function sizeOf(file) {
     return statSync(join(BUILD_DIR, file)).size;
   } catch {
     return 0;
+  }
+}
+
+function walk(directory) {
+  try {
+    return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+      const path = join(directory, entry.name);
+      return entry.isDirectory() ? walk(path) : [path];
+    });
+  } catch {
+    return [];
   }
 }
 
@@ -67,6 +83,24 @@ const rows = [
   ["referenced", referenced, BUDGETS.referenced],
 ];
 
+const cssFiles = walk(join(BUILD_DIR, "static", "chunks")).filter((file) => file.endsWith(".css"));
+const cssSizes = cssFiles.map((file) => statSync(file).size);
+rows.push(
+  ["CSS total", cssSizes.reduce((sum, size) => sum + size, 0), BUDGETS.cssTotal],
+  ["largest CSS", Math.max(0, ...cssSizes), BUDGETS.cssLargest],
+);
+
+const rasterFiles = walk("public").filter((file) => /\.(?:jpe?g|png|webp|avif)$/i.test(file));
+rows.push([
+  "public raster",
+  rasterFiles.reduce((sum, file) => sum + statSync(file).size, 0),
+  BUDGETS.publicRasterTotal,
+]);
+rows.push(["social image", statSync(join("public", "og.jpg")).size, BUDGETS.socialImage]);
+for (const icon of rasterFiles.filter((file) => /(?:icon|apple-touch)/.test(file))) {
+  rows.push([icon.replace(/^public\//, ""), statSync(icon).size, BUDGETS.appIcon]);
+}
+
 function appRouteSize(route) {
   const manifestPath = join(
     BUILD_DIR,
@@ -90,6 +124,44 @@ function appRouteSize(route) {
   return [...new Set(entry[1])].reduce((total, file) => total + sizeOf(file), 0);
 }
 
+function appRouteCss(route) {
+  const manifestPath = join(
+    BUILD_DIR,
+    "server",
+    "app",
+    ...route.slice(1).split("/"),
+    "page_client-reference-manifest.js",
+  );
+  const source = readFileSync(manifestPath, "utf8");
+  const marker = `globalThis.__RSC_MANIFEST["${route}/page"] = `;
+  const assignment = source.indexOf(marker);
+  if (assignment < 0) throw new Error(`Cannot parse CSS entries in ${manifestPath}`);
+  const routeManifest = JSON.parse(
+    source
+      .slice(assignment + marker.length)
+      .trim()
+      .replace(/;$/, ""),
+  );
+  return new Set(
+    Object.values(routeManifest.entryCSSFiles)
+      .flat()
+      .map(({ path }) => path),
+  );
+}
+
+const takkenCss = cssFiles
+  .filter((file) => readFileSync(file, "utf8").includes(".assessment-reading-shell"))
+  .map((file) => file.replace(`${BUILD_DIR}/`, ""));
+if (takkenCss.length === 0) {
+  console.error("The Takken assessment CSS marker was not found in the production build.");
+  process.exit(1);
+}
+const homeCss = appRouteCss("");
+if (takkenCss.some((file) => homeCss.has(file))) {
+  console.error("The root route includes Takken assessment CSS; keep it scoped to app/takken/layout.tsx.");
+  process.exit(1);
+}
+
 for (const [route, budget] of Object.entries(APP_ROUTE_BUDGETS)) {
   rows.push([route, appRouteSize(route), budget]);
 }
@@ -106,7 +178,7 @@ if (failed) {
   console.error(
     [
       "",
-      "Shipped JavaScript exceeded its budget. Either reduce it, or raise the",
+      "A shipped asset exceeded its budget. Either reduce it, or raise the",
       "budget in scripts/check-bundle-budget.mjs with the reason in the pull request.",
     ].join("\n"),
   );

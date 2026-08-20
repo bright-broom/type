@@ -14,7 +14,7 @@ this checklist after Actions policy, credential, ownership, visibility, or plan 
 | Codex permission profile | `:read-only` with `drop-sudo`                                              | Enforced in workflow and policy tests     |
 | Output                   | Artifact only; no PR comment, patch, push, merge, or deployment            | Enforced in workflow and policy tests     |
 
-The specific OpenAI action allowance is an intentional, narrow evolution of ADR-020's GitHub-owned-only baseline. Keep
+The specific OpenAI action allowance is the sole owner-managed exception documented by ADR-020. Keep
 `verified_allowed=false`, keep SHA pinning required, and do not add wildcard organizations or Marketplace actions. Enabling
 the advisory also authorizes selected CI diagnostics to be sent to the configured OpenAI API account. Record the verifier
 and date after applying the external setting; until then the workflow must remain disabled.

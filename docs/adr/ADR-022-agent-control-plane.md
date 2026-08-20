@@ -7,7 +7,7 @@ do not stop a local agent from issuing a dangerous command, while an unconstrain
 request output into a write-capable supply-chain boundary. The repository also lacked durable trend evidence for whether
 the automation improves lead time or merely moves failures later.
 
-This ADR follows ADR-019 through ADR-021 and must be rebased after those prerequisite pull requests land.
+This ADR follows ADR-019 through ADR-021 and is carried only in branch ancestry that already contains those prerequisite decisions.
 
 ## Decision
 
@@ -20,8 +20,8 @@ This ADR follows ADR-019 through ADR-021 and must be rebased after those prerequ
   receives untrusted logs as data, has read-only GitHub/filesystem permissions, cannot comment or push, and stores its
   output as a short-lived artifact for a human. It remains disabled until an owner configures the repository variable
   `CODEX_CI_ADVISORY_ENABLED=true` and the `OPENAI_API_KEY` Actions secret.
-- Narrowly evolve ADR-020's GitHub-owned-only Actions policy by allowing only `openai/codex-action@*` while retaining the
-  repository-wide full-SHA requirement. This owner-managed exception must be recorded in the agent control checklist before
+- Apply ADR-020's documented exception mechanism by allowing only `openai/codex-action@*` while retaining the repository-wide
+  full-SHA requirement. This owner-managed exception must be recorded in the agent control checklist before
   the advisory switch is enabled; verified Marketplace actions and broader patterns remain disabled.
 - Continue to reserve mechanical formatter/linter changes for the existing constrained autofix workflow. Codex does not
   generate or apply patches, merge PRs, or deploy production.

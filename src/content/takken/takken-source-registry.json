@@ -1,0 +1,289 @@
+{
+  "schemaVersion": 1,
+  "retrievedAt": "2026-08-20",
+  "allowlistedHosts": ["laws.e-gov.go.jp", "www.mlit.go.jp", "www.retio.or.jp"],
+  "documents": [
+    {
+      "id": "egov-takken-regulations",
+      "authority": "e-Gov",
+      "title": "宅地建物取引業法施行規則",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/332M50004000012?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "3592fcfd100bb47cf312d8610677341a0598cbc4dd536d9e9cff0fcab326bf21",
+      "format": "egov-json",
+      "expectedMarkers": ["宅地建物取引業法施行規則"]
+    },
+    {
+      "id": "egov-civil-code",
+      "authority": "e-Gov",
+      "title": "民法",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/129AC0000000089?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "0bbd5262a2ebf39ef4087a0a68efe5bea2c6e2a6c349353066a96542488b1f5d",
+      "format": "egov-json",
+      "expectedMarkers": ["民法"]
+    },
+    {
+      "id": "egov-land-house-lease",
+      "authority": "e-Gov",
+      "title": "借地借家法",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/403AC0000000090?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "876e25035675df85d458fa61a445125f483cb2935c37c20008b862da96ab0c30",
+      "format": "egov-json",
+      "expectedMarkers": ["借地借家法"]
+    },
+    {
+      "id": "egov-unit-ownership",
+      "authority": "e-Gov",
+      "title": "建物の区分所有等に関する法律",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/337AC0000000069?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "bc11b13498f8d52ef62161b39f58a91aa5ee86a5ac88536e5761b3624275ea5a",
+      "format": "egov-json",
+      "expectedMarkers": ["建物の区分所有等に関する法律"]
+    },
+    {
+      "id": "egov-real-estate-registration",
+      "authority": "e-Gov",
+      "title": "不動産登記法",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/416AC0000000123?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "8f902081acabc34376950dc42afbbf2e5fe2215de9af286c9897135852370b24",
+      "format": "egov-json",
+      "expectedMarkers": ["不動産登記法"]
+    },
+    {
+      "id": "egov-city-planning",
+      "authority": "e-Gov",
+      "title": "都市計画法",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/343AC0000000100?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "ddfb59af0177242b893806cc991c038058d243d57a923f689db031bf0df05a13",
+      "format": "egov-json",
+      "expectedMarkers": ["都市計画法"]
+    },
+    {
+      "id": "egov-building-standards",
+      "authority": "e-Gov",
+      "title": "建築基準法",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/325AC0000000201?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "695b067835bb6d9880573bfc093e0bb13c2c6a788a5bd507789f4e873187af4b",
+      "format": "egov-json",
+      "expectedMarkers": ["建築基準法"]
+    },
+    {
+      "id": "egov-national-land-use",
+      "authority": "e-Gov",
+      "title": "国土利用計画法",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/349AC1000000092?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "bfcd9ff0e5f2d0104c6445998035143ace30858978ba27caf71a668c9f519cd1",
+      "format": "egov-json",
+      "expectedMarkers": ["国土利用計画法"]
+    },
+    {
+      "id": "egov-agricultural-land",
+      "authority": "e-Gov",
+      "title": "農地法",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/327AC0000000229?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "ffc88d9a878f5f94071aa8424a9a534a3588033a4cc7d027550f423b88a36cc8",
+      "format": "egov-json",
+      "expectedMarkers": ["農地法"]
+    },
+    {
+      "id": "egov-land-readjustment",
+      "authority": "e-Gov",
+      "title": "土地区画整理法",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/329AC0000000119?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "aeb606019839a3ab9cf7cba5d21bc667c8c91f0c32dc1aab1e316a4baec55944",
+      "format": "egov-json",
+      "expectedMarkers": ["土地区画整理法"]
+    },
+    {
+      "id": "egov-embankment-regulation",
+      "authority": "e-Gov",
+      "title": "宅地造成及び特定盛土等規制法",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/336AC0000000191?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "ccff69ea8cf534d7ecc412ab2c8248f134e9cb66ccd4a6a9ffea6fa23791bc58",
+      "format": "egov-json",
+      "expectedMarkers": ["宅地造成及び特定盛土等規制法"]
+    },
+    {
+      "id": "egov-real-estate-brokerage",
+      "authority": "e-Gov",
+      "title": "宅地建物取引業法",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/327AC1000000176?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "3cc25a28329a5aeee97c4d745cbd5a532843956778ba2bbb884cdf79b3b11c00",
+      "format": "egov-json",
+      "expectedMarkers": ["宅地建物取引業法"]
+    },
+    {
+      "id": "egov-local-tax",
+      "authority": "e-Gov",
+      "title": "地方税法",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/325AC0000000226?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "a22e067219efbb506e774d7ae24be66b059e66f555cac4066495310331d4bd96",
+      "format": "egov-json",
+      "expectedMarkers": ["地方税法"]
+    },
+    {
+      "id": "egov-income-tax",
+      "authority": "e-Gov",
+      "title": "所得税法",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/340AC0000000033?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "93666682724020887e85b17d2276bd9e8b8a59c30f4a38a065cae0ccd6043675",
+      "format": "egov-json",
+      "expectedMarkers": ["所得税法"]
+    },
+    {
+      "id": "egov-stamp-tax",
+      "authority": "e-Gov",
+      "title": "印紙税法",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/342AC0000000023?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "fb8d28e31a82614e741181fe6a3a1a90c7ce5579317f7bcb6ba476573b337b94",
+      "format": "egov-json",
+      "expectedMarkers": ["印紙税法"]
+    },
+    {
+      "id": "egov-registration-tax",
+      "authority": "e-Gov",
+      "title": "登録免許税法",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/342AC0000000035?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "fc90efed67ffce2e77db7f337a0ca3e4494960f955a610d55742b4cbffb4f5c0",
+      "format": "egov-json",
+      "expectedMarkers": ["登録免許税法"]
+    },
+    {
+      "id": "egov-special-tax-measures",
+      "authority": "e-Gov",
+      "title": "租税特別措置法",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/332AC0000000026?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "b3f06dacfa87f5cb5ed68a5350fff75dc654001ded2203c37f6b8bd1529a8e12",
+      "format": "egov-json",
+      "expectedMarkers": ["租税特別措置法"]
+    },
+    {
+      "id": "egov-land-price-public-notice",
+      "authority": "e-Gov",
+      "title": "地価公示法",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/344AC0000000049?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "ef6d47004b4162e36a11659b8a83ddfb203956aa8961014faa209d0e1b1e60c9",
+      "format": "egov-json",
+      "expectedMarkers": ["地価公示法"]
+    },
+    {
+      "id": "egov-housing-finance-agency",
+      "authority": "e-Gov",
+      "title": "独立行政法人住宅金融支援機構法",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/417AC0000000082?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "f3a9572a7024098c46d63956546fa70d4a910836fa288905e7cb0253ab1703b7",
+      "format": "egov-json",
+      "expectedMarkers": ["独立行政法人住宅金融支援機構法"]
+    },
+    {
+      "id": "egov-premiums-representation",
+      "authority": "e-Gov",
+      "title": "不当景品類及び不当表示防止法",
+      "url": "https://laws.e-gov.go.jp/api/2/law_data/337AC0000000134?response_format=json&law_full_text_format=json&asof=2026-04-01",
+      "asOfDate": "2026-04-01",
+      "digest": "1df13bd43db8c0f30373ae2a0fe46833fbd086b46cbe0a56f3df569f76f78844",
+      "format": "egov-json",
+      "expectedMarkers": ["不当景品類及び不当表示防止法"]
+    },
+    {
+      "id": "mlit-real-estate-appraisal-standard",
+      "authority": "国土交通省",
+      "title": "不動産鑑定評価基準等",
+      "url": "https://www.mlit.go.jp/totikensangyo/totikensangyo_tk4_000024.html",
+      "asOfDate": "2026-08-20",
+      "digest": "6d45531f8d403ba11d04e4be973718fd90e3d50507eebc0b6b9d9959fa2a7e95",
+      "format": "html-text",
+      "expectedMarkers": ["不動産鑑定評価基準"]
+    },
+    {
+      "id": "mlit-real-estate-fair-competition-code",
+      "authority": "国土交通省",
+      "title": "不動産の表示に関する公正競争規約",
+      "url": "https://www.mlit.go.jp/totikensangyo/const/1_6_bt_000249.html",
+      "asOfDate": "2026-08-20",
+      "digest": "15b2afd0e869f26faf579530f096c7a429bf638f65295dfeb6e33c8ce5772207",
+      "format": "html-text",
+      "expectedMarkers": ["不動産の表示に関する公正競争規約"]
+    },
+    {
+      "id": "retio-2026-schedule",
+      "authority": "RETIO",
+      "title": "令和8年度宅地建物取引士資格試験スケジュール",
+      "url": "https://www.retio.or.jp/exam/schedule/",
+      "asOfDate": "2026-06-05",
+      "digest": "371d9e1c7a63305ede760b5037dadaafca740659cb121885397f31d7c5b963c3",
+      "format": "html-text",
+      "contentWindow": {
+        "startMarker": "令和８年度宅地建物取引士資格試験について",
+        "endMarker": "宅建試験のページへ戻る"
+      },
+      "expectedMarkers": ["令和８年度宅地建物取引士資格試験", "令和8年10月18日"]
+    },
+    {
+      "id": "mlit-2026-guidance",
+      "authority": "国土交通省",
+      "title": "宅地建物取引業法 法令改正・解釈",
+      "url": "https://www.mlit.go.jp/totikensangyo/const/1_6_bt_000268.html",
+      "asOfDate": "2026-04-01",
+      "digest": "651dfa3b1ac4bba3bd77566c8f2d944ef1c2fb5715e4f1dfae98e39261abfb3b",
+      "format": "html-text",
+      "contentWindow": {
+        "startMarker": "「宅地建物取引業法の解釈・運用の考え方」については、以下に掲載しています。",
+        "endMarker": "▲ページトップへ"
+      },
+      "expectedMarkers": ["令和８年４月１日以降", "令和７年12月15日国不動第452号"]
+    }
+  ],
+  "sourceMappings": [
+    { "sourceId": "S01", "documentIds": ["egov-takken-regulations", "mlit-2026-guidance"] },
+    { "sourceId": "S02", "documentIds": ["egov-civil-code"] },
+    { "sourceId": "S03", "documentIds": ["egov-land-house-lease"] },
+    { "sourceId": "S04", "documentIds": ["egov-unit-ownership"] },
+    { "sourceId": "S05", "documentIds": ["egov-real-estate-registration"] },
+    { "sourceId": "S06", "documentIds": ["egov-city-planning"] },
+    { "sourceId": "S07", "documentIds": ["egov-building-standards"] },
+    { "sourceId": "S08", "documentIds": ["egov-national-land-use"] },
+    { "sourceId": "S09", "documentIds": ["egov-agricultural-land"] },
+    { "sourceId": "S10", "documentIds": ["egov-land-readjustment"] },
+    { "sourceId": "S11", "documentIds": ["egov-embankment-regulation"] },
+    { "sourceId": "S12", "documentIds": ["egov-real-estate-brokerage", "mlit-2026-guidance"] },
+    { "sourceId": "S14", "documentIds": ["egov-local-tax"] },
+    {
+      "sourceId": "S15",
+      "documentIds": ["egov-income-tax", "egov-stamp-tax", "egov-registration-tax", "egov-special-tax-measures"]
+    },
+    {
+      "sourceId": "S16",
+      "documentIds": ["egov-land-price-public-notice", "mlit-real-estate-appraisal-standard"]
+    },
+    { "sourceId": "S17", "documentIds": ["egov-housing-finance-agency"] },
+    {
+      "sourceId": "S18",
+      "documentIds": ["egov-premiums-representation", "mlit-real-estate-fair-competition-code"]
+    }
+  ],
+  "watchDocumentIds": [
+    "egov-takken-regulations",
+    "egov-real-estate-brokerage",
+    "retio-2026-schedule",
+    "mlit-2026-guidance"
+  ]
+}

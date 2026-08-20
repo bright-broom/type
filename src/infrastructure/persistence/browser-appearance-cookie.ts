@@ -4,6 +4,19 @@ import {
   serializeAppearance,
 } from "../../application/settings/appearance-cookie.ts";
 import type { AppearanceSettings } from "../../application/settings/app-settings.ts";
+import { parseAppearance } from "../../application/settings/appearance-cookie.ts";
+
+export function readAppearanceCookie(
+  cookie = typeof document === "undefined" ? "" : document.cookie,
+): AppearanceSettings {
+  const prefix = `${APPEARANCE_COOKIE}=`;
+  const raw = cookie
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(prefix))
+    ?.slice(prefix.length);
+  return parseAppearance(raw);
+}
 
 /**
  * Persist appearance where the server can read it on the next request.

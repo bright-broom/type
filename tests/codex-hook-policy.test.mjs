@@ -45,6 +45,8 @@ test("blocks explicit and implicit protected-branch pushes", () => {
     "git push origin codex/work:master",
     "bash -c 'git push origin main'",
     "git push origin $TARGET_BRANCH",
+    "git push origin HEAD:$(printf main)",
+    "git push origin HEAD:`printf main`",
     "git push --mirror origin",
     "true | git push origin main",
   ]) {
@@ -117,16 +119,36 @@ test("inspects the repository selected by git -C and wrapped push commands", () 
 test("blocks every merge and production mutation path", () => {
   for (const command of [
     "gh pr merge 37 --squash",
+    "exec gh pr merge 37 --squash",
+    "exec -a release gh pr merge 37 --squash",
+    "command exec gh pr merge 37 --squash",
+    "builtin exec gh pr merge 37 --squash",
     "gh --repo bright-broom/type pr merge 37 --squash",
     "gh pr --repo bright-broom/type merge 37 --squash",
     "gh api --method PUT repos/bright-broom/type/pulls/37/merge",
+    "gh api --method PUT repos/bright-broom/type/pulls/$PR/merge",
+    "gh api --method PUT repos/bright-broom/type/pulls/$(printf 37)/merge",
     "curl -X PATCH https://api.github.com/repos/bright-broom/type/git/refs/heads/main",
+    "gh api --method PATCH repos/bright-broom/type/git/refs/heads/$BRANCH",
+    "curl -X PATCH https://api.github.com/repos/bright-broom/type/git/refs/heads/%6d%61%69%6e",
     "vercel promote preview.example.test",
     "vercel deploy",
     "vercel deploy --prod=true",
     "vercel alias set preview.example.test production.example.test",
     "vercel remove project --yes",
     "npx vercel@59.1.4 deploy --prod",
+    "exec vercel deploy --prod",
+    "nice gh pr merge 38 --squash",
+    "nice $(printf git) push origin main",
+    "timeout 10 gh pr merge 38 --squash",
+    "timeout 10 $(printf gh) pr merge 38 --squash",
+    "setsid gh pr merge 38 --squash",
+    "xargs gh pr merge 38 --squash",
+    "xargs $(printf gh) pr merge 38 --squash",
+    'xargs sh -c "gh pr merge 38 --squash"',
+    "find . -exec gh pr merge 38 --squash {} \\;",
+    "find . -exec $(printf gh) pr merge 38 --squash {} \\;",
+    'nice sh -c "gh pr merge 38 --squash"',
     "vercel rollback",
     "true & gh pr merge 37 --squash",
     "echo $(vercel deploy)",
@@ -138,6 +160,7 @@ test("blocks every merge and production mutation path", () => {
   ]) {
     assert.equal(decision(command)?.permissionDecision, "deny", command);
   }
+  assert.equal(decision("exec git push origin main")?.permissionDecision, "deny");
   assert.equal(decision("vercel build")?.permissionDecision, "deny");
   assert.equal(decision("vercel inspect preview.example.test")?.permissionDecision, "deny");
 });

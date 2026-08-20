@@ -8,7 +8,10 @@ import type { TrainingSet } from "../../domain/prompts/prompt-types.ts";
 import { BrowserSessionArchiveSink } from "../../infrastructure/persistence/browser-session-archive-sink.ts";
 import { LocalSessionRepository } from "../../infrastructure/persistence/local-session-repository.ts";
 import type { AppearanceSettings } from "../../application/settings/app-settings.ts";
-import { writeAppearanceCookie } from "../../infrastructure/persistence/browser-appearance-cookie.ts";
+import {
+  readAppearanceCookie,
+  writeAppearanceCookie,
+} from "../../infrastructure/persistence/browser-appearance-cookie.ts";
 import { useKeyboardInput } from "../hooks/useKeyboardInput.ts";
 import { useKeyboardInset } from "../hooks/useKeyboardInset.ts";
 import { useTypingSession } from "../hooks/useTypingSession.ts";
@@ -44,7 +47,9 @@ export function TypingApp({
   initialTrainingSet?: TrainingSet;
 }) {
   const session = useTypingSession();
-  const [appearance, setAppearance] = useState(initialAppearance);
+  const [appearance, setAppearance] = useState(() =>
+    typeof document === "undefined" ? initialAppearance : readAppearanceCookie(),
+  );
   useAppearance(appearance);
 
   /** Persist where the server can read it, so the next load paints this theme first. */

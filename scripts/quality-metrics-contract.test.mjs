@@ -146,3 +146,28 @@ test("counts missing CI and a failed first rerun attempt instead of inflating su
   assert.equal(metrics.preproductionFailureDetection.pullRequestFailures, 1);
   assert.equal(metrics.medianTimeToGreenHours, 3);
 });
+
+test("uses the earliest completed green run when concurrent runs finish out of creation order", () => {
+  const metrics = calculateQualityMetrics({
+    pullRequests: [pullRequests[0]],
+    workflowRuns: [
+      {
+        event: "pull_request",
+        conclusion: "success",
+        created_at: "2026-08-01T01:00:00Z",
+        updated_at: "2026-08-01T10:00:00Z",
+        pull_requests: [{ number: 1 }],
+      },
+      {
+        event: "pull_request",
+        conclusion: "success",
+        created_at: "2026-08-01T02:00:00Z",
+        updated_at: "2026-08-01T03:00:00Z",
+        pull_requests: [{ number: 1 }],
+      },
+    ],
+    windowStart: "2026-08-01T00:00:00Z",
+  });
+
+  assert.equal(metrics.medianTimeToGreenHours, 3);
+});
