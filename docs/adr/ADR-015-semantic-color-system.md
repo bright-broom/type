@@ -12,7 +12,7 @@ The product now requires a near-monochrome, dark-first interface while retaining
 - Introduce stable semantic roles for canvas, surfaces, content, controls, focus, and inverse regions. New component styling consumes roles rather than palette names.
 - Apply the existing modern product layer to both `noir` and `modern`; theme selection changes tokens only.
 - Reserve colored status tokens for success and danger. Ordinary emphasis in `noir` uses neutral values.
-- Continue server-rendering the validated theme identifier from the existing cookie, preserving a flash-free first paint and one persistence owner.
+- Continue restoring the validated theme identifier from the existing cookie at the delivery boundary, preserving a flash-free first paint and one persistence owner. ADR-023 moves that boundary from SSR to a parser-blocking static bootstrap.
 - Validate core semantic foreground/background pairs for every theme and cover the default, selector availability, persistence, and dark `color-scheme` in browser tests.
 
 ## Alternatives
@@ -24,4 +24,4 @@ The product now requires a near-monochrome, dark-first interface while retaining
 
 ## Consequences
 
-Noir loads by default without client bootstrap code, network activity, or additional dependencies. The same DOM and component behavior serve dark and light presentations. The semantic layer creates a safe migration path for remaining historical palette references; touched styles should move to roles, while the token and contrast gates prevent accidental regressions during that migration.
+Noir is the invariant document default; a same-origin 1.1 KB bootstrap restores another explicit choice before application paint without adding a dependency or third-party request. The same DOM and component behavior serve dark and light presentations. The semantic layer creates a safe migration path for remaining historical palette references; touched styles should move to roles, while the token and contrast gates prevent accidental regressions during that migration.

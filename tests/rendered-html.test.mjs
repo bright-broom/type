@@ -3,10 +3,11 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 test("declares an App Router home route and finished TypeLoop shell", async () => {
-  const [page, layout, app, playbook, takken, ais, game, keyboardInput, styles, themes] = await Promise.all([
+  const [page, layout, app, reference, playbook, takken, ais, game, keyboardInput, styles, themes] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/presentation/components/TypingApp.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/presentation/components/reference/ReferenceOverlay.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/presentation/components/consulting/ConsultingPlaybook.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/presentation/components/takken/TakkenGlossary.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/presentation/components/ais/AisGlossary.tsx", import.meta.url), "utf8"),
@@ -15,14 +16,14 @@ test("declares an App Router home route and finished TypeLoop shell", async () =
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     readFile(new URL("../app/styles/themes.css", import.meta.url), "utf8"),
   ]);
-  assert.match(page, /export default async function Home/);
+  assert.match(page, /export default function Home/);
   assert.match(page, /TypingApp/);
   assert.match(layout, /<html lang="ja"[^>]*>/);
   assert.match(playbook, /コンサル実務辞典/);
   assert.match(takken, /宅建試験 完全用語一覧/);
   assert.match(ais, /非開示処理済み/);
-  assert.match(app, /TakkenGlossary/);
-  assert.match(app, /AisGlossary/);
+  assert.match(reference, /TakkenGlossary/);
+  assert.match(reference, /AisGlossary/);
   assert.match(app, /HomeScreen/);
   assert.match(app, /TypingInput/);
   assert.match(game, /英数字キーボードに切り替え/);
@@ -31,11 +32,11 @@ test("declares an App Router home route and finished TypeLoop shell", async () =
   assert.match(keyboardInput, /isTypingField/);
   assert.match(styles, /--keyboard-inset/);
   assert.match(themes, /--page-gutter/);
-  // Online attributes come from the server; the same-origin beforeInteractive script
-  // only repairs a cached offline document from the current validated cookie.
+  // The invariant CDN shell starts from safe defaults, then the parser-blocking
+  // same-origin bootstrap applies the validated cookie before application paint.
   assert.match(layout, /appearanceDataAttributes/);
-  assert.match(layout, /cookies\(\)/);
+  assert.doesNotMatch(layout, /cookies\(\)|next\/headers/);
   assert.match(layout, /src="\/theme-bootstrap\.js"/);
-  assert.match(layout, /strategy="beforeInteractive"/);
+  assert.doesNotMatch(layout, /next\/script|beforeInteractive/);
   assert.match(styles, /pointer: coarse/);
 });
