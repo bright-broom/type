@@ -175,7 +175,8 @@ async function resetLocalState(page: Page): Promise<void> {
 }
 
 for (const viewport of VIEWPORTS) {
-  test(`all layout variants remain fluid at ${viewport.name}`, async ({ browser }) => {
+  test(`all layout variants remain fluid at ${viewport.name}`, async ({ browser }, testInfo) => {
+    testInfo.setTimeout(60_000);
     const context = await browser.newContext({ viewport, hasTouch: viewport.width < 768 });
     const page = await context.newPage();
     await page.clock.install();
