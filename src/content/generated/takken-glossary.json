@@ -1,7 +1,15 @@
 {
   "title": "宅建試験 完全用語一覧",
   "edition": "令和8年度試験向け",
-  "version": 1,
+  "examDate": "2026-10-18",
+  "legalBasisDate": "2026-04-01",
+  "version": 2,
+  "provenance": {
+    "sourceRegistryVersion": 1,
+    "sourceRegistryDigest": "eba4d6c06d86ca73360cd2ec54fb80ebf25d4949e3bc0d8eed1e45537970c520",
+    "sourceDigest": "e7ddaaf244b18bf77d6f58d6fa55d0fe2509bfaaff574f1b135f5e5ebebc15b8",
+    "retrievedAt": "2026-08-20"
+  },
   "stats": {
     "entryCount": 446
   },

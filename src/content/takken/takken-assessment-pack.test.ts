@@ -8,13 +8,15 @@ import {
   TAKKEN_PACK_VERSION,
 } from "./takken-assessment-pack.ts";
 import { selectPracticeQuestions } from "../../domain/assessment/assessment-progress.ts";
+import { TAKKEN_EXAM_YEAR, TAKKEN_PACK_SERIES } from "./takken-edition.ts";
 
-test("builds a valid, content-versioned 2026 original fifty-question pack", () => {
-  assert.match(TAKKEN_PACK_VERSION, /^2026\.1-[0-9a-f]{8}$/);
+test("builds a valid, edition-derived original fifty-question pack", () => {
+  assert.match(TAKKEN_PACK_VERSION, new RegExp(`^${TAKKEN_PACK_SERIES.replace(".", "\\.")}-[0-9a-f]{8}$`));
   assert.equal(TAKKEN_ASSESSMENT_QUESTIONS.length, 50);
   assert.deepEqual(validateAssessmentQuestions(TAKKEN_ASSESSMENT_QUESTIONS), []);
   assert.ok(TAKKEN_ASSESSMENT_QUESTIONS.every((question) => question.legalBasisDate === TAKKEN_LEGAL_BASIS_DATE));
   assert.ok(TAKKEN_ASSESSMENT_QUESTIONS.every((question) => question.reviewStatus === TAKKEN_PACK_REVIEW_STATUS));
+  assert.ok(TAKKEN_ASSESSMENT_QUESTIONS.every((question) => question.id.startsWith(`takken-${TAKKEN_EXAM_YEAR}-`)));
   assert.deepEqual(
     Object.fromEntries(
       [...new Set(TAKKEN_ASSESSMENT_QUESTIONS.map(({ categoryId }) => categoryId))].map((categoryId) => [

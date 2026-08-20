@@ -101,6 +101,14 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Verify generated content
+        run: npm run check:generated
+      - name: Verify Takken content governance
+        env:
+          TAKKEN_REVIEWER_KEYS_JSON: ${{ vars.TAKKEN_REVIEWER_KEYS_JSON }}
+        run: npm run check:content
+      - name: Verify design token boundary
+        run: npm run check:tokens
       - name: Check formatting
         run: npm run format:check
       - name: Lint

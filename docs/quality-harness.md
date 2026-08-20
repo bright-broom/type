@@ -8,6 +8,7 @@ TypeLoop treats command output, tests, and CI status as evidence. An agent's sta
 | ----------- | -------------------------- | -------------------------------------------------------------------- |
 | Deps        | `npm run check:deps`       | Every declared peer range is satisfiable by the pinned versions      |
 | Bundle      | `npm run check:bundle`     | First-load and App Router route JavaScript stay inside named budgets |
+| Content     | `npm run check:content`    | Takken source provenance and qualified publication evidence          |
 | Tokens      | `npm run check:tokens`     | Design colors exist only inside the theme registry; TSX carries none |
 | Format      | `npm run format:check`     | Deterministic authored-file formatting                               |
 | Lint        | `npm run lint`             | TypeScript, React, hooks, accessibility, and Next.js rules           |
@@ -30,6 +31,12 @@ Node strip-types does not transform JSX. UI behavior belongs in Playwright unles
 introduced.
 
 Use `npm run check:quick` while iterating, `npm run check` before review, and `npm run check:ci` for the complete local CI equivalent. Install the browsers once with `npm run e2e:install` (Chromium and WebKit).
+
+## Takken content governance
+
+`check:generated` reproduces the glossary byte-for-byte from its tracked normalized TSV. `check:content` then joins that artifact to the authored edition and official-source registries. Every source ID must resolve to an allowlisted RETIO, MLIT, or e-Gov HTTPS snapshot with retrieval and as-of dates plus a SHA-256 digest. Exam and legal-basis dates are manifest data, never importer literals.
+
+The weekly `Takken official source monitor` workflow compares stable content windows on the highest-risk official pages and reconciles one deduplicated Issue on drift. It reports only URLs, dates, digests, and missing markers; it does not copy official text, alter the glossary, change an answer, or promote a question. Redirects and non-default-branch manual runs are rejected. `published` questions are accepted only when exact question and registry digests have an Ed25519 review attestation signed by a reviewer whose qualification and category scope are stored in the owner-managed `TAKKEN_REVIEWER_KEYS_JSON` repository variable. An absent trust registry is an intentional default-deny state.
 
 ## Bug fixes
 
