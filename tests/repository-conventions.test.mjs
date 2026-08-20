@@ -30,6 +30,7 @@ const applicationScreenFiles = [
   "src/presentation/components/game/GameScreen.tsx",
   "src/presentation/components/history/HistoryScreen.tsx",
   "src/presentation/components/home/HomeScreen.tsx",
+  "src/presentation/components/reference/ReferenceOverlay.tsx",
   "src/presentation/components/result/ResultScreen.tsx",
   "src/presentation/components/settings/SettingsScreen.tsx",
   "src/presentation/components/takken-assessment/AssessmentHistoryScreen.tsx",
@@ -40,8 +41,12 @@ const applicationScreenFiles = [
   "src/presentation/components/takken/TakkenGlossary.tsx",
 ];
 const routeScreenContracts = {
+  "app/ais/page.tsx": ["src/presentation/components/TypingApp.tsx"],
+  "app/consulting/page.tsx": ["src/presentation/components/TypingApp.tsx"],
   "app/error.tsx": [],
+  "app/history/page.tsx": ["src/presentation/components/TypingApp.tsx"],
   "app/page.tsx": ["src/presentation/components/TypingApp.tsx"],
+  "app/settings/page.tsx": ["src/presentation/components/TypingApp.tsx"],
   "app/takken/glossary/page.tsx": [
     "src/presentation/components/takken-assessment/TakkenGlossaryRoute.tsx",
     "src/presentation/components/takken/TakkenGlossary.tsx",

@@ -1,16 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { cookies } from "next/headers";
-import Script from "next/script";
-import {
-  APPEARANCE_COOKIE,
-  appearanceDataAttributes,
-  parseAppearance,
-} from "@/src/application/settings/appearance-cookie";
+import { appearanceDataAttributes } from "@/src/application/settings/appearance-cookie";
+import { DEFAULT_APPEARANCE } from "@/src/application/settings/app-settings";
 import { ServiceWorkerRegistration } from "@/src/presentation/components/pwa/ServiceWorkerRegistration";
 import browserThemeColors from "@/src/presentation/theme/browser-theme-colors.generated.json";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://type-tau.vercel.app"),
   title: "TypeLoop",
   description: "1日60秒。正確さとリズムを育てるタイピング練習。",
   applicationName: "TypeLoop",
@@ -26,31 +22,24 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: "TypeLoop", statusBarStyle: "black-translucent" },
 };
 
-export async function generateViewport(): Promise<Viewport> {
-  const appearance = parseAppearance((await cookies()).get(APPEARANCE_COOKIE)?.value);
-  const dark = appearance.themeId === "noir";
-  return {
-    colorScheme: dark ? "dark" : "light",
-    themeColor: dark ? browserThemeColors.dark : browserThemeColors.light,
-  };
-}
+export const viewport: Viewport = {
+  colorScheme: "dark",
+  themeColor: browserThemeColors.dark,
+};
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Reading the cookie here is what removes the theme flash: the attributes ship in
-  // the initial HTML, so the first paint already uses the stored theme. No client
-  // script can achieve this — React serialises one into its flight payload, which
-  // runs after that paint (see ADR-014).
-  const appearance = parseAppearance((await cookies()).get(APPEARANCE_COOKIE)?.value);
   return (
-    <html lang="ja" suppressHydrationWarning {...appearanceDataAttributes(appearance)}>
+    <html lang="ja" suppressHydrationWarning {...appearanceDataAttributes(DEFAULT_APPEARANCE)}>
       <head>
-        <Script
+        {/* Parser blocking by design: this 1.1 KB same-origin file establishes
+            appearance before CSS can paint the invariant static shell. */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script
           src="/theme-bootstrap.js"
-          strategy="beforeInteractive"
           data-dark-color={browserThemeColors.dark}
           data-light-color={browserThemeColors.light}
         />

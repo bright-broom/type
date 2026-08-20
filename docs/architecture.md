@@ -34,13 +34,20 @@ Next.js route
 
 The active typing path stays in memory. Persistence happens after session completion or a settings change, never on every keystroke.
 
-The distribution shell is also local-first. A production-only service worker atomically
-caches the root document and its same-origin build assets so an installed home screen
-remains interactive offline. It owns no product state, never handles non-GET or
+The distribution shell is static and local-first. Every application route is prerendered
+to an invariant CDN document; no request cookie or header creates a Lambda boundary. A
+production-only service worker atomically caches every declared route document and the
+same-origin build assets discovered from them, so installed deep links remain interactive
+offline. It owns no product state, never handles non-GET or
 cross-origin requests, waits behind clients of the previous release, and is registered
 as a non-fatal progressive enhancement. A pre-paint script restores the validated
-appearance cookie when cached HTML is used. See
-[ADR-021](adr/ADR-021-product-quality-delivery.md).
+appearance cookie before application paint, both online and from cached HTML. See
+[ADR-021](adr/ADR-021-product-quality-delivery.md) and
+[ADR-023](adr/ADR-023-static-route-shell.md).
+
+`public/application-routes.json` is the single delivery inventory. The production build
+must match it exactly, and the service worker reads that same artifact before installation,
+so a newly added route cannot silently escape either CDN or offline guarantees.
 
 Assessment is a separate application capability. Its low-frequency answers are persisted after each transition so a long mock exam survives reload, while question content remains a versioned build artifact.
 
@@ -73,19 +80,25 @@ components can evolve with their actual workspace. See
 
 ## Appearance flow
 
-Appearance is the one preference the server must know before it renders, so it is
-persisted in a cookie and applied to the document root during SSR. The first paint
-already carries the stored theme; no client script is involved, because React
-serialises one into its flight payload where it runs too late (see
-[ADR-014](adr/ADR-014-theme-foundation.md)).
+Appearance is persisted in a validated cookie that a small, same-origin parser-blocking
+script reads in `<head>`. The static document carries safe noir defaults; the script
+applies theme, density, motion, browser chrome, and `color-scheme` before `<body>` can
+paint. CI inspects the emitted HTML byte order, so a framework transform cannot silently
+move this boundary behind hydration (see [ADR-023](adr/ADR-023-static-route-shell.md)).
 
 ```text
-settings UI → cookie → SSR reads it → <html data-theme/density/motion> → CSS themes
+settings UI → cookie → pre-paint bootstrap → <html data-theme/density/motion> → CSS themes
 ```
 
-Sound and session history stay in `SessionRepository`/localStorage, which the server
-never needs to read. Each preference has exactly one owner. Cookie values are three
-allow-listed identifiers, validated per field before they reach the rendered HTML.
+Sound and session history stay in `SessionRepository`/localStorage. Each preference has
+exactly one owner. Cookie values are three allow-listed identifiers, validated per field
+before they reach document attributes.
+
+Reference work surfaces are URL-owned even though they reuse the in-memory typing
+composition. `/settings`, `/history`, `/consulting`, `/ais`, and `/takken/glossary`
+survive reload and bookmarks; `popstate` restores the prior surface and focus target.
+The active timed session remains an in-memory state machine and replaces reference URLs
+with `/` before play, so Back cannot reopen an overlay during a run.
 
 ## Content flow
 

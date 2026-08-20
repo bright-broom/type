@@ -87,11 +87,13 @@ test("the install manifest exposes complete same-origin assets", async ({ reques
     display: string;
     start_url: string;
     icons: Array<{ src: string; sizes: string; purpose?: string }>;
-    shortcuts?: unknown;
+    shortcuts?: Array<{ name: string; url: string }>;
   };
   expect(manifest.display).toBe("standalone");
   expect(manifest.start_url).toBe("/");
-  expect(manifest.shortcuts, "offline-unsupported destinations must not be advertised as shortcuts").toBeUndefined();
+  expect(manifest.shortcuts).toEqual(
+    expect.arrayContaining([expect.objectContaining({ name: "宅建用語集", url: "/takken/glossary" })]),
+  );
   expect(manifest.icons).toEqual(
     expect.arrayContaining([
       expect.objectContaining({ src: "/icons/icon-192.png", sizes: "192x192" }),
@@ -102,7 +104,11 @@ test("the install manifest exposes complete same-origin assets", async ({ reques
   for (const icon of manifest.icons) expect((await request.get(icon.src)).ok()).toBe(true);
 });
 
-test("the installed home shell remains interactive offline", async ({ page, context, browserName }) => {
+test("the installed static shell remains interactive from root and deep URLs offline", async ({
+  page,
+  context,
+  browserName,
+}) => {
   test.skip(
     browserName !== "chromium",
     "Offline install semantics are gated once in Chromium; WebKit remains in UI E2E.",
@@ -133,6 +139,8 @@ test("the installed home shell remains interactive offline", async ({ page, cont
   await page.getByRole("radio", { name: /テーマ：\s*ライト/ }).check();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "modern");
   await expect.poll(() => hasOnlyThemeColor(page, "#f5f3ed")).toBe(true);
+  await page.getByRole("button", { name: /戻る/ }).click();
+  await expect(page).toHaveURL(/\/$/);
 
   await context.setOffline(true);
   try {
@@ -143,6 +151,10 @@ test("the installed home shell remains interactive offline", async ({ page, cont
     await expect(page.getByRole("heading", { name: /60秒で、.*昨日より軽く。/ })).toBeVisible();
     await page.getByRole("button", { name: /60秒トレーニングを始める/ }).click();
     await expect(page.locator(".countdown-shell")).toBeVisible();
+
+    await page.goto("/takken/glossary?concept=takken-term-001", { waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("heading", { name: "宅建試験 完全用語一覧" })).toBeVisible();
+    await expect(page.locator(".glossary-entry")).toHaveCount(1);
   } finally {
     await context.setOffline(false);
   }

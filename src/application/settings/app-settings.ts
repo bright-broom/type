@@ -14,8 +14,8 @@ export type AppearanceSettings = {
 };
 
 /**
- * Preferences the client alone needs. Appearance is deliberately absent: the server
- * must know it before it renders, so it lives in a cookie (`appearance-cookie.ts`).
+ * Preferences the interactive app alone needs. Appearance is deliberately absent:
+ * the pre-paint delivery shell reads its cookie (`appearance-cookie.ts`).
  * Keeping a second copy here is what would let the two drift apart.
  */
 export type AppSettings = {

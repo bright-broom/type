@@ -4,27 +4,26 @@ import { useMemo, useState } from "react";
 import glossaryJson from "../../../content/generated/takken-glossary.json";
 import { filterTakkenGlossary } from "../../../content/takken/filter-takken-glossary.ts";
 import type { TakkenGlossary as TakkenGlossaryData } from "../../../content/takken/takken-glossary-types.ts";
+import { useBrowserSnapshot } from "../../hooks/useBrowserSnapshot.ts";
 import { PageShell } from "../layout/PageShell.tsx";
 
 const glossary = glossaryJson as TakkenGlossaryData;
 
-export function TakkenGlossary({
-  onBack,
-  onStart,
-  initialQuery = "",
-}: {
-  onBack: () => void;
-  onStart: () => void;
-  initialQuery?: string;
-}) {
-  const [query, setQuery] = useState(initialQuery);
+export function TakkenGlossary({ onBack, onStart }: { onBack: () => void; onStart: () => void }) {
+  const browserReady = useBrowserSnapshot(() => true, false);
+  const routeQuery = useBrowserSnapshot(() => {
+    const match = new URLSearchParams(window.location.search).get("concept")?.match(/^takken-term-(\d{3})$/);
+    return match ? (glossary.entries.find(({ id }) => id === Number(match[1]))?.term ?? "") : "";
+  }, "");
+  const [queryOverride, setQuery] = useState<string | null>(null);
+  const query = queryOverride ?? routeQuery;
   const [category, setCategory] = useState("");
   const [importance, setImportance] = useState("");
   const [sourceId, setSourceId] = useState("");
 
   const entries = useMemo(
-    () => filterTakkenGlossary(glossary.entries, { query, category, importance, sourceId }),
-    [category, importance, query, sourceId],
+    () => (browserReady ? filterTakkenGlossary(glossary.entries, { query, category, importance, sourceId }) : []),
+    [browserReady, category, importance, query, sourceId],
   );
 
   const clearFilters = () => {
@@ -102,9 +101,15 @@ export function TakkenGlossary({
       </section>
 
       <div className="glossary-result-meta" aria-live="polite">
-        <strong>{entries.length.toLocaleString("ja-JP")}</strong> / {glossary.stats.entryCount}語
+        {browserReady ? (
+          <>
+            <strong>{entries.length.toLocaleString("ja-JP")}</strong> / {glossary.stats.entryCount}語
+          </>
+        ) : (
+          "用語を準備しています…"
+        )}
       </div>
-      <section className="glossary-list" aria-label="宅建用語一覧">
+      <section className="glossary-list" aria-label="宅建用語一覧" aria-busy={!browserReady}>
         {entries.map((entry) => (
           <article className="glossary-entry" key={entry.id}>
             <span className="row-number">{String(entry.id).padStart(3, "0")}</span>
@@ -130,7 +135,7 @@ export function TakkenGlossary({
             </div>
           </article>
         ))}
-        {entries.length === 0 && <p className="empty-state">一致する用語はありません。</p>}
+        {browserReady && entries.length === 0 && <p className="empty-state">一致する用語はありません。</p>}
       </section>
     </PageShell>
   );

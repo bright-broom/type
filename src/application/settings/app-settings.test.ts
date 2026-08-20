@@ -15,7 +15,7 @@ test("a non-boolean sound value falls back instead of leaking through", () => {
 });
 
 test("an appearance left in storage is dropped rather than carried forward", () => {
-  // Appearance moved to a cookie so the server can read it. Copying a stale localStorage
+  // Appearance moved to a cookie so the pre-paint shell can read it. Copying a stale localStorage
   // copy forward is exactly how the two stores would drift apart.
   const settings = normalizeAppSettings({
     soundEnabled: false,

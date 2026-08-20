@@ -6,6 +6,7 @@ import { runInNewContext } from "node:vm";
 
 const ROOT = new URL("../", import.meta.url);
 const file = (path) => new URL(path, ROOT);
+const applicationRoutes = JSON.parse(await readFile(file("public/application-routes.json"), "utf8"));
 
 function pngDimensions(bytes) {
   assert.equal(bytes.subarray(1, 4).toString("ascii"), "PNG");
@@ -75,7 +76,20 @@ test("the service worker is a same-origin, navigation-safe enhancement", async (
   assert.match(source, /request\.method !== "GET"/);
   assert.match(source, /url\.origin !== globalThis\.location\.origin/);
   assert.match(source, /request\.mode === "navigate"/);
-  assert.match(source, /cache\.match\("\/"\)/);
+  assert.match(source, /ignoreSearch: true/);
+  assert.deepEqual(applicationRoutes, [
+    "/",
+    "/ais",
+    "/consulting",
+    "/history",
+    "/settings",
+    "/takken",
+    "/takken/glossary",
+    "/takken/history",
+    "/takken/mock",
+    "/takken/practice",
+  ]);
+  assert.match(source, /application-routes\.json/);
   assert.match(source, /Required shell asset failed/);
   assert.doesNotMatch(source, /skipWaiting/);
   assert.doesNotMatch(source, /https?:\/\//);
@@ -100,12 +114,19 @@ test("a partial shell fetch rejects service-worker installation", async () => {
       keys: async () => [],
       delete: async () => true,
     },
-    fetch: async (resource) =>
-      resource === "/icons/icon-512.png"
-        ? new Response("failed", { status: 500 })
-        : new Response(resource === "/" ? '<script src="/_next/static/chunks/app.js"></script>' : "ok", {
-            status: 200,
-          }),
+    fetch: async (resource) => {
+      if (resource === "/application-routes.json") {
+        return new Response(JSON.stringify(applicationRoutes), { status: 200 });
+      }
+      if (resource === "/icons/icon-512.png") return new Response("failed", { status: 500 });
+      if (resource === "/") {
+        return new Response('<script src="/_next/static/chunks/app.js"></script>', { status: 200 });
+      }
+      if (resource === "/_next/static/chunks/app.js") {
+        return new Response('Promise.all(["static/chunks/lazy.js"])', { status: 200 });
+      }
+      return new Response("ok", { status: 200 });
+    },
     addEventListener: (name, listener) => listeners.set(name, listener),
   };
   context.globalThis = context;
@@ -114,6 +135,48 @@ test("a partial shell fetch rejects service-worker installation", async () => {
   listeners.get("install")({ waitUntil: (promise) => (installation = promise) });
   await assert.rejects(installation, /Required shell asset failed: \/icons\/icon-512\.png/);
   assert.ok(writes.includes("/"), "the root response was staged before the required asset failed");
+  assert.ok(writes.includes("/takken/glossary"), "route-specific documents are staged atomically");
+});
+
+test("the service worker discovers lazy chunks from cached route modules", async () => {
+  const source = await readFile(file("public/sw.js"), "utf8");
+  const listeners = new Map();
+  const writes = [];
+  const context = {
+    URL,
+    Response,
+    Set,
+    console,
+    location: { origin: "https://typeloop.example" },
+    clients: { claim: async () => undefined },
+    caches: {
+      open: async () => ({
+        put: async (key) => writes.push(String(key)),
+        match: async () => undefined,
+      }),
+      keys: async () => [],
+      delete: async () => true,
+    },
+    fetch: async (resource) => {
+      if (resource === "/application-routes.json") {
+        return new Response(JSON.stringify(applicationRoutes), { status: 200 });
+      }
+      if (resource === "/") {
+        return new Response('<script src="/_next/static/chunks/app.js"></script>', { status: 200 });
+      }
+      if (resource === "/_next/static/chunks/app.js") {
+        return new Response('load("static/chunks/lazy.js")', { status: 200 });
+      }
+      return new Response("ok", { status: 200 });
+    },
+    addEventListener: (name, listener) => listeners.set(name, listener),
+  };
+  context.globalThis = context;
+  runInNewContext(source, context);
+  let installation;
+  listeners.get("install")({ waitUntil: (promise) => (installation = promise) });
+  await installation;
+  assert.ok(writes.includes("/_next/static/chunks/lazy.js"));
 });
 
 test("authored CSS cannot introduce informative text below 11px", async () => {

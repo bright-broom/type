@@ -7,12 +7,14 @@ import { applyAppearance } from "../theme/apply-appearance.ts";
 /**
  * Keep the document root in step with appearance chosen during this session.
  *
- * The first paint already carries the stored values because the server rendered them
- * from the cookie, so this exists for changes made afterwards. Re-applying identical
- * values on mount is a no-op, which is why there is no "ready" guard.
+ * The parser-blocking bootstrap owns first paint. The component hydrates from the
+ * invariant default before its browser snapshot becomes available. While hydration
+ * catches up, the bootstrap stays the only DOM owner so React cannot briefly restore
+ * noir over a stored light/classic choice. This effect then owns in-session changes.
  */
-export function useAppearance(appearance: AppearanceSettings): void {
+export function useAppearance(appearance: AppearanceSettings, browserReady = true): void {
   useEffect(() => {
+    if (!browserReady) return;
     applyAppearance(document.documentElement, appearance);
-  }, [appearance]);
+  }, [appearance, browserReady]);
 }
