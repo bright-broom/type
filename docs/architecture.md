@@ -126,3 +126,4 @@ When adding persistence or another external capability, define the required port
 - `.agents/skills/develop-typeloop` provides a reusable, progressively loaded workflow for TypeLoop changes.
 - Root and nested `AGENTS.md` files hold a small number of consequential review invariants; mechanical rules remain in CI.
 - Durable changes to these boundaries require an ADR.
+- `next.config.ts` owns the browser response boundary: same-origin CSP, denied sensitive capabilities, cross-origin isolation headers, and framework-header removal. GitHub separately requires full-SHA GitHub-owned actions; see ADR-020.
