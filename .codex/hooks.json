@@ -1,0 +1,19 @@
+{
+  "description": "TypeLoop release operations stay behind feature branches, pull requests, and human approval.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/pre_tool_use_policy.py\"",
+            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$root = (& git rev-parse --show-toplevel); if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; & py -3 (Join-Path $root '.codex/hooks/pre_tool_use_policy.py')\"",
+            "timeout": 5,
+            "statusMessage": "Checking TypeLoop release policy"
+          }
+        ]
+      }
+    ]
+  }
+}
