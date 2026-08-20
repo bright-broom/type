@@ -95,6 +95,12 @@ to open a large glossary paid the compile cost — on a shared runner that pushe
 Serving the build removes that variance and means the suite exercises what ships, so
 `npm run test:e2e` expects `npm run build` to have run (both `npm run check` and CI do).
 
+The Core Web Vitals lab probe runs after the functional matrix in a dedicated single-worker Chromium phase. Event Timing
+includes main-thread scheduling delay, so co-scheduling the probe beside full-screen WebKit/Chromium traversals measures
+runner contention instead of the page. The 200 ms interaction threshold is unchanged; only the measurement isolation is
+different. Full all-screen fluid traversals have a 60-second per-viewport budget because each test intentionally visits up
+to sixteen application states in one browser context.
+
 CI runs the browser job inside the version-matched, digest-pinned Playwright
 `noble` image. The image owns Chromium, WebKit, and their OS packages; do not add
 `playwright install-deps` or a browser cache to the job. Linux OS packages are not

@@ -146,7 +146,10 @@ test("the installed home shell remains interactive offline", async ({ page, cont
   expect(failedRequests).toEqual([]);
 });
 
-test("home meets lab paint, stability, and single-interaction latency budgets", async ({ page, browserName }) => {
+test("@performance home meets lab paint, stability, and single-interaction latency budgets", async ({
+  page,
+  browserName,
+}) => {
   test.skip(browserName !== "chromium", "Chromium exposes the standardized paint and event timing entries used here.");
   await page.addInitScript(() => {
     const state = {
