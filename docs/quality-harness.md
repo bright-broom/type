@@ -133,22 +133,27 @@ Runs on `workflow_run` after CI finishes, so it executes the classifier from the
 default branch and never checks out the branch whose CI failed. That keeps it safe
 to run for forks and for dependabot, which is precisely where the reporting matters.
 
-`scripts/triage-ci-failure.mjs` maps the failed job log onto a known cause, states
-whether it is mechanically fixable, and comments the evidence and the next command
-on the pull request. Causes marked blocking — dependency conflicts, tracked
-secrets, high-severity advisories — also fail the triage job, so "do not merge" is
-visible as a check and not only inside a log.
+`scripts/triage-ci-failure.mjs` maps the failed job log onto a known cause and states
+whether it is mechanically fixable. Pull-request and Autofix-dispatched failures
+receive a PR comment. `scripts/ci-triage-contract.mjs` fails closed on unexpected
+classifier exits and owns incident identity. A repository-scoped serial reconciler
+re-reads the latest `main` CI run before it opens, updates, or closes the one marked
+Production Health issue; stale workflow completions cannot mutate it.
 
 ### Autofix (`.github/workflows/autofix.yml`)
 
-Applies `npm run format` and `eslint --fix`, verifies the result with
-`npm run check:quick`, then pushes an `[autofix]` commit to the same branch. It is
-limited to same-repository branches, skips its own commits, and skips dependabot
-branches. Nothing that needs a decision is ever rewritten.
+The trusted `pull_request_target` workflow has three capability-separated jobs. A
+read-only prepare job checks out the exact PR SHA without credentials, applies
+`npm run format` and `eslint --fix`, verifies `npm run check:quick`, and uploads only
+a short-lived patch. A writer job executes no PR code: it rechecks the SHA, applies
+the patch only to files already changed by the PR, and pushes an `[autofix]` commit.
+A final job owns only Actions dispatch and PR notification.
 
-A `GITHUB_TOKEN` push does not start a new workflow run, so the job comments that CI
-needs re-running on the new commit. Add `[skip autofix]` to a pull request title to
-opt out.
+A `GITHUB_TOKEN` push does not start a new workflow run, so Autofix dispatches CI
+explicitly with the new commit SHA. CI rejects a dispatched run if GitHub resolves
+the branch to a different SHA, preventing a stale green check from being mistaken
+for validation of the Autofix commit. Add `[skip autofix]` to a pull request title
+to opt out.
 
 ### What the automation deliberately does not do
 

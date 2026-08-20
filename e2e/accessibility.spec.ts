@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { submitAnsweredPractice } from "./support/assessment-fixtures.ts";
 
 /**
  * `eslint-plugin-jsx-a11y` only reads the source, so it cannot see a contrast ratio,
@@ -20,18 +21,6 @@ async function finishSession(page: Page): Promise<void> {
   await page.keyboard.type("a");
   await page.clock.fastForward(61_000);
   await page.getByRole("heading", { name: "おつかれさまでした。" }).waitFor();
-}
-
-async function finishTakkenPractice(page: Page): Promise<void> {
-  await page.goto("/takken/practice");
-  await page.getByRole("button", { name: "10問演習を始める" }).click();
-  for (let index = 0; index < 10; index += 1) {
-    await page.keyboard.press("1");
-    if (index < 9) await page.getByRole("button", { name: /次の問題/ }).click();
-  }
-  await page.getByRole("button", { name: "採点する" }).click();
-  await page.getByRole("button", { name: "提出して採点" }).click();
-  await page.locator(".assessment-result-shell").waitFor();
 }
 
 const screens: ReadonlyArray<AccessibilityScreen> = [
@@ -118,12 +107,12 @@ const screens: ReadonlyArray<AccessibilityScreen> = [
   },
   {
     name: "takken assessment result",
-    open: finishTakkenPractice,
+    open: submitAnsweredPractice,
   },
   {
     name: "takken assessment history",
     open: async (page) => {
-      await finishTakkenPractice(page);
+      await submitAnsweredPractice(page);
       await page.goto("/takken/history");
       await page.getByRole("heading", { name: "試験記録" }).waitFor();
     },

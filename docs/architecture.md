@@ -104,6 +104,18 @@ fails on any leak, so the generated artifact is already the publishable form. Se
 - Input the romanization engine cannot consume is reported, never silently dropped, and never counted as a typing mistake.
 - Domain modules remain deterministic and testable without React or browser mocks.
 
+## Release flow
+
+Release automation is a control plane outside the runtime modular monolith. A
+feature branch produces CI evidence and a Vercel Preview; a human performs the
+merge. Vercel Deployment Checks **must be configured and owner-verified** before
+the exact `main` SHA validation can be treated as a production-domain prerequisite;
+repository code alone does not provide that guarantee. CI failure reconciliation is
+serialized and latest-run/attempt owned, while production promotion and rollback
+remain human-only. Autofix separates untrusted pull-request execution from Git,
+Actions, and PR write capabilities. See [ADR-019](adr/ADR-019-release-safety.md) and
+the [release checklist](release-checklist.md).
+
 ## Extension rules
 
 When adding a training set:

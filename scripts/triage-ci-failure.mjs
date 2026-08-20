@@ -183,6 +183,6 @@ export function triage(log) {
 
 if (import.meta.filename === process.argv[1]) {
   const result = triage(readFileSync(process.argv[2] ?? 0, "utf8"));
-  process.stdout.write(`${result.markdown}\n_🤖 Reported by Claude Code CI triage_\n`);
+  process.stdout.write(`${result.markdown}\n_🤖 TypeLoop deterministic CI triage_\n`);
   process.exit(result.blocking ? 2 : 0);
 }
