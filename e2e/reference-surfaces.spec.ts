@@ -2,8 +2,8 @@ import { expect, test } from "@playwright/test";
 import { expectNoPageFailures, observePageFailures } from "./support/browser-health.ts";
 import { CRITICAL_TYPING_VIEWPORTS, expectNoHorizontalOverflow } from "./support/typing-layout-assertions.ts";
 
-test("local dictionaries filter accurately across responsive layout classes", async ({ browser }) => {
-  for (const viewport of CRITICAL_TYPING_VIEWPORTS) {
+for (const viewport of CRITICAL_TYPING_VIEWPORTS) {
+  test(`local dictionaries filter accurately at ${viewport.name}`, async ({ browser }) => {
     const context = await browser.newContext({ viewport });
     const page = await context.newPage();
     const failures = observePageFailures(page);
@@ -49,5 +49,5 @@ test("local dictionaries filter accurately across responsive layout classes", as
     await expectNoHorizontalOverflow(page);
     await expectNoPageFailures(failures);
     await context.close();
-  }
-});
+  });
+}
