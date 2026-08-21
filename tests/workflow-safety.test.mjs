@@ -31,6 +31,11 @@ test("CI accepts an explicit dispatch only for the requested commit", async () =
   const policy = jobBlock(source, "pr-policy");
   assert.match(policy, /ACTUAL_SHA: \$\{\{ github\.sha \}\}/);
   assert.match(policy, /if \[ "\$ACTUAL_SHA" != "\$EXPECTED_SHA" \]/);
+  const quality = jobBlock(source, "quality");
+  const buildIndex = quality.indexOf("run: npm run build");
+  const staticIndex = quality.indexOf("run: npm run check:static");
+  const bundleIndex = quality.indexOf("run: npm run check:bundle");
+  assert.ok(buildIndex >= 0 && buildIndex < staticIndex && staticIndex < bundleIndex);
 });
 
 test("Autofix isolates pull request execution from write capabilities", async () => {

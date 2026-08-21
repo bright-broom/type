@@ -4,22 +4,23 @@ TypeLoop treats command output, tests, and CI status as evidence. An agent's sta
 
 ## Validation ladder
 
-| Stage       | Command                    | Purpose                                                                  |
-| ----------- | -------------------------- | ------------------------------------------------------------------------ |
-| Deps        | `npm run check:deps`       | Every declared peer range is satisfiable by the pinned versions          |
-| Bundle      | `npm run check:bundle`     | JavaScript, CSS, social art, and install icons stay inside named budgets |
-| Content     | `npm run check:content`    | Takken source provenance and qualified publication evidence              |
-| Tokens      | `npm run check:tokens`     | Design colors exist only inside the theme registry; TSX carries none     |
-| Format      | `npm run format:check`     | Deterministic authored-file formatting                                   |
-| Lint        | `npm run lint`             | TypeScript, React, hooks, accessibility, and Next.js rules               |
-| Typecheck   | `npm run typecheck`        | Strict TypeScript contracts                                              |
-| Unit        | `npm run test:unit`        | Pure domain, reducer, and content behavior                               |
-| Integration | `npm run test:integration` | Cross-module, repository policy, and infrastructure behavior             |
-| Coverage    | `npm run test:coverage`    | All authored `src` modules, including zero-hit files, with floors        |
-| Dead code   | `npm run check:dead-code`  | Unused files, exports, and dependencies                                  |
-| Build       | `npm run build`            | Next.js production compilation                                           |
-| Browser     | `npm run test:e2e`         | Critical flows, responsive overflow, console, and request failures       |
-| Security    | `npm run check:security`   | Tracked-secret heuristic and High dependency audit                       |
+| Stage       | Command                    | Purpose                                                                   |
+| ----------- | -------------------------- | ------------------------------------------------------------------------- |
+| Deps        | `npm run check:deps`       | Every declared peer range is satisfiable by the pinned versions           |
+| Bundle      | `npm run check:bundle`     | JavaScript, CSS, social art, and install icons stay inside named budgets  |
+| Content     | `npm run check:content`    | Takken source provenance and qualified publication evidence               |
+| Tokens      | `npm run check:tokens`     | Design colors exist only inside the theme registry; TSX carries none      |
+| Format      | `npm run format:check`     | Deterministic authored-file formatting                                    |
+| Lint        | `npm run lint`             | TypeScript, React, hooks, accessibility, and Next.js rules                |
+| Typecheck   | `npm run typecheck`        | Strict TypeScript contracts                                               |
+| Unit        | `npm run test:unit`        | Pure domain, reducer, and content behavior                                |
+| Integration | `npm run test:integration` | Cross-module, repository policy, and infrastructure behavior              |
+| Coverage    | `npm run test:coverage`    | All authored `src` modules, including zero-hit files, with floors         |
+| Dead code   | `npm run check:dead-code`  | Unused files, exports, and dependencies                                   |
+| Build       | `npm run build`            | Next.js production compilation                                            |
+| Static      | `npm run check:static`     | Every route is prerendered and theme bootstrap precedes application paint |
+| Browser     | `npm run test:e2e`         | Critical flows, responsive overflow, console, and request failures        |
+| Security    | `npm run check:security`   | Tracked-secret heuristic and High dependency audit                        |
 
 Coverage uses c8's all-source mode. It includes zero-hit authored runtime modules under `src`, while excluding generated
 datasets, tests, type-only contracts, application ports, and the compatibility export facade. Browser behavior remains
@@ -132,7 +133,7 @@ change continuously. Intentional scrollable rails are validated as reachable
 overflow rather than mistaken for clipped controls.
 
 `e2e/product-quality.spec.ts` checks effective install metadata, a fully interactive
-and theme-consistent offline home shell, a rendered 11px floor for informative phone
+and theme-consistent offline shell from both root and a query-bearing deep route, a rendered 11px floor for informative phone
 text, and lab LCP, CLS, and single-interaction Event Timing budgets. The interaction
 check requires a real positive interaction identifier, separately gates product-owned
 processing and end-to-end hosted-runner latency, and is not presented as field INP. A source-wide CSS floor catches screens and pseudo-content outside the rendered
