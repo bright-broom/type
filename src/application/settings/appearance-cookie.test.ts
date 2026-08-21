@@ -45,7 +45,7 @@ test("a missing, empty, or hand-edited cookie yields the defaults", () => {
 });
 
 test("only allow-listed identifiers can reach the document attributes", () => {
-  // These attribute values land in server-rendered HTML, so nothing unvalidated may
+  // These attribute values reach the document root, so nothing unvalidated may
   // pass through. The dot-separated format also cannot carry quotes or semicolons.
   const attributes = appearanceDataAttributes(parseAppearance('classic."><script>.reduced'));
   assert.deepEqual(attributes, {
@@ -57,7 +57,7 @@ test("only allow-listed identifiers can reach the document attributes", () => {
 });
 
 test("the cookie name is stable", () => {
-  // The server reads this name before any JavaScript runs; renaming it silently
+  // The parser-blocking bootstrap reads this name before application paint; renaming it silently
   // resets everyone's theme.
   assert.equal(APPEARANCE_COOKIE, "typeloop-appearance");
 });

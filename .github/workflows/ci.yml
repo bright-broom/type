@@ -121,6 +121,8 @@ jobs:
         run: npm run check:dead-code
       - name: Build production application
         run: npm run build
+      - name: Verify immutable static application routes
+        run: npm run check:static
       - name: Hold shipped JavaScript to its budget
         run: npm run check:bundle
 

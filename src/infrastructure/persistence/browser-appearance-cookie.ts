@@ -19,10 +19,10 @@ export function readAppearanceCookie(
 }
 
 /**
- * Persist appearance where the server can read it on the next request.
+ * Persist appearance where the pre-paint bootstrap can read it on the next navigation.
  *
- * `SameSite=Lax` because the cookie is only ever read by this origin's own document
- * request; it is not `HttpOnly` because the settings screen writes it directly, and
+ * `SameSite=Lax` because the cookie is only ever read by this origin's own document;
+ * it is not `HttpOnly` because the settings screen and bootstrap read it directly, and
  * not `Secure` in development so localhost keeps working. It carries three
  * allow-listed identifiers and no personal data.
  */

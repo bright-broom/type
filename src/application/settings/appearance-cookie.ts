@@ -7,13 +7,12 @@ import {
 } from "./app-settings.ts";
 
 /**
- * Appearance is the one preference the server must know before it renders.
+ * Appearance is the one preference the delivery shell must know before it paints.
  *
- * Session history and sound live in localStorage, which the server cannot read, so
- * a persisted theme could only be restored by a client script — and that script runs
- * after the first paint, flashing the default theme (measured; see ADR-014). A cookie
- * is the only store both sides can see, so appearance moved here and localStorage no
- * longer holds a copy: one owner per preference, never two.
+ * Session history and sound live in localStorage. Appearance uses a cookie because a
+ * parser-blocking, same-origin bootstrap can validate it during HTML parsing, before
+ * application paint. localStorage no longer holds a copy: one owner per preference,
+ * never two (see ADR-023).
  *
  * The value is three allow-listed identifiers, dot separated. Deliberately not JSON:
  * cookies would need escaping, and a fixed triple cannot grow an injection surface.
@@ -47,7 +46,7 @@ export function parseAppearance(raw: string | undefined | null): AppearanceSetti
   };
 }
 
-/** Attributes the document root carries so CSS can select a theme without JavaScript. */
+/** Safe authored defaults and runtime attributes share one closed CSS selector contract. */
 export function appearanceDataAttributes(appearance: AppearanceSettings): {
   "data-theme": string;
   "data-density": string;
