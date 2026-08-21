@@ -26,13 +26,17 @@ Dependencies point inward toward stable policy. `application/ports` owns interfa
 Next.js route
   → TypingApp
     → useTypingSession
-      → application session reducer
+      → application typing-session state + clock reducer
       → domain typing/scoring/analytics
       → content prompt datasets
       → infrastructure audio/localStorage adapters
 ```
 
-The active typing path stays in memory. Persistence happens after session completion or a settings change, never on every keystroke.
+The active typing path stays in memory. One application-owned typing snapshot moves
+prompt, input, counters, combo, feedback, and completion accounting atomically. The
+presentation hook owns browser scheduling and executes audio and persistence through
+application ports. Persistence happens after session completion or a settings change,
+never on every keystroke.
 
 The distribution shell is static and local-first. Every application route is prerendered
 to an invariant CDN document; no request cookie or header creates a Lambda boundary. A
@@ -96,7 +100,8 @@ before they reach document attributes.
 
 Reference work surfaces are URL-owned even though they reuse the in-memory typing
 composition. `/settings`, `/history`, `/consulting`, `/ais`, and `/takken/glossary`
-survive reload and bookmarks; `popstate` restores the prior surface and focus target.
+survive reload and bookmarks. A reference-surface coordinator composes the route-state
+hook with scroll and focus restoration; `popstate` restores the prior surface and focus target.
 The active timed session remains an in-memory state machine and replaces reference URLs
 with `/` before play, so Back cannot reopen an overlay during a run.
 
@@ -119,7 +124,8 @@ fails on any leak, so the generated artifact is already the publishable form. Se
 
 ## State and failure boundaries
 
-- The session reducer is the source of truth for lifecycle and time transitions.
+- The session clock reducer is the source of truth for lifecycle and time transitions.
+- The typing-session snapshot is the source of truth for prompt, input, counters, combo, and feedback.
 - `performance.now()` is the monotonic active-session clock.
 - localStorage is best-effort; corrupt or unavailable storage must not stop play.
 - Audio failures are non-fatal and must not alter scoring.

@@ -32,8 +32,8 @@ creating a safer static alternative if its emitted position can be enforced.
   gate requires an exact match with Next's application prerenders, immutable
   `initialRevalidateSeconds`, and the bootstrap before body markup in emitted home HTML.
 - Settings, typing history, consulting, AIS, and the takken glossary own stable routes.
-  One route-state hook maps URLs to reference surfaces, owns `popstate`, and restores
-  deterministic in-app Back behavior.
+  One pure route contract maps URLs to reference surfaces, the route-state hook owns
+  `popstate`, and a presentation coordinator restores deterministic in-app Back focus.
 - Starting a timed session replaces the reference URL with `/`; active timing and
   keystrokes remain an in-memory application state machine.
 - `TypingApp` keeps session and input composition. Lazy reference rendering moves to a

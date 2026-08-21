@@ -220,6 +220,47 @@
   --home-skip-hidden-offset: -220%;
   --home-skip-layer: 100;
 
+  /* Session history */
+  --history-title-size: clamp(2.6rem, 5vw, 4.2rem);
+  --history-title-size-mobile: clamp(2.25rem, 11vw, 3.25rem);
+  --history-heading-columns: 110px minmax(0, 1fr) auto;
+  --history-heading-gap: 28px;
+  --history-heading-padding-bottom: 30px;
+  --history-actions-min-width: 190px;
+  --history-status-min-height: 2.8em;
+  --history-status-leading: 1.4;
+  --history-table-margin: 28px;
+  --history-row-columns: 2fr repeat(3, 1fr);
+  --history-row-min-height: 68px;
+  --history-row-date-gap: 25px;
+  --history-row-value-size: 1.3rem;
+  --history-label-min-height: 38px;
+  --history-label-tracking: 0.12em;
+  --history-empty-padding: 80px;
+  --history-save-min-height: 48px;
+  --history-overview-margin: 26px;
+  --history-overview-padding: 22px 26px;
+  --history-overview-columns: repeat(3, minmax(0, 1fr)) auto;
+  --history-overview-cell-padding: 22px;
+  --history-overview-value-gap: 7px;
+  --history-overview-value-size: 1.6rem;
+  --history-overview-copy-gap: 24px;
+  --history-overview-count-size: 0.82rem;
+  --history-mobile-heading-gap: 18px;
+  --history-card-margin: 12px;
+  --history-card-columns: repeat(3, minmax(0, 1fr));
+  --history-card-gap: 18px 10px;
+  --history-card-padding: 18px;
+  --history-card-label-gap: 5px;
+  --history-card-label-tracking: 0.1em;
+  --history-card-date-gap: 10px;
+  --history-card-gap-compact: 16px 8px;
+  --history-card-padding-compact: 16px 14px;
+  --history-overview-padding-mobile: 18px 14px;
+  --history-overview-cell-padding-mobile: 10px;
+  --history-overview-value-size-mobile: clamp(1.25rem, 6vw, 1.55rem);
+  --history-overview-tracking-compact: 0.04em;
+
   /* Takken assessment experience */
   --assessment-hero-size: clamp(2.8rem, 7vw, 5.7rem);
   --assessment-question-size: clamp(1.35rem, 2.7vw, 2rem);

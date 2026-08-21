@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { CompletedSession } from "../../../application/session/session-types.ts";
 import { PageShell } from "../layout/PageShell.tsx";
+import styles from "./HistoryScreen.module.css";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("ja-JP", {
   month: "short",
@@ -29,8 +30,8 @@ export function HistoryScreen({ sessions, onBack, onSave }: HistoryScreenProps) 
   };
 
   return (
-    <PageShell width="reading" className="history-shell" data-overlay-root tabIndex={-1}>
-      <div className="history-heading">
+    <PageShell width="reading" data-history-root data-overlay-root tabIndex={-1}>
+      <div className={styles.heading}>
         <button className="text-button" type="button" onClick={onBack}>
           ← 戻る
         </button>
@@ -40,16 +41,20 @@ export function HistoryScreen({ sessions, onBack, onSave }: HistoryScreenProps) 
           <p>直近の変化を確認して、次の60秒で改善することを1つだけ決めましょう。</p>
         </div>
         {sessions.length > 0 && (
-          <div className="history-actions">
+          <div className={styles.actions}>
             <button
-              className="secondary-button history-save-button"
+              className={`secondary-button ${styles.saveButton}`}
               type="button"
               onClick={saveRecords}
               disabled={saveStatus === "saving"}
             >
               {saveStatus === "saving" ? "保存中…" : "JSONで保存"}
             </button>
-            <p className={"history-save-status status-" + saveStatus} role="status" aria-live="polite">
+            <p
+              className={`${styles.saveStatus} ${saveStatus === "failed" ? styles.saveFailed : ""}`}
+              role="status"
+              aria-live="polite"
+            >
               {saveStatus === "saved"
                 ? "JSONファイルに保存しました。"
                 : saveStatus === "failed"
@@ -60,7 +65,7 @@ export function HistoryScreen({ sessions, onBack, onSave }: HistoryScreenProps) 
         )}
       </div>
       {sessions.length > 0 ? (
-        <section className="history-overview" aria-label="記録の要約">
+        <section className={styles.overview} aria-label="記録の要約">
           <div>
             <span>最新 WPM</span>
             <strong>{sessions[0]?.metrics.wpm}</strong>
@@ -79,17 +84,17 @@ export function HistoryScreen({ sessions, onBack, onSave }: HistoryScreenProps) 
         </section>
       ) : null}
       {sessions.length === 0 ? (
-        <p className="empty-state">まだ記録がありません。</p>
+        <p className={styles.empty}>まだ記録がありません。</p>
       ) : (
-        <div className="history-table" role="table" aria-label="直近の練習履歴">
-          <div className="history-row history-labels" role="row">
+        <div className={styles.table} role="table" aria-label="直近の練習履歴">
+          <div className={`${styles.row} ${styles.labels}`} role="row">
             <span role="columnheader">日時</span>
             <span role="columnheader">WPM</span>
             <span role="columnheader">精度</span>
             <span role="columnheader">スコア</span>
           </div>
           {sessions.map((session, index) => (
-            <div className="history-row" role="row" key={session.id}>
+            <div className={styles.row} role="row" key={session.id}>
               <span role="cell" data-label="日時">
                 <i>{String(index + 1).padStart(2, "0")}</i>
                 {DATE_FORMATTER.format(session.endedAt)}

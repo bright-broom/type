@@ -24,12 +24,15 @@ TypeLoop treats command output, tests, and CI status as evidence. An agent's sta
 
 Coverage uses c8's all-source mode. It includes zero-hit authored runtime modules under `src`, while excluding generated
 datasets, tests, type-only contracts, application ports, and the compatibility export facade. Browser behavior remains
-covered by Playwright rather than being silently omitted from the denominator.
+covered by Playwright rather than being silently omitted from the denominator. Browser orchestration stays in hooks, while
+stateful product decisions are extracted into application-owned pure transitions so their coverage is meaningful without
+introducing a second JSX test runtime.
 
 Node tests are co-located under `src` and use `*.test.ts` or `*.spec.ts`; add `.integration` before that suffix for
 integration tests. The runner fails when either group is empty, rejects TSX tests, and rejects tests under `app` because
 Node strip-types does not transform JSX. UI behavior belongs in Playwright unless a JSX-capable unit runner is deliberately
-introduced.
+introduced. The authored-file line guard includes Playwright specifications and their support modules, so browser tests are
+split by journey rather than accumulating in one catch-all file.
 
 Use `npm run check:quick` while iterating, `npm run check` before review, and `npm run check:ci` for the complete local CI equivalent. Install the browsers once with `npm run e2e:install` (Chromium and WebKit).
 

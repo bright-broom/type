@@ -100,7 +100,6 @@
 :root:is([data-theme="modern"], [data-theme="noir"]) .settings-select,
 :root:is([data-theme="modern"], [data-theme="noir"]) .glossary-filters,
 :root:is([data-theme="modern"], [data-theme="noir"]) .playbook-controls,
-:root:is([data-theme="modern"], [data-theme="noir"]) .history-overview,
 :root:is([data-theme="modern"], [data-theme="noir"]) .pause-dialog {
   border: var(--modern-border);
   border-radius: var(--modern-card-radius);
@@ -133,7 +132,6 @@
 }
 
 :root:is([data-theme="modern"], [data-theme="noir"]) .live-stats,
-:root:is([data-theme="modern"], [data-theme="noir"]) .history-table,
 :root:is([data-theme="modern"], [data-theme="noir"]) .playbook-nav,
 :root:is([data-theme="modern"], [data-theme="noir"]) .playbook-content,
 :root:is([data-theme="modern"], [data-theme="noir"]) .glossary-list {
@@ -144,7 +142,6 @@
 }
 
 :root:is([data-theme="modern"], [data-theme="noir"]) .live-stats,
-:root:is([data-theme="modern"], [data-theme="noir"]) .history-table,
 :root:is([data-theme="modern"], [data-theme="noir"]) .playbook-content,
 :root:is([data-theme="modern"], [data-theme="noir"]) .glossary-list {
   overflow: hidden;
@@ -185,8 +182,7 @@
 }
 
 :root:is([data-theme="modern"], [data-theme="noir"]) .glossary-entry,
-:root:is([data-theme="modern"], [data-theme="noir"]) .playbook-rows article,
-:root:is([data-theme="modern"], [data-theme="noir"]) .history-row {
+:root:is([data-theme="modern"], [data-theme="noir"]) .playbook-rows article {
   border-color: var(--line-soft);
 }
 

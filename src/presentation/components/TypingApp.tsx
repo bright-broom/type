@@ -16,7 +16,8 @@ import { useKeyboardInput } from "../hooks/useKeyboardInput.ts";
 import { useKeyboardInset } from "../hooks/useKeyboardInset.ts";
 import { useTypingSession } from "../hooks/useTypingSession.ts";
 import { useAppearance } from "../hooks/useAppearance.ts";
-import { type AppOverlay, useAppRoute } from "../hooks/useAppRoute.ts";
+import type { AppOverlay } from "../hooks/reference-route.ts";
+import { useReferenceSurface } from "../hooks/useReferenceSurface.ts";
 import { useBrowserSnapshot } from "../hooks/useBrowserSnapshot.ts";
 import { AppHeader } from "./AppHeader.tsx";
 import { HomeScreen } from "./home/HomeScreen.tsx";
@@ -28,24 +29,8 @@ import { ResultScreen } from "./result/ResultScreen.tsx";
 import { PageShell } from "./layout/PageShell.tsx";
 import { ReferenceOverlay } from "./reference/ReferenceOverlay.tsx";
 
-type FocusReturn = { key: string | null; fallback: "home" | "result" };
-
 export function TypingApp({ initialOverlay = "none" }: { initialOverlay?: AppOverlay }) {
   const session = useTypingSession();
-  const focusReturnRef = useRef<FocusReturn | null>(null);
-  const onRoutePopState = useCallback(
-    (next: AppOverlay, returnFocusKey: string | null) => {
-      if (next !== "none") {
-        focusReturnRef.current = null;
-        return;
-      }
-      focusReturnRef.current = {
-        key: returnFocusKey,
-        fallback: session.clock.status === "finished" ? "result" : "home",
-      };
-    },
-    [session.clock.status],
-  );
   const appearanceCookie = useBrowserSnapshot(() => document.cookie, "");
   const browserReady = useBrowserSnapshot(() => true, false);
   const restoredAppearance = useMemo(() => readAppearanceCookie(appearanceCookie), [appearanceCookie]);
@@ -58,7 +43,12 @@ export function TypingApp({ initialOverlay = "none" }: { initialOverlay?: AppOve
     setAppearanceOverride(next);
     writeAppearanceCookie(next);
   }, []);
-  const { overlay, navigate, close } = useAppRoute(initialOverlay, onRoutePopState);
+  const {
+    overlay,
+    navigateSurface: navigateOverlay,
+    closeSurface: closeOverlay,
+    clearReturnFocus,
+  } = useReferenceSurface(initialOverlay, session.clock.status === "finished" ? "result" : "home");
   const routeTrainingSet = useBrowserSnapshot<TrainingSet>(
     () => (new URLSearchParams(window.location.search).get("training") === "takken" ? "takken" : "japanese"),
     "japanese",
@@ -68,68 +58,6 @@ export function TypingApp({ initialOverlay = "none" }: { initialOverlay?: AppOve
   const [previousBest, setPreviousBest] = useState<CompletedSession | null>(null);
   const typingFieldRef = useRef<HTMLInputElement>(null);
   useKeyboardInset();
-
-  const navigateOverlay = useCallback(
-    (next: AppOverlay, mode: "push" | "replace" = "push", returnFocusKey?: string) => {
-      if (next !== "none") {
-        const trigger =
-          document.activeElement instanceof HTMLElement
-            ? document.activeElement.closest<HTMLElement>("[data-focus-key]")
-            : null;
-        focusReturnRef.current = {
-          key: returnFocusKey ?? trigger?.dataset.focusKey ?? null,
-          fallback: session.clock.status === "finished" ? "result" : "home",
-        };
-      }
-      window.scrollTo(0, 0);
-      navigate(next, mode, focusReturnRef.current?.key ?? null);
-    },
-    [navigate, session.clock.status],
-  );
-
-  const closeOverlay = useCallback(() => {
-    focusReturnRef.current ??= {
-      key: null,
-      fallback: session.clock.status === "finished" ? "result" : "home",
-    };
-    window.scrollTo(0, 0);
-    close();
-  }, [close, session.clock.status]);
-
-  useEffect(() => {
-    if (overlay === "none") {
-      const focusReturn = focusReturnRef.current;
-      if (!focusReturn) return;
-      let focusFrame = 0;
-      const renderFrame = window.requestAnimationFrame(() => {
-        focusFrame = window.requestAnimationFrame(() => {
-          const trigger = focusReturn.key
-            ? document.querySelector<HTMLElement>(`[data-focus-key="${focusReturn.key}"]`)
-            : null;
-          trigger?.focus({ preventScroll: true });
-          if (document.activeElement !== trigger) {
-            document.querySelector<HTMLElement>(`[data-${focusReturn.fallback}-root]`)?.focus({ preventScroll: true });
-          }
-          focusReturnRef.current = null;
-        });
-      });
-      return () => {
-        window.cancelAnimationFrame(renderFrame);
-        window.cancelAnimationFrame(focusFrame);
-      };
-    }
-    const focusOverlay = () => {
-      const root = document.querySelector<HTMLElement>("[data-overlay-root]");
-      root?.focus({ preventScroll: true });
-      return Boolean(root);
-    };
-    if (focusOverlay()) return;
-    const observer = new MutationObserver(() => {
-      if (focusOverlay()) observer.disconnect();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, [overlay]);
 
   useEffect(() => {
     if (session.clock.status === "finished") {
@@ -147,7 +75,7 @@ export function TypingApp({ initialOverlay = "none" }: { initialOverlay?: AppOve
 
   const start = (trainingSet: TrainingSet = "japanese") => {
     focusTypingField();
-    focusReturnRef.current = null;
+    clearReturnFocus();
     setSelectedTrainingSet(trainingSet);
     setPreviousBest(session.bests[trainingSet]);
     navigateOverlay("none", "replace");

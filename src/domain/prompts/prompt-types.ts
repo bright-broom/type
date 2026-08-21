@@ -8,7 +8,12 @@ export type PromptCategory =
  * session concept. Keeping it in the domain lets `content` own the catalogue that
  * binds each identifier to its dataset while `application` only persists the name.
  */
-export type TrainingSet = "japanese" | "consulting" | "takken" | "ais" | "git";
+export const TRAINING_SET_IDS = ["japanese", "consulting", "takken", "ais", "git"] as const;
+export type TrainingSet = (typeof TRAINING_SET_IDS)[number];
+
+export function isTrainingSet(value: unknown): value is TrainingSet {
+  return typeof value === "string" && TRAINING_SET_IDS.some((trainingSet) => trainingSet === value);
+}
 
 export type TypingPrompt = {
   id: string;
