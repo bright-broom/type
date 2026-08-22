@@ -1,4 +1,4 @@
-import type { TrainingSet, TypingPrompt } from "../domain/prompts/prompt-types.ts";
+import { TRAINING_SET_IDS, type TrainingSet, type TypingPrompt } from "../domain/prompts/prompt-types.ts";
 import { JAPANESE_PROMPTS } from "./japanese/japanese-prompts.ts";
 import { CONSULTING_PROMPTS } from "./consulting/consulting-prompts.ts";
 import { TAKKEN_PROMPTS } from "./takken/takken-prompts.ts";
@@ -22,7 +22,7 @@ export const TRAINING_SET_PROMPTS: Record<TrainingSet, ReadonlyArray<TypingPromp
   git: GIT_COMMAND_PROMPTS,
 };
 
-export const TRAINING_SETS = Object.keys(TRAINING_SET_PROMPTS) as ReadonlyArray<TrainingSet>;
+export const TRAINING_SETS: ReadonlyArray<TrainingSet> = TRAINING_SET_IDS;
 
 /** Build a record keyed by every catalogued training set. */
 export function byTrainingSet<Value>(create: (trainingSet: TrainingSet) => Value): Record<TrainingSet, Value> {

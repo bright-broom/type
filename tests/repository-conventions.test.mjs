@@ -18,7 +18,7 @@ const requiredDocuments = [
 ];
 const forbiddenDirectoryNames = new Set(["shared", "common", "utils", "helpers"]);
 const authoredExtensions = new Set([".ts", ".tsx", ".mjs", ".py"]);
-const authoredRoots = ["app", "src", "scripts", "tests", ".codex/hooks"];
+const authoredRoots = ["app", "src", "scripts", "tests", "e2e", ".codex/hooks"];
 const maxAuthoredLines = 300;
 const applicationScreenFiles = [
   "app/error.tsx",

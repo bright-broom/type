@@ -18,7 +18,7 @@ import { join } from "node:path";
 
 const THEME_REGISTRY = "app/styles/themes.css";
 const MODERN_STYLES = "app/styles/modern.css";
-const CSS_ROOT = "app";
+const CSS_ROOTS = ["app", "src"];
 const CODE_ROOTS = ["src", "app"];
 
 const HEX_COLOR = /#[0-9a-fA-F]{3,8}\b/;
@@ -63,8 +63,8 @@ if (rootBlocks.length > 1) {
   violations.push(`${THEME_REGISTRY}: ${rootBlocks.length} unscoped :root blocks — the base token contract forked`);
 }
 
-// 2. Other authored CSS must consume the theme contract rather than define colors.
-for (const file of walk(CSS_ROOT)) {
+// 2. Other authored CSS, including co-located CSS Modules, must consume the theme contract rather than define colors.
+for (const file of CSS_ROOTS.flatMap(walk)) {
   if (!file.endsWith(".css") || file === THEME_REGISTRY) continue;
   scan(file, readFileSync(file, "utf8"));
 }

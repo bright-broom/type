@@ -22,6 +22,8 @@ TypeLoopのUIは、タイピング中の集中を守り、結果を一目で理�
 
 生の色、影、角丸、余白、モーション、レイアウト閾値は`app/styles/themes.css`の`@tokens`レジストリだけに置く。コンポーネントやTSXへ値を直書きしない。ブラウザmetadataだけが必要とする色は、生成スクリプトがこのCSSから`browser-theme-colors.generated.json`へ導出し、`check:generated`が差分を拒否する。`npm run check:tokens`がそれ以外の境界を検証する。
 
+画面固有のselectorは画面と同じディレクトリのCSS Moduleが所有する。`globals.css`にはdocument基盤と複数画面で意図的に共有するcontrolだけを置き、新規画面の都合でglobal selectorを増やさない。既存global styleは、その画面を変更するPRで視覚回帰を保ちながら段階移行する。
+
 ## テーマ要件
 
 - 主要な本文・操作・反転面は全テーマでWCAG AA（4.5:1以上）を満たす。

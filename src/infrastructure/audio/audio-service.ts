@@ -1,10 +1,6 @@
-export interface AudioService {
-  playCorrect(): void;
-  playMiss(): void;
-  playComplete(): void;
-}
+import type { TypingAudio } from "../../application/ports/typing-audio.ts";
 
-export class WebAudioService implements AudioService {
+export class WebAudioService implements TypingAudio {
   private context: AudioContext | null = null;
   private enabled = true;
 

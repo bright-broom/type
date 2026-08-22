@@ -3,7 +3,28 @@ import test from "node:test";
 import { emptyEnvelope, isSession, migrateEnvelope, STORAGE_VERSION } from "./storage-envelope.ts";
 
 function session(id: string, overrides: Record<string, unknown> = {}) {
-  return { id, score: 1200, endedAt: 1_700_000_000_000, trainingSet: "japanese", ...overrides };
+  return {
+    id,
+    mode: "60s",
+    trainingSet: "japanese",
+    startedAt: 1_699_999_940_000,
+    endedAt: 1_700_000_000_000,
+    prompts: [],
+    keystrokes: [],
+    metrics: {
+      correctKeystrokes: 100,
+      totalKeystrokes: 105,
+      accuracy: 95.2,
+      wpm: 20,
+      cpm: 100,
+      elapsedMs: 60_000,
+    },
+    score: 1200,
+    completedPrompts: 3,
+    maxCombo: 30,
+    weakKeys: [],
+    ...overrides,
+  };
 }
 
 test("reads the current envelope unchanged", () => {
@@ -44,16 +65,24 @@ test("a payload without a version is still read", () => {
 test("sessions carrying unknown extra fields survive", () => {
   const envelope = migrateEnvelope({
     version: STORAGE_VERSION,
-    sessions: [session("a", { streak: 3, mode: "120s" })],
+    sessions: [session("a", { streak: 3 })],
   });
   assert.equal(envelope.sessions.length, 1);
   assert.equal(envelope.sessions[0]?.id, "a");
 });
 
-test("only records missing the keys history depends on are dropped", () => {
+test("only complete records required by history and export consumers survive", () => {
   const envelope = migrateEnvelope({
     version: STORAGE_VERSION,
-    sessions: [session("keep"), { id: "no-score" }, { score: 10, endedAt: 1 }, null, "nonsense"],
+    sessions: [
+      session("keep"),
+      { id: "no-score" },
+      { id: "missing-metrics", score: 10, endedAt: 1 },
+      session("bad-metrics", { metrics: { wpm: "fast" } }),
+      session("invalid-date", { endedAt: 1e300 }),
+      null,
+      "nonsense",
+    ],
   });
   assert.deepEqual(
     envelope.sessions.map((entry) => entry.id),
@@ -94,5 +123,8 @@ test("an empty envelope is fresh each time so callers cannot share its arrays", 
 test("isSession guards the fields personal bests are computed from", () => {
   assert.equal(isSession(session("a")), true);
   assert.equal(isSession({ id: "a", score: 1, endedAt: "not-a-number" }), false);
+  assert.equal(isSession({ id: "a", score: 1, endedAt: 1 }), false);
+  assert.equal(isSession(session("a", { weakKeys: [null] })), false);
+  assert.equal(isSession(session("a", { endedAt: 1e300 })), false);
   assert.equal(isSession(undefined), false);
 });

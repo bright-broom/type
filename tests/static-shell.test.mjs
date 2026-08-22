@@ -21,9 +21,12 @@ test("the root shell has no request-time rendering dependency", async () => {
 });
 
 test("reference destinations own stable deep links", async () => {
-  const route = await readFile(new URL("src/presentation/hooks/useAppRoute.ts", ROOT), "utf8");
+  const [route, contract] = await Promise.all([
+    readFile(new URL("src/presentation/hooks/useAppRoute.ts", ROOT), "utf8"),
+    readFile(new URL("src/presentation/hooks/reference-route.ts", ROOT), "utf8"),
+  ]);
   for (const path of ["/settings", "/history", "/consulting", "/ais", "/takken/glossary"]) {
-    assert.match(route, new RegExp(`"${path}"`));
+    assert.match(contract, new RegExp(`"${path}"`));
   }
   assert.match(route, /popstate/);
   assert.match(route, /history\.back/);

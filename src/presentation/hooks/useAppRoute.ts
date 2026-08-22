@@ -1,26 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import {
+  OVERLAY_PATH,
+  overlayFromPathname,
+  returnFocusKeyFromState,
+  type AppOverlay,
+  type ReferenceRouteState,
+} from "./reference-route.ts";
 
-export type AppOverlay = "none" | "history" | "playbook" | "takken" | "ais" | "settings";
+export type { AppOverlay } from "./reference-route.ts";
 
-const OVERLAY_PATH: Record<AppOverlay, string> = {
-  none: "/",
-  history: "/history",
-  playbook: "/consulting",
-  takken: "/takken/glossary",
-  ais: "/ais",
-  settings: "/settings",
-};
-
-function overlayFromPathname(pathname: string): AppOverlay {
-  const match = Object.entries(OVERLAY_PATH).find(([, path]) => path === pathname);
-  return (match?.[0] as AppOverlay | undefined) ?? "none";
-}
-
-type RouteState = { typeloopOverlay?: AppOverlay; typeloopReturnFocusKey?: string };
-
-function currentRouteState(): RouteState {
+function currentRouteState(): ReferenceRouteState {
   return typeof window.history.state === "object" && window.history.state !== null ? window.history.state : {};
 }
 
@@ -33,8 +24,7 @@ export function useAppRoute(
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
       const next = overlayFromPathname(window.location.pathname);
-      const state = event.state as RouteState | null;
-      onPopState?.(next, typeof state?.typeloopReturnFocusKey === "string" ? state.typeloopReturnFocusKey : null);
+      onPopState?.(next, returnFocusKeyFromState(event.state));
       setOverlay(next);
     };
     window.addEventListener("popstate", handlePopState);
@@ -58,7 +48,7 @@ export function useAppRoute(
   );
 
   const close = useCallback(() => {
-    if ((window.history.state as RouteState | null)?.typeloopOverlay) {
+    if ((window.history.state as ReferenceRouteState | null)?.typeloopOverlay) {
       window.history.back();
     } else {
       window.history.replaceState({ ...currentRouteState(), typeloopOverlay: "none" }, "", OVERLAY_PATH.none);

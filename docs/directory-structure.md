@@ -42,11 +42,11 @@
 ## Placement rules
 
 - Framework entry points stay in `app`; product behavior does not.
-- Reference routes in `app` delegate to the shared client composition with an explicit initial route. The content-heavy takken glossary keeps a lightweight direct-route adapter so it does not pull the typing application into that route's initial bundle. In-app URL/history policy belongs in `presentation/hooks/useAppRoute.ts`.
+- Reference routes in `app` delegate to the shared client composition with an explicit initial route. The content-heavy takken glossary keeps a lightweight direct-route adapter so it does not pull the typing application into that route's initial bundle. Stable URL mapping belongs in `presentation/hooks/reference-route.ts`; History API mutation stays in `useAppRoute.ts`; focus and scroll restoration belong in `useReferenceSurface.ts`.
 - Pure rules and value calculations belong in `domain`.
-- Session orchestration and capability interfaces belong in `application`.
+- Session orchestration, atomic typing state, and capability interfaces belong in `application`.
 - Browser or vendor-specific implementations belong in `infrastructure`.
-- React rendering and browser event composition belong in `presentation`.
+- React rendering and browser event composition belong in `presentation`. Screen-specific styles use a co-located CSS Module; global CSS is reserved for document foundations and intentionally shared controls.
 - Cross-screen page geometry belongs in `presentation/components/layout`; screens choose a typed `PageShell` role and retain ownership of their internal Grid/Flex composition.
 - Install registration belongs in `presentation/components/pwa`; the static service worker remains in `public` as a browser delivery entry point and never owns product state.
 - Theme identifiers, defaults, and cookie encoding belong in `application/settings`; the parser-blocking static bootstrap and DOM application belong in `presentation/theme`; raw visual values belong in `app/styles/themes.css`; browser metadata consumes only its checked generated mirror; the current product treatment belongs in the scoped `app/styles/modern.css` layer.
