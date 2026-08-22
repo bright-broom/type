@@ -1,5 +1,5 @@
 export type PromptCategory =
-  "basic" | "daily" | "sokuon" | "contracted" | "n-rule" | "phrase" | "consulting" | "takken" | "ais" | "git";
+  "basic" | "daily" | "sokuon" | "contracted" | "n-rule" | "phrase" | "consulting" | "takken" | "git";
 
 /**
  * Identifier of a practisable prompt collection.
@@ -8,7 +8,7 @@ export type PromptCategory =
  * session concept. Keeping it in the domain lets `content` own the catalogue that
  * binds each identifier to its dataset while `application` only persists the name.
  */
-export const TRAINING_SET_IDS = ["japanese", "consulting", "takken", "ais", "git"] as const;
+export const TRAINING_SET_IDS = ["japanese", "consulting", "takken", "git"] as const;
 export type TrainingSet = (typeof TRAINING_SET_IDS)[number];
 
 export function isTrainingSet(value: unknown): value is TrainingSet {

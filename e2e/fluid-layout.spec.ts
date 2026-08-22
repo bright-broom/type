@@ -54,12 +54,11 @@ const SCREENS: ReadonlyArray<LayoutScreen> = [
     },
   },
   {
-    name: "ais glossary",
-    width: "wide",
+    name: "privacy",
+    width: "reading",
     open: async (page) => {
-      await page.goto("/");
-      await page.getByRole("button", { name: /週次定例会議 用語辞典を開く/ }).click();
-      await page.getByRole("heading", { name: /AIS週次定例会議/ }).waitFor();
+      await page.goto("/privacy");
+      await page.getByRole("heading", { name: "プライバシーと安全性" }).waitFor();
     },
   },
   {

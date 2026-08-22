@@ -20,10 +20,16 @@ export type PromptAttempt = {
   incorrectKeystrokes: number;
 };
 
+/**
+ * A history record can outlive the prompt collection that created it. `retired`
+ * keeps harmless aggregates readable without making that collection selectable.
+ */
+export type SessionTrainingSet = TrainingSet | "retired";
+
 export type CompletedSession = {
   id: string;
   mode: "60s";
-  trainingSet?: TrainingSet;
+  trainingSet?: SessionTrainingSet;
   startedAt: number;
   endedAt: number;
   prompts: ReadonlyArray<PromptAttempt>;

@@ -11,7 +11,6 @@
 - Excel由来のConsulting Playbook全17セクション検索と327件の用語練習
 - 令和8年度向け宅建用語446語の検索・分野/重要度/出典フィルター・用語練習
 - 宅建10問演習と50問/45問の本番模試、見直し・時間切れ提出・再読み込み復旧・端末内履歴・弱点優先出題
-- AIS週次定例会議の用語154語を、カテゴリ・確度・種別・確認待ちで絞り込み＆練習（顧客名・個人名・金額は取込時に非開示化）
 - Keyboard-first operation, IME protection, reduced motion, and optional sound
 - スマホ対応入力：開始タップと同時にソフトウェアキーボードが開き、キーボードが覆う高さに合わせて出題・ローマ字ガイド・入力欄を保持。かな入力時は英数字への切り替えを案内（ミス加算はしない）
 
@@ -79,10 +78,9 @@ src/
 ```bash
 npm run import:consulting -- "/path/to/Consulting_Playbook_Dictionary_JA.xlsx"
 npm run import:takken -- "/path/to/takken-glossary.tsv"
-npm run import:ais -- "/path/to/AIS_weekly_meeting_glossary.xlsx"
 npm run import:git
 ```
 
 生成物は `src/content/generated/` に出力されます。生成JSONを直接編集せず、取込スクリプトを再実行してください。取込データはローカル静的データとして保持され、外部へ送信されません。
 
-会議用語集の元ブックは機密資料です。顧客名・個人名は取込時に固定の代替表記へ置換し、金額・件数・割合は非開示マーカーへ置換したうえで生成物に書き出します。元ブックはリポジトリにコミットしないでください。方針は [ADR-009](docs/adr/ADR-009-ais-meeting-glossary.md) を正とします。
+機密資料、個人情報、仮名化された取引・会議データは、取込元だけでなく生成物も公開リポジトリやブラウザ配信物へ含めません。公開データ境界は [ADR-024](docs/adr/ADR-024-public-release-privacy-boundary.md) を正とします。

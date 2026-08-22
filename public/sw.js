@@ -1,4 +1,5 @@
-const CACHE_NAME = "typeloop-shell-2026-08-21-v4";
+const CACHE_NAME = "typeloop-shell-2026-08-23-v6";
+const RESTRICTED_LEGACY_CACHES = new Set(["typeloop-shell-2026-08-21-v3", "typeloop-shell-2026-08-21-v4"]);
 const ROUTE_INVENTORY = "/application-routes.json";
 const SHELL_ASSETS = [
   "/manifest.webmanifest",
@@ -57,43 +58,75 @@ async function cacheApplicationShell() {
   }
 }
 
+async function installApplicationShell() {
+  const existingCaches = await globalThis.caches.keys();
+  await cacheApplicationShell();
+  if (existingCaches.some((name) => RESTRICTED_LEGACY_CACHES.has(name))) {
+    await globalThis.skipWaiting();
+  }
+}
+
+async function cachedApplicationRoutes(cache) {
+  const response = await cache.match(ROUTE_INVENTORY);
+  if (!response) return new Set();
+  try {
+    const routes = await response.json();
+    if (!Array.isArray(routes)) return new Set();
+    return new Set(
+      routes.filter((route) => typeof route === "string" && route.startsWith("/") && !route.includes("?")),
+    );
+  } catch {
+    return new Set();
+  }
+}
+
 globalThis.addEventListener("install", (event) => {
-  event.waitUntil(cacheApplicationShell());
+  event.waitUntil(installApplicationShell());
 });
 
 globalThis.addEventListener("activate", (event) => {
   event.waitUntil(
-    globalThis.caches
-      .keys()
-      .then((names) =>
-        Promise.all(
-          names
-            .filter((name) => name.startsWith("typeloop-shell-") && name !== CACHE_NAME)
-            .map((name) => globalThis.caches.delete(name)),
-        ),
-      )
-      .then(() => globalThis.clients.claim()),
+    globalThis.caches.keys().then(async (names) => {
+      const retiresRestrictedShell = names.some((name) => RESTRICTED_LEGACY_CACHES.has(name));
+      await Promise.all(
+        names
+          .filter((name) => name.startsWith("typeloop-shell-") && name !== CACHE_NAME)
+          .map((name) => globalThis.caches.delete(name)),
+      );
+      await globalThis.clients.claim();
+      if (!retiresRestrictedShell) return;
+      const windows = await globalThis.clients.matchAll({ type: "window", includeUncontrolled: true });
+      const freshRoot = new URL("/", globalThis.location.origin).href;
+      await Promise.all(windows.map((client) => client.navigate(freshRoot)));
+    }),
   );
 });
 
 async function networkFirst(request) {
   const cache = await globalThis.caches.open(CACHE_NAME);
+  const url = new URL(request.url);
+  const cacheKey = url.pathname;
+  const applicationRoutes = await cachedApplicationRoutes(cache);
   try {
     const response = await globalThis.fetch(request);
-    if (response.ok) await cache.put(request, response.clone());
+    if (response.ok && applicationRoutes.has(cacheKey)) await cache.put(cacheKey, response.clone());
     return response;
   } catch {
-    return (await cache.match(request, { ignoreSearch: true })) ?? (await cache.match("/")) ?? Response.error();
+    return (await cache.match(cacheKey)) ?? (await cache.match("/")) ?? Response.error();
   }
 }
 
 async function cacheFirst(request, event) {
   const cache = await globalThis.caches.open(CACHE_NAME);
-  const cached = await cache.match(request);
+  const cacheKey = new URL(request.url).pathname;
+  const cached = await cache.match(cacheKey);
+  if (!cached && cacheKey.startsWith("/_next/static/")) {
+    return Response.error();
+  }
   const refresh = globalThis
     .fetch(request)
     .then(async (response) => {
-      if (response.ok) await cache.put(request, response.clone());
+      if (response.ok) await cache.put(cacheKey, response.clone());
       return response;
     })
     .catch(() => null);

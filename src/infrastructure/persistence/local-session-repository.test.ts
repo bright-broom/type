@@ -69,6 +69,70 @@ test("history written by a different envelope version is kept, not discarded", a
   );
 });
 
+test("reading legacy history rewrites it without detailed typing input", async () => {
+  const storage = new MemoryStorage();
+  const repository = new LocalSessionRepository();
+  useStorage(storage);
+  const legacy = session("legacy", 10);
+  legacy.prompts = [
+    {
+      promptId: "basic-1",
+      startedAt: 1,
+      input: "sensitive-typed-text",
+      correctKeystrokes: 1,
+      incorrectKeystrokes: 0,
+    },
+  ];
+  legacy.keystrokes = [{ timestamp: 1, key: "s", normalizedKey: "s", correct: true, promptId: "basic-1", position: 0 }];
+  storage.values.set(STORAGE_KEY, JSON.stringify({ version: 1, sessions: [legacy] }));
+
+  const recovered = await repository.getAll();
+  assert.deepEqual(recovered[0]?.prompts, []);
+  assert.deepEqual(recovered[0]?.keystrokes, []);
+  assert.equal(storage.values.get(STORAGE_KEY)?.includes("sensitive-typed-text"), false);
+});
+
+test("readable history survives when a privacy migration cannot be rewritten", async () => {
+  const legacy = session("legacy", 10);
+  const raw = JSON.stringify({
+    version: 1,
+    sessions: [legacy],
+    settings: { soundEnabled: false },
+  });
+  const repository = new LocalSessionRepository();
+  useStorage({
+    getItem: () => raw,
+    setItem: () => {
+      throw new Error("quota exceeded");
+    },
+  });
+
+  assert.deepEqual(
+    (await repository.getAll()).map((entry) => entry.id),
+    ["legacy"],
+  );
+  assert.deepEqual(await repository.getSettings(), { soundEnabled: false });
+});
+
+test("new sessions are persisted without detailed typing input", async () => {
+  const storage = new MemoryStorage();
+  const repository = new LocalSessionRepository();
+  useStorage(storage);
+  const detailed = session("new", 10);
+  detailed.prompts = [
+    {
+      promptId: "basic-1",
+      startedAt: 1,
+      input: "sensitive-typed-text",
+      correctKeystrokes: 1,
+      incorrectKeystrokes: 0,
+    },
+  ];
+
+  await repository.save(detailed);
+  assert.equal(storage.values.get(STORAGE_KEY)?.includes("sensitive-typed-text"), false);
+});
+
 test("caps history and keeps best scores isolated by training set", async () => {
   const storage = new MemoryStorage();
   const repository = new LocalSessionRepository();

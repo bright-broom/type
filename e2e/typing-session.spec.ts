@@ -62,11 +62,13 @@ test("critical flow stays operable from compact portrait through landscape and d
     const archive = JSON.parse(await readFile(downloadPath as string, "utf8")) as {
       format: string;
       version: number;
-      sessions: Array<{ id: string }>;
+      sessions: Array<Record<string, unknown>>;
     };
     expect(archive.format).toBe("typeloop-session-history");
-    expect(archive.version).toBe(1);
+    expect(archive.version).toBe(2);
     expect(archive.sessions).toHaveLength(1);
+    expect(archive.sessions[0]).not.toHaveProperty("prompts");
+    expect(archive.sessions[0]).not.toHaveProperty("keystrokes");
     await expect(page.getByRole("status")).toHaveText("JSONファイルに保存しました。");
     await expectNoHorizontalOverflow(page);
     await expectNoPageFailures(failures);

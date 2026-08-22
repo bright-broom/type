@@ -25,7 +25,7 @@ test("reference destinations own stable deep links", async () => {
     readFile(new URL("src/presentation/hooks/useAppRoute.ts", ROOT), "utf8"),
     readFile(new URL("src/presentation/hooks/reference-route.ts", ROOT), "utf8"),
   ]);
-  for (const path of ["/settings", "/history", "/consulting", "/ais", "/takken/glossary"]) {
+  for (const path of ["/settings", "/history", "/consulting", "/takken/glossary"]) {
     assert.match(contract, new RegExp(`"${path}"`));
   }
   assert.match(route, /popstate/);

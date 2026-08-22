@@ -31,10 +31,22 @@ test("the production CSP is same-origin and blocks dangerous embedding", () => {
   assert.match(csp, /default-src 'self'/);
   assert.match(csp, /frame-ancestors 'none'/);
   assert.match(csp, /object-src 'none'/);
+  assert.match(csp, /base-uri 'none'/);
+  assert.match(csp, /form-action 'none'/);
+  assert.match(csp, /script-src-attr 'none'/);
   assert.match(csp, /connect-src 'self'/);
   assert.doesNotMatch(csp, /unsafe-eval|https?:\/\//);
+  assert.equal(headers["referrer-policy"], "no-referrer");
 });
 
 test("HSTS does not claim unverified subdomains or preload eligibility", () => {
   assert.equal(headers["strict-transport-security"], "max-age=63072000");
+});
+
+test("the service worker script cannot be retained by an intermediary cache", () => {
+  const serviceWorkerRoute = configuredRoutes.find(({ source }) => source === "/sw.js");
+  assert.ok(serviceWorkerRoute);
+  assert.deepEqual(serviceWorkerRoute.headers, [
+    { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+  ]);
 });

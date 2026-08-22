@@ -3,11 +3,12 @@ import type { NextConfig } from "next";
 const isDevelopment = process.env.NODE_ENV === "development";
 const contentSecurityPolicy = [
   "default-src 'self'",
-  "base-uri 'self'",
-  "form-action 'self'",
+  "base-uri 'none'",
+  "form-action 'none'",
   "frame-ancestors 'none'",
   "object-src 'none'",
   "script-src 'self' 'unsafe-inline'" + (isDevelopment ? " 'unsafe-eval'" : ""),
+  "script-src-attr 'none'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",
@@ -19,7 +20,7 @@ const contentSecurityPolicy = [
 
 export const SECURITY_HEADERS = [
   { key: "Content-Security-Policy", value: contentSecurityPolicy },
-  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Referrer-Policy", value: "no-referrer" },
   {
     key: "Permissions-Policy",
     value:
@@ -35,7 +36,13 @@ export const SECURITY_HEADERS = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   async headers() {
-    return [{ source: "/:path*", headers: [...SECURITY_HEADERS] }];
+    return [
+      { source: "/:path*", headers: [...SECURITY_HEADERS] },
+      {
+        source: "/sw.js",
+        headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }],
+      },
+    ];
   },
 };
 

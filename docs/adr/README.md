@@ -12,7 +12,7 @@ ADRs capture durable decisions that constrain future implementation. They do not
 | [006](ADR-006-takken-glossary.md)                      | Static takken glossary ingestion                      |
 | [007](ADR-007-source-boundaries.md)                    | Source directory boundaries                           |
 | [008](ADR-008-ai-development-guardrails.md)            | AI-readable repository guardrails                     |
-| [009](ADR-009-ais-meeting-glossary.md)                 | De-identified meeting glossary ingestion              |
+| [009](ADR-009-ais-meeting-glossary.md)                 | Superseded meeting glossary ingestion                 |
 | [010](ADR-010-software-keyboard-input.md)              | Software keyboard input on touch devices              |
 | [011](ADR-011-dataset-ownership-and-catalogue.md)      | Dataset ownership and the training set catalogue      |
 | [012](ADR-012-cross-browser-durability-and-budgets.md) | Cross-browser proof, storage durability, and budgets  |
@@ -27,5 +27,6 @@ ADRs capture durable decisions that constrain future implementation. They do not
 | [021](ADR-021-product-quality-delivery.md)             | Product quality as an enforced delivery contract      |
 | [022](ADR-022-agent-control-plane.md)                  | Human-owned agent control plane                       |
 | [023](ADR-023-static-route-shell.md)                   | CDN-prerendered shell and URL-owned reference screens |
+| [024](ADR-024-public-release-privacy-boundary.md)      | Public privacy and restricted-content boundary        |
 
 Add an ADR only for a decision with meaningful alternatives and long-lived consequences. Use the next number and include Context, Decision, Alternatives, and Consequences.

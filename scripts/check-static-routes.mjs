@@ -1,4 +1,17 @@
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { restrictedTextViolations } from "./public-content-policy.mjs";
+
+async function filesBelow(root) {
+  const entries = await readdir(root, { withFileTypes: true });
+  const files = [];
+  for (const entry of entries) {
+    const path = join(root, entry.name);
+    if (entry.isDirectory()) files.push(...(await filesBelow(path)));
+    else if (entry.isFile()) files.push(path);
+  }
+  return files;
+}
 
 const [manifest, requiredStaticRoutes] = await Promise.all([
   readFile(".next/prerender-manifest.json", "utf8").then(JSON.parse),
@@ -35,6 +48,18 @@ const bootstrapIndex = homeHtml.indexOf('src="/theme-bootstrap.js"');
 const bodyIndex = homeHtml.indexOf("<body");
 if (bootstrapIndex < 0 || bodyIndex < 0 || bootstrapIndex > bodyIndex) {
   console.error("The appearance bootstrap must remain parser-blocking in <head> before static application markup.");
+  process.exit(1);
+}
+
+const emittedFiles = [...(await filesBelow(".next/server/app")), ...(await filesBelow(".next/static"))];
+const restrictedArtifacts = [];
+for (const path of emittedFiles) {
+  const source = await readFile(path, "utf8");
+  if (source.includes("\0")) continue;
+  if (restrictedTextViolations(source).length > 0) restrictedArtifacts.push(path);
+}
+if (restrictedArtifacts.length > 0) {
+  console.error(`Restricted content reached emitted browser artifacts:\n${restrictedArtifacts.join("\n")}`);
   process.exit(1);
 }
 console.log(`Verified ${requiredStaticRoutes.length} CDN-prerendered application routes.`);

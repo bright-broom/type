@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { saveSessionArchive } from "../../application/session/session-archive.ts";
@@ -121,7 +122,6 @@ export function TypingApp({ initialOverlay = "none" }: { initialOverlay?: AppOve
     onEnter: () => {
       if (overlay === "playbook") start("consulting");
       else if (overlay === "takken") start("takken");
-      else if (overlay === "ais") start("ais");
       else if (overlay !== "none") {
         closeOverlay();
       } else if (session.clock.status === "idle" || session.clock.status === "aborted") start(selectedTrainingSet);
@@ -210,7 +210,6 @@ export function TypingApp({ initialOverlay = "none" }: { initialOverlay?: AppOve
           onStart={() => start(selectedTrainingSet)}
           onShowPlaybook={() => navigateOverlay("playbook", "push", "home-playbook")}
           onShowTakkenGlossary={() => navigateOverlay("takken", "push", "home-takken")}
-          onShowAisGlossary={() => navigateOverlay("ais", "push", "home-ais")}
           onShowHistory={() => navigateOverlay("history", "push", "home-history")}
           aborted={session.clock.status === "aborted"}
         />
@@ -219,6 +218,9 @@ export function TypingApp({ initialOverlay = "none" }: { initialOverlay?: AppOve
 
       <footer className="site-footer">
         <span>TYPELOOP / 60 SEC TRAINING</span>
+        <Link className="footer-link" href="/privacy">
+          プライバシー
+        </Link>
         <span>LOCAL FIRST · NO ACCOUNT</span>
       </footer>
     </div>

@@ -9,6 +9,7 @@ TypeLoop treats command output, tests, and CI status as evidence. An agent's sta
 | Deps        | `npm run check:deps`       | Every declared peer range is satisfiable by the pinned versions           |
 | Bundle      | `npm run check:bundle`     | JavaScript, CSS, social art, and install icons stay inside named budgets  |
 | Content     | `npm run check:content`    | Takken source provenance and qualified publication evidence               |
+| Privacy     | `npm run check:privacy`    | Public runtime source excludes restricted content and personal addresses  |
 | Tokens      | `npm run check:tokens`     | Design colors exist only inside the theme registry; TSX carries none      |
 | Format      | `npm run format:check`     | Deterministic authored-file formatting                                    |
 | Lint        | `npm run lint`             | TypeScript, React, hooks, accessibility, and Next.js rules                |
@@ -69,6 +70,14 @@ an adversarial-code sandbox; review and an ADR remain required for any boundary 
 current tracked/untracked snapshot, including generated content and the lockfile, but does not replace GitHub history
 scanning or push protection. `npm audit` is registry-backed and may fail for operational reasons; CI keeps it in a separate
 security job so the failure is explicit.
+
+`check:privacy` is a confidentiality boundary for the current delivery tree. It rejects
+known restricted meeting markers and personal email addresses from runtime source and
+generated public content without printing matched values. `check:static` applies the
+restricted-marker portion again to emitted client and route artifacts. This is defense in
+depth for known disclosure classes, not a claim that regexes can discover every form of PII.
+Before a repository visibility change, the separate history and owner-control gates in the
+public-release review remain mandatory.
 
 CodeQL, native Secret Scanning, push protection, branch rulesets, and Vercel production controls are repository/workspace settings. They must be verified by an owner before being described as enabled. Never print `.env`, credentials, tokens, or production data while diagnosing a gate.
 
