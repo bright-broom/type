@@ -4,7 +4,7 @@ const REFERENCE_ROUTES = [
   { path: "/settings", heading: "表示設定" },
   { path: "/history", heading: "練習の記録" },
   { path: "/consulting", heading: "コンサル実務辞典" },
-  { path: "/ais", heading: "週次定例会議 用語辞典" },
+  { path: "/privacy", heading: "プライバシーと安全性" },
   { path: "/takken/glossary", heading: "宅建試験 完全用語一覧" },
 ] as const;
 

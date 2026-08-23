@@ -47,10 +47,10 @@ const screens: ReadonlyArray<AccessibilityScreen> = [
     },
   },
   {
-    name: "ais glossary",
+    name: "privacy",
     open: async (page) => {
-      await page.getByRole("button", { name: /週次定例会議 用語辞典を開く/ }).click();
-      await page.getByRole("heading", { name: /AIS週次定例会議/ }).waitFor();
+      await page.goto("/privacy");
+      await page.getByRole("heading", { name: "プライバシーと安全性" }).waitFor();
     },
   },
   {

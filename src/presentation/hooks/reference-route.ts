@@ -1,11 +1,10 @@
-export type AppOverlay = "none" | "history" | "playbook" | "takken" | "ais" | "settings";
+export type AppOverlay = "none" | "history" | "playbook" | "takken" | "settings";
 
 export const OVERLAY_PATH: Record<AppOverlay, string> = {
   none: "/",
   history: "/history",
   playbook: "/consulting",
   takken: "/takken/glossary",
-  ais: "/ais",
   settings: "/settings",
 };
 

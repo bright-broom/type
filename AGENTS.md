@@ -35,7 +35,7 @@ TypeLoop is a local-first Next.js typing trainer. Before structural work, read:
 - Regenerate content with the npm import commands; do not patch generated JSON directly.
 - Raw design values live only in the `@tokens` registry in `app/styles/themes.css`; components consume named tokens. CI rejects color literals elsewhere, including in TSX (`npm run check:tokens`). Do not hardcode palette values, spacing decisions, motion timings, shadows, radii, or layout thresholds in components; add or reuse a responsibility-named token.
 - Name every meaningful threshold as a module-level constant (`SESSION_DURATION_MS`, `MAX_SESSIONS`); a bare number in an expression must be self-evident, not a design decision.
-- Confidential source material is de-identified by its importer, never by the UI. Do not commit source workbooks, and do not add a real customer or personal name to any authored file (see `docs/adr/ADR-009-ais-meeting-glossary.md`).
+- Confidential source material, personal data, and re-identifiable pseudonyms never enter the repository's runtime or generated public content. Pseudonymization alone is not publication approval; see `docs/adr/ADR-024-public-release-privacy-boundary.md`.
 - Do not add dependencies, persistence, authentication, or network calls without a concrete requirement and ADR-worthy justification.
 - Never commit `.env*`, credentials, tokens, or user-local output.
 - The application currently has no database or migrations. Stop and require an ADR plus an approved migration/rollback plan before adding either.
@@ -88,7 +88,6 @@ TypeLoop is a local-first Next.js typing trainer. Before structural work, read:
 - Architecture only: `npm run test:architecture`
 - Consulting import: `npm run import:consulting -- "/path/to/source.xlsx"`
 - Takken import: `npm run import:takken -- "/path/to/source.tsv"`
-- AIS meeting glossary import: `npm run import:ais -- "/path/to/source.xlsx"`
 - Git command import: `npm run import:git`
 
 ## Definition of Done
@@ -96,6 +95,7 @@ TypeLoop is a local-first Next.js typing trainer. Before structural work, read:
 - Required behavior is covered by a regression, integration, or E2E test at the correct boundary.
 - `npm run check:ci` succeeds and the evidence is reported; do not substitute an AI claim for command output.
 - The final diff contains no secret, generated-file hand edit, architecture drift, or unrelated product change.
+- Restricted business data, personal data, and stable pseudonyms that can be re-identified never enter runtime source, generated public content, or browser assets; `npm run check:privacy` enforces the known boundary.
 - An independent reviewer reports no unresolved Critical/High finding.
 - CI is green before merge; production changes still require human approval.
 

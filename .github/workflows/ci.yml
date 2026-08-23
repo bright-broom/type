@@ -107,6 +107,8 @@ jobs:
         env:
           TAKKEN_REVIEWER_KEYS_JSON: ${{ vars.TAKKEN_REVIEWER_KEYS_JSON }}
         run: npm run check:content
+      - name: Verify public-content confidentiality
+        run: npm run check:privacy
       - name: Verify design token boundary
         run: npm run check:tokens
       - name: Check formatting

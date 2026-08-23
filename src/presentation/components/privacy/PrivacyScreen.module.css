@@ -1,0 +1,64 @@
+.root {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.heading {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.heading h1,
+.heading p,
+.section h2,
+.section p,
+.section ul {
+  margin: 0;
+}
+
+.heading h1 {
+  color: var(--content-primary);
+  font-size: var(--modern-heading-size);
+  line-height: 1.05;
+}
+
+.heading p,
+.section p,
+.section li {
+  color: var(--text-prose);
+  line-height: var(--leading-copy);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: var(--modern-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+}
+
+.section h2 {
+  color: var(--content-primary);
+  font-size: var(--modern-section-heading-size);
+}
+
+.section ul {
+  display: grid;
+  gap: var(--space-0);
+  padding-inline-start: var(--space-3);
+}
+
+.section a,
+.back {
+  color: var(--focus-accent);
+  text-decoration: underline;
+}
+
+.back {
+  inline-size: fit-content;
+  min-block-size: var(--tap-target);
+  display: inline-flex;
+  align-items: center;
+  font-weight: 750;
+}

@@ -31,7 +31,7 @@ creating a safer static alternative if its emitted position can be enforced.
 - One authored JSON inventory feeds both the service worker and the build gate. The
   gate requires an exact match with Next's application prerenders, immutable
   `initialRevalidateSeconds`, and the bootstrap before body markup in emitted home HTML.
-- Settings, typing history, consulting, AIS, and the takken glossary own stable routes.
+- Settings, typing history, consulting, and the takken glossary own stable routes.
   One pure route contract maps URLs to reference surfaces, the route-state hook owns
   `popstate`, and a presentation coordinator restores deterministic in-app Back focus.
 - Starting a timed session replaces the reference URL with `/`; active timing and

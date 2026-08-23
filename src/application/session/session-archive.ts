@@ -3,37 +3,21 @@ import type { SessionRepository } from "../ports/session-repository.ts";
 import type { CompletedSession } from "./session-types.ts";
 
 const ARCHIVE_FORMAT = "typeloop-session-history";
-const ARCHIVE_VERSION = 1;
+const ARCHIVE_VERSION = 2;
 
 type SessionArchive = {
   format: typeof ARCHIVE_FORMAT;
   version: typeof ARCHIVE_VERSION;
   exportedAt: string;
-  sessions: ReadonlyArray<SessionArchiveEntryV1>;
+  sessions: ReadonlyArray<SessionArchiveEntryV2>;
 };
 
-type SessionArchiveEntryV1 = {
+type SessionArchiveEntryV2 = {
   id: string;
   mode: "60s";
   trainingSet: string;
   startedAt: number;
   endedAt: number;
-  prompts: Array<{
-    promptId: string;
-    startedAt: number;
-    completedAt?: number;
-    input: string;
-    correctKeystrokes: number;
-    incorrectKeystrokes: number;
-  }>;
-  keystrokes: Array<{
-    timestamp: number;
-    key: string;
-    normalizedKey: string;
-    correct: boolean;
-    promptId: string;
-    position: number;
-  }>;
   metrics: {
     correctKeystrokes: number;
     totalKeystrokes: number;
@@ -54,29 +38,13 @@ type SessionArchiveEntryV1 = {
   }>;
 };
 
-function toArchiveEntryV1(session: CompletedSession): SessionArchiveEntryV1 {
+function toArchiveEntryV2(session: CompletedSession): SessionArchiveEntryV2 {
   return {
     id: session.id,
     mode: session.mode,
     trainingSet: session.trainingSet ?? "japanese",
     startedAt: session.startedAt,
     endedAt: session.endedAt,
-    prompts: session.prompts.map((prompt) => ({
-      promptId: prompt.promptId,
-      startedAt: prompt.startedAt,
-      ...(prompt.completedAt === undefined ? {} : { completedAt: prompt.completedAt }),
-      input: prompt.input,
-      correctKeystrokes: prompt.correctKeystrokes,
-      incorrectKeystrokes: prompt.incorrectKeystrokes,
-    })),
-    keystrokes: session.keystrokes.map((keystroke) => ({
-      timestamp: keystroke.timestamp,
-      key: keystroke.key,
-      normalizedKey: keystroke.normalizedKey,
-      correct: keystroke.correct,
-      promptId: keystroke.promptId,
-      position: keystroke.position,
-    })),
     metrics: {
       correctKeystrokes: session.metrics.correctKeystrokes,
       totalKeystrokes: session.metrics.totalKeystrokes,
@@ -107,7 +75,7 @@ export function createSessionArchiveFile(
     format: ARCHIVE_FORMAT,
     version: ARCHIVE_VERSION,
     exportedAt: timestamp,
-    sessions: sessions.map(toArchiveEntryV1),
+    sessions: sessions.map(toArchiveEntryV2),
   };
 
   return {

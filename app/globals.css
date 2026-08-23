@@ -222,14 +222,6 @@ kbd {
   background: var(--coral);
   color: var(--ink-deep);
 }
-.ais-link {
-  margin-top: 10px;
-}
-.ais-link span {
-  background: var(--surface-inverse);
-  color: var(--content-on-inverse);
-}
-
 .site-footer {
   width: min(100%, calc(var(--layout-content-default) + (var(--layout-page-gutter) * 2)));
   margin: auto auto 0;
@@ -246,6 +238,13 @@ kbd {
     600 var(--font-micro) var(--font-geist-mono),
     monospace;
   letter-spacing: 0.12em;
+}
+.footer-link {
+  min-height: var(--tap-target);
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+  text-decoration: underline;
 }
 
 .countdown-shell {
@@ -1048,71 +1047,9 @@ kbd {
     monospace;
   letter-spacing: 0.08em;
 }
-.ais-filters {
-  grid-template-columns: minmax(230px, 2fr) repeat(3, minmax(118px, 1fr)) auto auto;
-}
-.glossary-toggle {
-  align-content: end;
-}
-.glossary-toggle input {
-  width: 22px;
-  height: 22px;
-  min-height: 0;
-  margin: 11px 0;
-  accent-color: var(--cyan-dark);
-  cursor: pointer;
-}
 .glossary-result-meta span {
   color: var(--muted);
   font-size: 0.7rem;
-}
-.confidence {
-  flex: none;
-  border-radius: 999px;
-  padding: 6px 9px;
-  font:
-    normal 750 var(--font-micro) var(--font-geist-mono),
-    monospace;
-  white-space: nowrap;
-}
-.confidence-confirmed {
-  color: var(--content-on-accent);
-  background: var(--accent-soft);
-}
-.confidence-partial {
-  color: var(--content-primary);
-  border: 1px solid var(--status-attention);
-  background: rgb(var(--status-attention-rgb) / 12%);
-}
-.confidence-pending {
-  color: var(--content-on-accent);
-  background: var(--status-attention);
-}
-.glossary-entry-main .meeting-context {
-  padding: 10px 12px;
-  border-left: 3px solid var(--cyan-dark);
-  background: rgb(var(--cyan-rgb) / 10%);
-}
-.meeting-context strong {
-  margin-right: 12px;
-  color: var(--cyan-dark);
-  font-size: var(--font-micro);
-}
-.glossary-entry-main .review-question {
-  padding: 10px 12px;
-  border-left: 3px solid var(--muted);
-  background: rgb(var(--ink-deep-rgb) / 4%);
-}
-.review-question strong {
-  margin-right: 12px;
-  color: var(--muted);
-  font-size: var(--font-micro);
-}
-.glossary-entry footer span.masked-chip {
-  border-color: var(--ink-deep);
-  color: var(--ink-deep);
-  background: rgb(var(--ink-deep-rgb) / 8%);
-  font-weight: 750;
 }
 .error-shell {
   min-height: 100svh;

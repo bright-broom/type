@@ -3,7 +3,8 @@ import {
   normalizeAppSettings,
   type AppSettings,
 } from "../../application/settings/app-settings.ts";
-import type { CompletedSession } from "../../application/session/session-types.ts";
+import type { CompletedSession, SessionTrainingSet } from "../../application/session/session-types.ts";
+import { minimizeCompletedSession } from "../../application/session/session-retention.ts";
 import { isTrainingSet } from "../../domain/prompts/prompt-types.ts";
 
 /**
@@ -19,7 +20,7 @@ export type StorageEnvelope = {
   settings: AppSettings;
 };
 
-export const STORAGE_VERSION = 1;
+export const STORAGE_VERSION = 2;
 
 export function emptyEnvelope(): StorageEnvelope {
   return {
@@ -44,6 +45,10 @@ function isFiniteNumber(value: unknown): value is number {
 
 function isValidDateNumber(value: unknown): value is number {
   return isFiniteNumber(value) && Number.isFinite(new Date(value).getTime());
+}
+
+function isSessionTrainingSet(value: unknown): value is SessionTrainingSet {
+  return value === "retired" || isTrainingSet(value);
 }
 
 function isCount(value: unknown): value is number {
@@ -115,7 +120,7 @@ export function isSession(value: unknown): value is CompletedSession {
     typeof value.id === "string" &&
     value.id.length > 0 &&
     value.mode === "60s" &&
-    (value.trainingSet === undefined || isTrainingSet(value.trainingSet)) &&
+    (value.trainingSet === undefined || isSessionTrainingSet(value.trainingSet)) &&
     isValidDateNumber(value.startedAt) &&
     isValidDateNumber(value.endedAt) &&
     value.endedAt >= value.startedAt &&
@@ -131,6 +136,14 @@ export function isSession(value: unknown): value is CompletedSession {
     Array.isArray(value.weakKeys) &&
     value.weakKeys.every(isWeakKey)
   );
+}
+
+function normalizeStoredSession(value: unknown): CompletedSession | null {
+  if (isRecord(value) && value.trainingSet === "ais") {
+    const retired = { ...value, trainingSet: "retired" };
+    return isSession(retired) ? minimizeCompletedSession(retired) : null;
+  }
+  return isSession(value) ? minimizeCompletedSession(value) : null;
 }
 
 /**
@@ -152,7 +165,9 @@ export function isSession(value: unknown): value is CompletedSession {
 export function migrateEnvelope(payload: unknown): StorageEnvelope {
   if (!payload || typeof payload !== "object") return emptyEnvelope();
   const record = payload as Record<string, unknown>;
-  const sessions = Array.isArray(record.sessions) ? record.sessions.filter(isSession) : [];
+  const sessions = Array.isArray(record.sessions)
+    ? record.sessions.map(normalizeStoredSession).filter((session): session is CompletedSession => session !== null)
+    : [];
   return {
     version: STORAGE_VERSION,
     sessions,

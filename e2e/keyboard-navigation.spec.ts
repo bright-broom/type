@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const dictionaries = [/コンサル実務辞典を開く/, /宅建試験 完全用語一覧を開く/, /週次定例会議 用語辞典を開く/] as const;
+const dictionaries = [/コンサル実務辞典を開く/, /宅建試験 完全用語一覧を開く/] as const;
 
 test("dictionary Escape and Enter shortcuts match the visible navigation", async ({ page }) => {
   await page.clock.install();

@@ -42,6 +42,37 @@ test("reads the current envelope unchanged", () => {
   assert.equal(envelope.settings.soundEnabled, false);
 });
 
+test("legacy session details are removed during migration", () => {
+  const detailed = session("private", {
+    prompts: [
+      {
+        promptId: "basic-1",
+        startedAt: 1,
+        input: "sensitive-typed-text",
+        correctKeystrokes: 1,
+        incorrectKeystrokes: 0,
+      },
+    ],
+    keystrokes: [{ timestamp: 1, key: "s", normalizedKey: "s", correct: true, promptId: "basic-1", position: 0 }],
+  });
+  const migrated = migrateEnvelope({ version: 1, sessions: [detailed] });
+  assert.deepEqual(migrated.sessions[0]?.prompts, []);
+  assert.deepEqual(migrated.sessions[0]?.keystrokes, []);
+  assert.equal(JSON.stringify(migrated).includes("sensitive-typed-text"), false);
+});
+
+test("a retired training set keeps only its harmless aggregate history", () => {
+  const migrated = migrateEnvelope({
+    version: 1,
+    sessions: [session("retired", { trainingSet: "ais" })],
+  });
+
+  assert.equal(migrated.sessions.length, 1);
+  assert.equal(migrated.sessions[0]?.trainingSet, "retired");
+  assert.deepEqual(migrated.sessions[0]?.prompts, []);
+  assert.deepEqual(migrated.sessions[0]?.keystrokes, []);
+});
+
 test("an envelope from a newer build keeps its sessions instead of wiping them", () => {
   // This is the regression that mattered: the previous reader returned an empty
   // envelope for any version mismatch, deleting the only copy of a player's history.

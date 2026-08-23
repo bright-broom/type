@@ -2,7 +2,6 @@ import { TRAINING_SET_IDS, type TrainingSet, type TypingPrompt } from "../domain
 import { JAPANESE_PROMPTS } from "./japanese/japanese-prompts.ts";
 import { CONSULTING_PROMPTS } from "./consulting/consulting-prompts.ts";
 import { TAKKEN_PROMPTS } from "./takken/takken-prompts.ts";
-import { AIS_PROMPTS } from "./ais/ais-prompts.ts";
 import { GIT_COMMAND_PROMPTS } from "./git/git-commands.ts";
 
 /**
@@ -18,7 +17,6 @@ export const TRAINING_SET_PROMPTS: Record<TrainingSet, ReadonlyArray<TypingPromp
   japanese: JAPANESE_PROMPTS,
   consulting: CONSULTING_PROMPTS,
   takken: TAKKEN_PROMPTS,
-  ais: AIS_PROMPTS,
   git: GIT_COMMAND_PROMPTS,
 };
 

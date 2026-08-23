@@ -32,9 +32,11 @@ test("CI accepts an explicit dispatch only for the requested commit", async () =
   assert.match(policy, /ACTUAL_SHA: \$\{\{ github\.sha \}\}/);
   assert.match(policy, /if \[ "\$ACTUAL_SHA" != "\$EXPECTED_SHA" \]/);
   const quality = jobBlock(source, "quality");
+  const privacyIndex = quality.indexOf("run: npm run check:privacy");
   const buildIndex = quality.indexOf("run: npm run build");
   const staticIndex = quality.indexOf("run: npm run check:static");
   const bundleIndex = quality.indexOf("run: npm run check:bundle");
+  assert.ok(privacyIndex >= 0 && privacyIndex < buildIndex);
   assert.ok(buildIndex >= 0 && buildIndex < staticIndex && staticIndex < bundleIndex);
 });
 

@@ -8,7 +8,6 @@ test("every reference surface has one stable path", () => {
     history: "/history",
     playbook: "/consulting",
     takken: "/takken/glossary",
-    ais: "/ais",
     settings: "/settings",
   });
   for (const [overlay, pathname] of Object.entries(OVERLAY_PATH)) {

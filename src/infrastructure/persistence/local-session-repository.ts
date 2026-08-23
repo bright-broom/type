@@ -2,6 +2,7 @@ import type { AppSettings } from "../../application/settings/app-settings.ts";
 import type { CompletedSession } from "../../application/session/session-types.ts";
 import type { TrainingSet } from "../../domain/prompts/prompt-types.ts";
 import type { SessionRepository } from "../../application/ports/session-repository.ts";
+import { minimizeCompletedSession } from "../../application/session/session-retention.ts";
 import { emptyEnvelope, migrateEnvelope, STORAGE_VERSION, type StorageEnvelope } from "./storage-envelope.ts";
 
 export const STORAGE_KEY = "typeloop:data";
@@ -12,7 +13,10 @@ function readStorage(): StorageEnvelope {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return emptyEnvelope();
-    return migrateEnvelope(JSON.parse(raw));
+    const migrated = migrateEnvelope(JSON.parse(raw));
+    const minimized = JSON.stringify(migrated);
+    if (minimized !== raw) writeStorage(migrated);
+    return migrated;
   } catch {
     return emptyEnvelope();
   }
@@ -30,7 +34,11 @@ function writeStorage(value: StorageEnvelope): void {
 export class LocalSessionRepository implements SessionRepository {
   async save(session: CompletedSession): Promise<void> {
     const data = readStorage();
-    writeStorage({ ...data, version: STORAGE_VERSION, sessions: [session, ...data.sessions].slice(0, MAX_SESSIONS) });
+    writeStorage({
+      ...data,
+      version: STORAGE_VERSION,
+      sessions: [minimizeCompletedSession(session), ...data.sessions].slice(0, MAX_SESSIONS),
+    });
   }
 
   async getAll(): Promise<CompletedSession[]> {

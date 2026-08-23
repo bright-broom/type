@@ -99,7 +99,7 @@ exactly one owner. Cookie values are three allow-listed identifiers, validated p
 before they reach document attributes.
 
 Reference work surfaces are URL-owned even though they reuse the in-memory typing
-composition. `/settings`, `/history`, `/consulting`, `/ais`, and `/takken/glossary`
+composition. `/settings`, `/history`, `/consulting`, and `/takken/glossary`
 survive reload and bookmarks. A reference-surface coordinator composes the route-state
 hook with scroll and focus restoration; `popstate` restores the prior surface and focus target.
 The active timed session remains an in-memory state machine and replaces reference URLs
@@ -117,13 +117,17 @@ Generated artifacts are versioned for reproducible builds but are not hand-edite
 
 Takken adds a tracked normalized TSV, authored edition manifest, and official-source registry before the importer. The generated artifact binds exact source and canonical registry digests. A scheduled, non-runtime monitor reads only default-branch code and allowlisted RETIO, MLIT, and e-Gov sources, rejects redirects, and opens a GitHub Issue when stable content windows drift. It never writes application content. A signed qualified-human attestation, verified against an owner-managed external trust registry, is the only path from a provisional assessment question to `published`.
 
-Confidentiality is an importer responsibility, not a UI one. When a source contains
-material that must not reach a deployed bundle, the importer de-identifies it and
-fails on any leak, so the generated artifact is already the publishable form. See
-[ADR-009](adr/ADR-009-ais-meeting-glossary.md).
+Confidentiality is a source and delivery boundary, not a UI concern. Restricted
+business material, personal data, and stable pseudonyms that remain re-identifiable
+must not enter runtime source or generated browser content. CI scans the public
+delivery tree and the emitted build for known restricted markers. See
+[ADR-024](adr/ADR-024-public-release-privacy-boundary.md).
 
 ## State and failure boundaries
 
+- Completed session persistence retains only aggregate results. Prompt text and
+  keystroke timelines stay in memory for the active session and are removed before
+  localStorage or archive export.
 - The session clock reducer is the source of truth for lifecycle and time transitions.
 - The typing-session snapshot is the source of truth for prompt, input, counters, combo, and feedback.
 - `performance.now()` is the monotonic active-session clock.

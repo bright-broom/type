@@ -24,6 +24,9 @@ export function TakkenSiteShell({ children }: { children: React.ReactNode }) {
       {children}
       <footer className="site-footer">
         <span>TYPELOOP / TAKKEN ASSESSMENT</span>
+        <Link className="footer-link" href="/privacy">
+          プライバシー
+        </Link>
         <span>LOCAL FIRST · ORIGINAL QUESTIONS</span>
       </footer>
     </div>

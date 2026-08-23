@@ -1,5 +1,12 @@
 # ADR-009: AIS meeting glossary ingestion with de-identification at import time
 
+## Status
+
+Superseded by [ADR-024](ADR-024-public-release-privacy-boundary.md) — 2026-08-22.
+The importer, runtime route, and generated artifact described below were removed.
+Stable pseudonyms and meeting context remain re-identifiable and are not suitable
+for unrestricted public delivery.
+
 ## Context
 
 The AIS weekly meeting glossary workbook is a normalised database of 154 terms

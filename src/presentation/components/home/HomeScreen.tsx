@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { CompletedSession } from "../../../application/session/session-types.ts";
+import type { CompletedSession, SessionTrainingSet } from "../../../application/session/session-types.ts";
 import type { TrainingSet } from "../../../domain/prompts/prompt-types.ts";
 import { PageShell } from "../layout/PageShell.tsx";
 import styles from "./HomeScreen.module.css";
@@ -12,7 +12,6 @@ type HomeScreenProps = {
   onStart: () => void;
   onShowPlaybook: () => void;
   onShowTakkenGlossary: () => void;
-  onShowAisGlossary: () => void;
   onShowHistory: () => void;
   aborted: boolean;
 };
@@ -25,16 +24,15 @@ const MODES: ReadonlyArray<{
   { id: "japanese", label: "日本語", detail: "基礎と日常語" },
   { id: "consulting", label: "コンサル", detail: "実務用語" },
   { id: "takken", label: "宅建", detail: "試験用語" },
-  { id: "ais", label: "会議", detail: "定例会議用語" },
   { id: "git", label: "Git", detail: "公式コマンド" },
 ];
 
-const MODE_LABELS: Record<TrainingSet, string> = {
+const MODE_LABELS: Record<SessionTrainingSet, string> = {
   japanese: "日本語",
   consulting: "コンサル用語",
   takken: "宅建用語",
-  ais: "会議用語",
   git: "Gitコマンド",
+  retired: "終了したモード",
 };
 
 export function HomeScreen({
@@ -45,7 +43,6 @@ export function HomeScreen({
   onStart,
   onShowPlaybook,
   onShowTakkenGlossary,
-  onShowAisGlossary,
   onShowHistory,
   aborted,
 }: HomeScreenProps) {
@@ -176,7 +173,7 @@ export function HomeScreen({
             <p>{nextFocus}</p>
           </div>
           <p className={styles.privacyNote}>
-            <span aria-hidden="true">●</span> アカウント不要。入力内容と記録はこのデバイスだけに保存されます。
+            <span aria-hidden="true">●</span> 集計は端末内だけ。入力内容は保存しません。
           </p>
         </aside>
 
@@ -214,17 +211,6 @@ export function HomeScreen({
             >
               <span>宅建用語集</span>
               <small>446語</small>
-              <i aria-hidden="true">→</i>
-            </button>
-            <button
-              className={styles.resourceItem}
-              data-focus-key="home-ais"
-              type="button"
-              onClick={onShowAisGlossary}
-              aria-label="週次定例会議 用語辞典を開く"
-            >
-              <span>会議用語辞典</span>
-              <small>154語</small>
               <i aria-hidden="true">→</i>
             </button>
           </div>

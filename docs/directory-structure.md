@@ -23,8 +23,8 @@
 │   ├── content/
 │   │   ├── training-set-catalog.ts  Binds each TrainingSet id to its dataset
 │   │   ├── generated/          Versioned JSON with scoped agent guidance
-│   │   ├── ais/                One directory per dataset: types, filters,
-│   │   ├── consulting/         prompt adapter, and dataset tests
+│   │   ├── consulting/         One directory per dataset: types, filters,
+│   │   │                      prompt adapter, and dataset tests
 │   │   ├── git/                Versioned official Git command source and prompts
 │   │   ├── japanese/
 │   │   └── takken/
@@ -62,7 +62,7 @@ Do not create a generic `shared`, `common`, `utils`, or `helpers` bucket. A modu
 - React component files: `PascalCase.tsx`.
 - Components that own a complete application work surface end in `Screen`, `App`, `Glossary`, `Playbook`, or `Launcher`; route wrappers end in `Route`. This lets repository policy discover every `PageShell` owner independently from its imports.
 - Other files under `src`, `app`, and `tests`: `kebab-case.ts`, `kebab-case.tsx`, or `kebab-case.mjs`.
-- Files under `scripts`: `snake_case`, named after the command that runs them, such as `import_ais_glossary.py` for `npm run import:ais`. Supporting policy or data modules keep the importer's prefix.
+- Files under `scripts`: `snake_case` for Python importers and `kebab-case.mjs` for Node policies and commands. Supporting policy or data modules keep the owning command's prefix.
 - Tests: `<subject>.test.<extension>` beside the subject when layer-local.
 - Ports: responsibility names such as `session-repository.ts`; implementations add their mechanism, such as `local-session-repository.ts`.
 - ADRs: `ADR-NNN-short-decision.md` with the next sequential number.

@@ -15,7 +15,6 @@ const ConsultingPlaybook = lazy(() =>
 const TakkenGlossary = lazy(() =>
   import("../takken/TakkenGlossary.tsx").then((module) => ({ default: module.TakkenGlossary })),
 );
-const AisGlossary = lazy(() => import("../ais/AisGlossary.tsx").then((module) => ({ default: module.AisGlossary })));
 
 type ReferenceOverlayProps = {
   overlay: Exclude<AppOverlay, "none">;
@@ -51,9 +50,7 @@ export function ReferenceOverlay({
   if (overlay === "history") {
     return <HistoryScreen sessions={sessions} onBack={onBack} onSave={onSave} />;
   }
-  return overlay === "ais" ? (
-    <AisGlossary onBack={onBack} onStart={() => onStart("ais")} />
-  ) : overlay === "takken" ? (
+  return overlay === "takken" ? (
     <TakkenGlossary onBack={onBack} onStart={() => onStart("takken")} />
   ) : (
     <ConsultingPlaybook onBack={onBack} onStart={() => onStart("consulting")} />

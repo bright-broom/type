@@ -76,12 +76,12 @@ test("the service worker is a same-origin, navigation-safe enhancement", async (
   assert.match(source, /request\.method !== "GET"/);
   assert.match(source, /url\.origin !== globalThis\.location\.origin/);
   assert.match(source, /request\.mode === "navigate"/);
-  assert.match(source, /ignoreSearch: true/);
+  assert.match(source, /const cacheKey = url\.pathname/);
   assert.deepEqual(applicationRoutes, [
     "/",
-    "/ais",
     "/consulting",
     "/history",
+    "/privacy",
     "/settings",
     "/takken",
     "/takken/glossary",
@@ -91,8 +91,65 @@ test("the service worker is a same-origin, navigation-safe enhancement", async (
   ]);
   assert.match(source, /application-routes\.json/);
   assert.match(source, /Required shell asset failed/);
-  assert.doesNotMatch(source, /skipWaiting/);
+  assert.match(source, /RESTRICTED_LEGACY_CACHES/);
   assert.doesNotMatch(source, /https?:\/\//);
+});
+
+test("navigation and asset query variants share canonical cache keys", async () => {
+  const source = await readFile(file("public/sw.js"), "utf8");
+  const listeners = new Map();
+  const writes = [];
+  const inventory = new Response(JSON.stringify(applicationRoutes), { status: 200 });
+  const context = {
+    URL,
+    Response,
+    Set,
+    console,
+    location: { origin: "https://typeloop.example" },
+    clients: { claim: async () => undefined },
+    caches: {
+      open: async () => ({
+        put: async (key) => writes.push(String(key)),
+        match: async (key) => (String(key) === "/application-routes.json" ? inventory.clone() : undefined),
+      }),
+      keys: async () => [],
+      delete: async () => true,
+    },
+    fetch: async () => new Response("ok", { status: 200 }),
+    addEventListener: (name, listener) => listeners.set(name, listener),
+  };
+  context.globalThis = context;
+  runInNewContext(source, context);
+
+  async function dispatch(request) {
+    let response;
+    const waits = [];
+    listeners.get("fetch")({
+      request,
+      respondWith: (promise) => (response = promise),
+      waitUntil: (promise) => waits.push(promise),
+    });
+    const resolved = await response;
+    await Promise.all(waits);
+    return resolved;
+  }
+
+  await dispatch({ method: "GET", mode: "navigate", url: "https://typeloop.example/settings?source=one" });
+  await dispatch({ method: "GET", mode: "navigate", url: "https://typeloop.example/settings?source=two" });
+  await dispatch({ method: "GET", mode: "navigate", url: "https://typeloop.example/unknown?source=three" });
+  await dispatch({ method: "GET", mode: "same-origin", url: "https://typeloop.example/theme-bootstrap.js?v=one" });
+  const retiredAsset = await dispatch({
+    method: "GET",
+    mode: "same-origin",
+    url: "https://typeloop.example/_next/static/retired.js",
+  });
+
+  assert.equal(writes.filter((key) => key === "/settings").length, 2);
+  assert.equal(writes.filter((key) => key === "/theme-bootstrap.js").length, 1);
+  assert.ok(!writes.some((key) => key.includes("?")));
+  assert.ok(!writes.includes("/unknown"));
+  assert.ok(!writes.includes("/_next/static/retired.js"));
+  assert.equal(retiredAsset.type, "error");
 });
 
 test("a partial shell fetch rejects service-worker installation", async () => {

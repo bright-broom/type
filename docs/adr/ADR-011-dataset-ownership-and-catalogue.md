@@ -2,10 +2,10 @@
 
 ## Context
 
-Four training sets now exist, and adding one touched more places than it should:
+At the time of this decision four training sets existed, and adding one touched more places than it should:
 
 - A dataset's code was split in two. `content/ais/` held its types and filters while
-  `content/prompts/ais-prompts.ts` held the adapter that turns it into
+  its prompt adapter held the code that turns it into
   `TypingPrompt`s. Neither directory described a whole dataset, and both had to be
   edited together.
 - `content/prompts/validate-prompts.ts` was a pure rule over domain types with no
@@ -31,7 +31,8 @@ declared the single module allowed to reach across dataset directories.
 
 **One directory per dataset.** `content/<dataset>/` owns that dataset's types,
 filters, prompt adapter, and tests. `content/prompts/` is gone; `japanese/` joins
-`ais/`, `takken/`, and `consulting/` as a peer.
+`takken/` and `consulting/` as a peer. The AIS dataset was later removed by ADR-024;
+the ownership rule remains unchanged.
 
 **Pure rules move to the domain.** `validate-prompts.ts` now lives in
 `domain/prompts/`, where its dependencies already pointed.
