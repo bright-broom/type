@@ -181,7 +181,16 @@ whether it is mechanically fixable. Pull-request and Autofix-dispatched failures
 receive a PR comment. `scripts/ci-triage-contract.mjs` fails closed on unexpected
 classifier exits and owns incident identity. A repository-scoped serial reconciler
 re-reads the latest `main` CI run before it opens, updates, or closes the one marked
-Production Health issue; stale workflow completions cannot mutate it.
+Production Health issue; stale workflow completions cannot mutate it. On exact-SHA
+CI success, `scripts/verify-production-release.mjs` waits for the matching successful
+GitHub Production deployment and checks the canonical application inventory, every
+recursively referenced same-origin shell asset, HTML shell, immutable full-SHA release
+header, the retired route (including its 404 body), restricted-content policy, all
+route security headers, and Service Worker cache boundary. An overall timeout stays
+below the job budget; a later successful Production deployment status provides the
+recovery signal. Its report contains only finding codes and public paths. The
+reconciler owns no Vercel mutation capability. Repository and script-level contract
+tests are both part of the coverage-mode CI discovery set.
 
 ### Autofix (`.github/workflows/autofix.yml`)
 

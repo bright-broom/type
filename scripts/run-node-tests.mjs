@@ -33,15 +33,24 @@ if (unsupportedTests.length > 0) {
 
 const sourceTests = sourceFiles.filter((path) => /\.(?:test|spec)\.ts$/.test(path));
 const repositoryTests = walk("tests").filter((path) => extname(path) === ".mjs" && path.endsWith(".test.mjs"));
+const scriptTests = walk("scripts").filter((path) => extname(path) === ".mjs" && path.endsWith(".test.mjs"));
 const integrationPattern = /\.integration\.(?:test|spec)\.ts$/;
 const unitTests = sourceTests.filter((path) => !integrationPattern.test(path));
-const integrationTests = [...sourceTests.filter((path) => integrationPattern.test(path)), ...repositoryTests];
+const integrationTests = [
+  ...sourceTests.filter((path) => integrationPattern.test(path)),
+  ...repositoryTests,
+  ...scriptTests,
+];
 if (unitTests.length === 0 || integrationTests.length === 0) {
   console.error("Test discovery requires at least one unit test and one integration/repository test.");
   process.exit(2);
 }
 const files =
-  mode === "unit" ? unitTests : mode === "integration" ? integrationTests : [...sourceTests, ...repositoryTests];
+  mode === "unit"
+    ? unitTests
+    : mode === "integration"
+      ? integrationTests
+      : [...sourceTests, ...repositoryTests, ...scriptTests];
 const args = ["--experimental-strip-types"];
 
 if (mode === "coverage") {

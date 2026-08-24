@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import nextConfig from "../next.config.ts";
+import nextConfig, { RELEASE_COMMIT, resolveReleaseCommit } from "../next.config.ts";
+import { EXPECTED_PRODUCTION_HEADERS } from "../scripts/production-release-contract.mjs";
 
 const configuredRoutes = await nextConfig.headers();
 const headers = Object.fromEntries(
@@ -24,6 +25,11 @@ test("production responses declare the complete security header boundary", async
   ]) {
     assert.ok(headers[required], `${required} is missing`);
   }
+  for (const [name, value] of Object.entries(EXPECTED_PRODUCTION_HEADERS)) {
+    assert.equal(headers[name], value, `${name} drifted from the production verifier`);
+  }
+  assert.equal(headers["x-typeloop-release"], RELEASE_COMMIT);
+  assert.match(RELEASE_COMMIT, /^(?:[0-9a-f]{40}|unavailable)$/);
 });
 
 test("the production CSP is same-origin and blocks dangerous embedding", () => {
@@ -49,4 +55,13 @@ test("the service worker script cannot be retained by an intermediary cache", ()
   assert.deepEqual(serviceWorkerRoute.headers, [
     { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
   ]);
+});
+
+test("release identity prefers Vercel, falls back to GitHub, and fails closed", () => {
+  const vercel = "a".repeat(40);
+  const github = "b".repeat(40);
+  assert.equal(resolveReleaseCommit(vercel, github), vercel);
+  assert.equal(resolveReleaseCommit(undefined, github), github);
+  assert.equal(resolveReleaseCommit("invalid", github), "unavailable");
+  assert.equal(resolveReleaseCommit(undefined, undefined), "unavailable");
 });

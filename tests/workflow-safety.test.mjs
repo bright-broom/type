@@ -74,14 +74,27 @@ test("Autofix isolates pull request execution from write capabilities", async ()
 test("main health is serial, latest-run owned, and marker deduplicated", async () => {
   const source = await workflow("ci-triage.yml");
   const production = jobBlock(source, "production-health");
+  assert.match(source, /deployment_status:/);
   assert.match(production, /group: production-health-\$\{\{ github\.repository \}\}/);
   assert.match(production, /cancel-in-progress: false/);
+  assert.match(production, /deployments: read/);
   assert.match(production, /ci-triage-contract\.mjs latest-run/);
   assert.equal(production.split("ci-triage-contract.mjs latest-run").length - 1, 2);
+  assert.equal(production.split("ci-triage-contract.mjs deployment-recovery").length - 1, 2);
   assert.match(production, /CURRENT_ATTEMPT: \$\{\{ github\.event\.workflow_run\.run_attempt \}\}/);
   assert.match(production, /CURRENT_CONCLUSION: \$\{\{ github\.event\.workflow_run\.conclusion \}\}/);
   assert.match(production, /--json databaseId,headSha,attempt,status,conclusion/);
   assert.match(production, /steps\.owner\.outputs\.owns == 'true'/);
+  assert.match(production, /verify-production-release\.mjs/);
+  assert.match(
+    production,
+    /EXPECTED_SHA: \$\{\{ github\.event\.workflow_run\.head_sha \|\| github\.event\.deployment\.sha \}\}/,
+  );
+  assert.match(production, /PRODUCTION_ORIGIN: https:\/\/type-tau\.vercel\.app/);
+  assert.match(production, /RELEASE_HEALTHY: \$\{\{ steps\.release\.outputs\.healthy \}\}/);
+  assert.match(production, /ci-triage-contract\.mjs release-health/);
+  assert.match(production, /github\.event\.deployment\.environment == 'Production'/);
+  assert.match(production, /cat production-release\.md/);
   assert.match(production, /ci-triage-contract\.mjs production-issue/);
   assert.doesNotMatch(production, /select\(\.title/);
 });
@@ -94,4 +107,10 @@ test("PR triage includes workflow-dispatched autofix validation", async () => {
   assert.match(pullRequest, /ci-triage-contract\.mjs pull-requests/);
   assert.match(pullRequest, /while read -r number/);
   assert.match(pullRequest, /ci-triage-contract\.mjs classifier/);
+});
+
+test("coverage-mode CI discovers trusted script contract tests", async () => {
+  const runner = await readFile(resolve(root, "scripts/run-node-tests.mjs"), "utf8");
+  assert.match(runner, /const scriptTests = walk\("scripts"\)/);
+  assert.match(runner, /\[\.\.\.sourceTests, \.\.\.repositoryTests, \.\.\.scriptTests\]/);
 });

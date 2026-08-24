@@ -20,6 +20,12 @@ export function latestRunOwnsHealthMutation(currentRunId, currentSha, currentAtt
   );
 }
 
+export function deploymentRecoveryOwnsHealthMutation(deploymentSha, latestRun) {
+  return (
+    latestRun?.headSha === deploymentSha && latestRun?.conclusion === "success" && latestRun?.status === "completed"
+  );
+}
+
 export function openPullRequestsForCommit(pulls) {
   return [
     ...new Set(
@@ -33,6 +39,11 @@ export function productionHealthIssue(issues) {
     ?.number;
 }
 
+export function releaseHealthIsHealthy(ciConclusion, productionHealthy) {
+  if (ciConclusion !== "success") return false;
+  return productionHealthy === "true";
+}
+
 function readStdinJson() {
   return JSON.parse(readFileSync(0, "utf8"));
 }
@@ -42,8 +53,12 @@ function runCli([command, ...args]) {
   if (command === "latest-run") {
     return String(latestRunOwnsHealthMutation(args[0], args[1], args[2], args[3], JSON.parse(args[4])));
   }
+  if (command === "deployment-recovery") {
+    return String(deploymentRecoveryOwnsHealthMutation(args[0], JSON.parse(args[1])));
+  }
   if (command === "pull-requests") return openPullRequestsForCommit(readStdinJson()).join("\n");
   if (command === "production-issue") return String(productionHealthIssue(readStdinJson()) ?? "");
+  if (command === "release-health") return String(releaseHealthIsHealthy(args[0], args[1]));
   if (command === "marker") return PRODUCTION_HEALTH_MARKER;
   throw new Error(`Unknown CI triage contract command: ${command ?? ""}`);
 }
