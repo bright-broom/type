@@ -5,7 +5,7 @@ test("Git mode starts a directly typable command session", async ({ page }) => {
   const gitMode = page.getByRole("radio", { name: /Git/ });
   await page.locator("label[data-mode-option]").filter({ hasText: "Git" }).click();
   await expect(gitMode).toBeChecked();
-  await page.getByRole("button", { name: /60秒トレーニングを始める/ }).click();
+  await page.getByRole("button", { name: /60秒練習する/ }).click();
 
   await expect(page.locator(".prompt-reading")).toHaveText("GIT COMMAND");
   const command = (await page.getByRole("heading", { level: 1 }).textContent()) ?? "";

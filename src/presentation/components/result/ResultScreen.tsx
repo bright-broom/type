@@ -44,8 +44,8 @@ export function ResultScreen({ result, previousBest, onRetry, onHome, onHistory 
             <strong>{result.metrics.wpm}</strong>
             {previousBest && (
               <small className={delta >= 0 ? "positive" : ""}>
-                {delta >= 0 ? "+" : ""}
-                {delta.toFixed(1)} vs BEST
+                最高スコア記録時比 {delta >= 0 ? "+" : ""}
+                {delta.toFixed(1)} WPM
               </small>
             )}
           </div>

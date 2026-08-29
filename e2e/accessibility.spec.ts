@@ -16,7 +16,7 @@ const GATED_IMPACTS = new Set(["critical", "serious"]);
 type AccessibilityScreen = { name: string; open: (page: Page) => Promise<void> };
 
 async function finishSession(page: Page): Promise<void> {
-  await page.getByRole("button", { name: /60秒トレーニング/ }).click();
+  await page.getByRole("button", { name: /60秒練習する/ }).click();
   await page.clock.fastForward(4_000);
   await page.keyboard.type("a");
   await page.clock.fastForward(61_000);
@@ -56,7 +56,7 @@ const screens: ReadonlyArray<AccessibilityScreen> = [
   {
     name: "game",
     open: async (page) => {
-      await page.getByRole("button", { name: /60秒トレーニング/ }).click();
+      await page.getByRole("button", { name: /60秒練習する/ }).click();
       await page.clock.fastForward(4_000);
       await page.locator(".roman-line").waitFor();
     },
@@ -173,7 +173,7 @@ test("the typing field keeps an accessible name while a session runs", async ({ 
   const page = await context.newPage();
   await page.clock.install();
   await page.goto("/");
-  await page.getByRole("button", { name: /60秒トレーニング/ }).click();
+  await page.getByRole("button", { name: /60秒練習する/ }).click();
   await page.clock.fastForward(4_000);
   await expect(page.getByRole("textbox", { name: "タイピング入力" })).toBeVisible();
   await expect(page.getByRole("progressbar", { name: "残り時間" })).toHaveAttribute("aria-valuetext", /残り\d+秒/);
