@@ -61,6 +61,7 @@ export function useTypingSession(dependencies?: TypingSessionDependencies) {
   const typingSessionRef = useRef(typingSession);
   const [result, setResult] = useState<Session.CompletedSession | null>(null);
   const [history, setHistory] = useState<Session.CompletedSession[]>([]);
+  const [retainedHistory, setRetainedHistory] = useState<Session.CompletedSession[]>([]);
   const [bests, setBests] = useState<Record<TrainingSet, Session.CompletedSession | null>>(() =>
     byTrainingSet(() => null),
   );
@@ -79,11 +80,13 @@ export function useTypingSession(dependencies?: TypingSessionDependencies) {
   useEffect(() => {
     Promise.all([
       runtime.repository.getRecent(RECENT_SESSIONS_SHOWN),
+      runtime.repository.getAll(),
       Promise.all(TRAINING_SETS.map(async (set) => [set, await runtime.repository.getBest(set)] as const)),
       runtime.repository.getSettings(),
     ])
-      .then(([recent, bestPerSet, storedSettings]) => {
+      .then(([recent, retained, bestPerSet, storedSettings]) => {
         setHistory(recent);
+        setRetainedHistory(retained);
         setBests(Object.fromEntries(bestPerSet) as Record<TrainingSet, Session.CompletedSession | null>);
         setSettings(storedSettings);
         runtime.audio.setEnabled(storedSettings.soundEnabled);
@@ -158,7 +161,11 @@ export function useTypingSession(dependencies?: TypingSessionDependencies) {
         [typingSession.trainingSet]: !previous || session.score > previous.score ? session : previous,
       };
     });
-    void runtime.repository.save(session);
+    void runtime.repository
+      .save(session)
+      .then(() => runtime.repository.getAll())
+      .then(setRetainedHistory)
+      .catch(() => undefined);
   }, [clock.status, clock.durationMs, runtime, typingSession]);
 
   useEffect(() => {
@@ -233,6 +240,7 @@ export function useTypingSession(dependencies?: TypingSessionDependencies) {
     liveMetrics,
     result,
     history,
+    retainedHistory,
     best: bests[typingSession.trainingSet],
     bests,
     settings,

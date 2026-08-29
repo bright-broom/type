@@ -14,7 +14,7 @@ test("critical flow stays operable from compact portrait through landscape and d
     const failures = observePageFailures(page);
     await page.clock.install();
     await page.goto("/");
-    await page.getByRole("button", { name: /60秒トレーニングを始める/ }).click();
+    await page.getByRole("button", { name: /60秒練習する/ }).click();
     await page.clock.fastForward(4_000);
 
     const inputGuide = page.locator(".roman-line");
@@ -76,6 +76,18 @@ test("critical flow stays operable from compact portrait through landscape and d
   }
 });
 
+test("result comparison names the score-selected baseline", async ({ page }) => {
+  await page.clock.install();
+  await page.goto("/");
+  await page.getByRole("button", { name: /60秒練習する/ }).click();
+  await page.clock.fastForward(65_000);
+  await page.getByRole("button", { name: /同じモードでもう1回/ }).click();
+  await page.clock.fastForward(65_000);
+
+  await expect(page.getByText(/最高スコア記録時比/)).toBeVisible();
+  await expect(page.getByText(/vs BEST/)).toHaveCount(0);
+});
+
 test("touch controls meet the minimum tap target on every phone size", async ({ browser }) => {
   // Height alone was constrained before, so icon-only controls stayed under 44px wide.
   for (const viewport of [TYPING_VIEWPORTS[0], TYPING_VIEWPORTS[1], TYPING_VIEWPORTS[2]]) {
@@ -105,7 +117,7 @@ test("a phone opens its keyboard from the start tap and keeps the field focused"
   await page.goto("/");
 
   const focusedLabel = () => page.evaluate(() => document.activeElement?.getAttribute("aria-label") ?? null);
-  await page.getByRole("button", { name: /60秒トレーニング/ }).tap();
+  await page.getByRole("button", { name: /60秒練習する/ }).tap();
   // Focus must land during the countdown: a software keyboard only opens while the
   // starting gesture is still being handled.
   expect(await focusedLabel()).toBe("タイピング入力");
@@ -132,7 +144,7 @@ test("kana from a keyboard left in Japanese mode is explained, not scored as a m
   const failures = observePageFailures(page);
   await page.clock.install();
   await page.goto("/");
-  await page.getByRole("button", { name: /60秒トレーニング/ }).tap();
+  await page.getByRole("button", { name: /60秒練習する/ }).tap();
   await page.clock.fastForward(4_000);
 
   const missCount = page.locator(".live-stats > div").filter({ hasText: "ミス" }).locator("strong");
@@ -155,7 +167,7 @@ test("the prompt and the typing field stay visible in the space a keyboard leave
   const failures = observePageFailures(page);
   await page.clock.install();
   await page.goto("/");
-  await page.getByRole("button", { name: /60秒トレーニング/ }).tap();
+  await page.getByRole("button", { name: /60秒練習する/ }).tap();
   await page.clock.fastForward(4_000);
 
   await expect(page.locator(".prompt-stage h1")).toBeInViewport();
@@ -172,7 +184,7 @@ test("touch input processes multi-character IME events sequentially", async ({ b
   const failures = observePageFailures(page);
   await page.clock.install();
   await page.goto("/");
-  await page.getByRole("button", { name: /60秒トレーニング/ }).tap();
+  await page.getByRole("button", { name: /60秒練習する/ }).tap();
   await page.clock.fastForward(4_000);
 
   const inputGuide = page.locator(".roman-line");

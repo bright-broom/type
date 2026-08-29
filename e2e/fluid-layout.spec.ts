@@ -13,7 +13,7 @@ const VIEWPORTS = [
 
 async function finishSession(page: Page): Promise<void> {
   await page.goto("/");
-  await page.getByRole("button", { name: /60秒トレーニング/ }).click();
+  await page.getByRole("button", { name: /60秒練習する/ }).click();
   await page.clock.fastForward(4_000);
   await page.keyboard.type("a");
   await page.clock.fastForward(61_000);
@@ -66,7 +66,7 @@ const SCREENS: ReadonlyArray<LayoutScreen> = [
     width: "game",
     open: async (page) => {
       await page.goto("/");
-      await page.getByRole("button", { name: /60秒トレーニング/ }).click();
+      await page.getByRole("button", { name: /60秒練習する/ }).click();
       await page.clock.fastForward(4_000);
       await page.locator(".roman-line").waitFor();
     },
@@ -76,7 +76,7 @@ const SCREENS: ReadonlyArray<LayoutScreen> = [
     width: "game",
     open: async (page) => {
       await page.goto("/");
-      await page.getByRole("button", { name: /60秒トレーニング/ }).click();
+      await page.getByRole("button", { name: /60秒練習する/ }).click();
       await page.locator(".countdown-shell").waitFor();
     },
   },

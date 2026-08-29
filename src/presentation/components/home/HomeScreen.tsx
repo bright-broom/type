@@ -7,6 +7,7 @@ import styles from "./HomeScreen.module.css";
 type HomeScreenProps = {
   best: CompletedSession | null;
   history: ReadonlyArray<CompletedSession>;
+  retainedHistory: ReadonlyArray<CompletedSession>;
   selectedMode: TrainingSet;
   onSelectMode: (mode: TrainingSet) => void;
   onStart: () => void;
@@ -38,6 +39,7 @@ const MODE_LABELS: Record<SessionTrainingSet, string> = {
 export function HomeScreen({
   best,
   history,
+  retainedHistory,
   selectedMode,
   onSelectMode,
   onStart,
@@ -46,7 +48,14 @@ export function HomeScreen({
   onShowHistory,
   aborted,
 }: HomeScreenProps) {
-  const latest = history[0];
+  const selectedModeLabel = MODE_LABELS[selectedMode];
+  const progressHistory = [...history, ...retainedHistory].filter(
+    (session, index, sessions) => sessions.findIndex((candidate) => candidate.id === session.id) === index,
+  );
+  const selectedModeHistory = progressHistory.filter(
+    (completedSession) => (completedSession.trainingSet ?? "japanese") === selectedMode,
+  );
+  const latest = selectedModeHistory[0];
 
   const nextFocus = latest
     ? latest.metrics.accuracy >= 97
@@ -105,11 +114,11 @@ export function HomeScreen({
           </fieldset>
           <div className={styles.startRow}>
             <button className={`primary-button ${styles.startButton}`} type="button" onClick={onStart}>
-              <span>60秒トレーニングを始める</span>
+              <span>{selectedModeLabel}を60秒練習する</span>
               <kbd>Enter</kbd>
             </button>
             <p>
-              {MODE_LABELS[selectedMode]}を選択中 <i aria-hidden="true" /> 記録は端末内に保存
+              {selectedModeLabel}を選択中 <i aria-hidden="true" /> 記録は端末内に保存
             </p>
           </div>
         </section>
@@ -120,7 +129,7 @@ export function HomeScreen({
           <header className={styles.progressHeader}>
             <div>
               <span className={styles.progressKicker}>YOUR PROGRESS</span>
-              <h2>{latest ? "前回の60秒" : "最初の60秒"}</h2>
+              <h2 aria-live="polite">{latest ? `${selectedModeLabel}の前回記録` : `${selectedModeLabel}を始めよう`}</h2>
             </div>
             {history.length > 0 ? (
               <button data-focus-key="home-history" type="button" onClick={onShowHistory}>
@@ -134,7 +143,7 @@ export function HomeScreen({
               <div className={styles.progressPrimary}>
                 <span>LAST WPM</span>
                 <strong>{latest.metrics.wpm}</strong>
-                <small>{MODE_LABELS[latest.trainingSet ?? "japanese"]}</small>
+                <small>前回の記録</small>
               </div>
               <div className={styles.progressMetrics}>
                 <div>
@@ -142,12 +151,12 @@ export function HomeScreen({
                   <strong>{latest.metrics.accuracy}%</strong>
                 </div>
                 <div>
-                  <span>日本語 BEST</span>
-                  <strong>{best?.metrics.wpm ?? "—"}</strong>
+                  <span>ベストスコア</span>
+                  <strong>{best?.score.toLocaleString("ja-JP") ?? "—"}</strong>
                 </div>
                 <div>
                   <span>最近の記録</span>
-                  <strong>{history.length}</strong>
+                  <strong>{selectedModeHistory.length}</strong>
                 </div>
               </div>
             </>

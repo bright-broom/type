@@ -150,7 +150,7 @@ test("the installed static shell remains interactive from root and deep URLs off
     await expect(page.locator("html")).toHaveCSS("color-scheme", "light");
     await expect.poll(() => hasOnlyThemeColor(page, "#f5f3ed")).toBe(true);
     await expect(page.getByRole("heading", { name: /60秒で、.*昨日より軽く。/ })).toBeVisible();
-    await page.getByRole("button", { name: /60秒トレーニングを始める/ }).click();
+    await page.getByRole("button", { name: /60秒練習する/ }).click();
     await expect(page.locator(".countdown-shell")).toBeVisible();
 
     await page.goto("/takken/glossary?concept=takken-term-001", { waitUntil: "domcontentloaded" });

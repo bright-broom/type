@@ -12,7 +12,7 @@ const SCREENSHOT_OPTIONS = {
 async function finishTypingSession(page: Page) {
   await page.clock.install({ time: new Date("2026-08-21T12:00:00+09:00") });
   await page.goto("/");
-  await page.getByRole("button", { name: /60秒トレーニングを始める/ }).click();
+  await page.getByRole("button", { name: /60秒練習する/ }).click();
   await page.clock.fastForward(65_000);
   await expect(page.getByRole("heading", { name: "おつかれさまでした。" })).toBeVisible();
 }

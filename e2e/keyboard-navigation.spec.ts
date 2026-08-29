@@ -32,7 +32,7 @@ test("focus stays natural on first load and returns to the result surface", asyn
   await page.clock.install();
   await page.goto("/");
   await expect(page.locator("body")).toBeFocused();
-  await page.getByRole("button", { name: /60秒トレーニングを始める/ }).click();
+  await page.getByRole("button", { name: /60秒練習する/ }).click();
   await page.clock.fastForward(65_000);
   await expect(page.locator("[data-result-root]")).toBeFocused();
 

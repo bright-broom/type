@@ -203,8 +203,9 @@ export function TypingApp({ initialOverlay = "none" }: { initialOverlay?: AppOve
         />
       ) : (
         <HomeScreen
-          best={session.bests.japanese}
+          best={session.bests[selectedTrainingSet]}
           history={session.history}
+          retainedHistory={session.retainedHistory}
           selectedMode={selectedTrainingSet}
           onSelectMode={setSelectedTrainingSet}
           onStart={() => start(selectedTrainingSet)}
