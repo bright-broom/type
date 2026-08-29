@@ -16,14 +16,14 @@ name, Vercel project, or production-domain change.
 
 ## Public distribution gates
 
-| Boundary                      | Required state                                                  | Observed state                                    | Next action                                                                                                 |
-| ----------------------------- | --------------------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Restricted runtime content    | No internal meeting data or re-identifiable stable pseudonyms   | Removed on the public-security feature branch     | Merge by PR, deploy exact `main` SHA, then verify retired route and production chunks.                      |
-| Typing-data minimization      | No prompt text or ordered keystroke timeline in persistence     | Enforced by versioned migration and archive tests | Confirm full CI and independent review.                                                                     |
-| Vulnerability reporting       | Public policy plus a repository-independent private channel     | **Not satisfied**                                 | Owner provisions the channel and records an unauthenticated reachability check before general distribution. |
-| Repository-history privacy    | No sensitive blobs or unapproved personal author metadata       | **Not satisfied**                                 | Follow `docs/public-release-security-review.md`; destructive history treatment requires explicit approval.  |
-| Native GitHub security        | CodeQL, secret scanning, push protection, Dependabot            | Dependabot enabled; other native scanners absent  | Enable and record after plan/visibility permits; do not infer from repository files.                        |
-| Content redistribution rights | Every generated dataset and asset approved for public republish | **Not yet recorded**                              | Owner records provenance/license acceptance before changing repository visibility.                          |
+| Boundary                      | Required state                                                  | Observed state                                                                                                                                | Next action                                                                                                  |
+| ----------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Restricted runtime content    | No internal meeting data or re-identifiable stable pseudonyms   | Verified by Codex in Production at `0fb2e63` on 2026-08-24; [main CI evidence](https://github.com/bright-broom/type/actions/runs/32630361708) | The post-merge verifier repeats exact deployment, alias SHA, route, asset, retired-route, and policy checks. |
+| Typing-data minimization      | No prompt text or ordered keystroke timeline in persistence     | Enforced by versioned migration and archive tests                                                                                             | Confirm full CI and independent review.                                                                      |
+| Vulnerability reporting       | Public policy plus a repository-independent private channel     | **Not satisfied**                                                                                                                             | Owner provisions the channel and records an unauthenticated reachability check before general distribution.  |
+| Repository-history privacy    | No sensitive blobs or unapproved personal author metadata       | **Not satisfied**                                                                                                                             | Follow `docs/public-release-security-review.md`; destructive history treatment requires explicit approval.   |
+| Native GitHub security        | CodeQL, secret scanning, push protection, Dependabot            | Dependabot enabled; other native scanners absent                                                                                              | Enable and record after plan/visibility permits; do not infer from repository files.                         |
+| Content redistribution rights | Every generated dataset and asset approved for public republish | **Not yet recorded**                                                                                                                          | Owner records provenance/license acceptance before changing repository visibility.                           |
 
 ## Checks to select in Vercel
 
@@ -39,3 +39,19 @@ Vercel and this checklist in the same release operation:
 Deployment Checks are not considered active until the Vercel production deployment
 shows each check as required and a new `main` deployment remains staged while one is
 pending. Record the verification date and owner here; do not infer it from a green PR.
+
+## Post-merge verification
+
+After exact-SHA `main` CI succeeds, the trusted CI reconciler runs the read-only
+production verifier and folds failures into the single Production Health issue. It
+does not prove that Deployment Checks delayed alias assignment and does not own any
+promotion or rollback capability. The canonical response's `X-TypeLoop-Release` must
+equal the full expected SHA; a successful delayed Production deployment triggers a
+recovery check. For an owner-operated check, run:
+
+```sh
+npm run verify:production -- \
+  --repository bright-broom/type \
+  --origin https://type-tau.vercel.app \
+  --expected-sha <full-main-sha>
+```

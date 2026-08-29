@@ -24,12 +24,23 @@ capabilities:
    setting and cannot be claimed active from repository code alone.
 3. A default-branch `workflow_run` reconciler serializes all Production Health
    mutations. It re-reads the latest `main` CI run immediately before mutation;
-   stale events cannot open, update, or close the incident.
-4. Autofix executes pull-request code only with a read-only token and no persisted
+   stale events cannot open, update, or close the incident. After a successful
+   exact-SHA CI run, the same read-only path waits for the matching successful
+   GitHub Production deployment. The build emits the full commit in an immutable
+   `X-TypeLoop-Release` response header so the canonical alias is bound to that SHA.
+   The verifier traverses the canonical route inventory and recursively referenced
+   shell assets, and verifies route shells, the retired route, restricted-content
+   policy, and the complete browser security-header contract on every route response. It
+   reports only codes and paths, never response bodies or matched confidential values.
+4. Production verification can open or close the single health incident but cannot
+   promote, alias, roll back, or remove a deployment. Vercel Deployment Checks remain
+   the separate owner-controlled pre-assignment gate; post-merge verification does
+   not replace them.
+5. Autofix executes pull-request code only with a read-only token and no persisted
    Git credential. A separate job applies a patch without executing branch code,
    restricts the patch to files already changed by the PR, and pushes it. A third
    job dispatches CI for the resulting exact SHA.
-5. Rollback and forced promotion always require a human. Automation may report an
+6. Rollback and forced promotion always require a human. Automation may report an
    incident but never changes production traffic in response to a classifier.
 
 ## Alternatives
@@ -49,7 +60,10 @@ capabilities:
   or make the repository public before PR requirements can be enforced server-side.
 - Vercel Deployment Checks must be verified in project settings after CI job names
   change. Repository tests protect those names from accidental drift.
-- The Production Health issue represents current `main` health, not a permanent
-  incident archive; GitHub Actions retains the per-run evidence.
+- The Production Health issue represents current `main` CI and canonical Production
+  health, not a permanent incident archive; GitHub Actions retains the per-run evidence.
+- Verification has an overall budget below the workflow timeout. A later successful
+  `Production` deployment-status event rechecks the current green `main` SHA and can
+  close a delay-induced incident without waiting for another commit.
 - Autofix has more jobs and one short-lived artifact, but no untrusted command holds
   write, Actions-dispatch, or PR-comment capability.

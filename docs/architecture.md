@@ -144,10 +144,15 @@ feature branch produces CI evidence and a Vercel Preview; a human performs the
 merge. Vercel Deployment Checks **must be configured and owner-verified** before
 the exact `main` SHA validation can be treated as a production-domain prerequisite;
 repository code alone does not provide that guarantee. CI failure reconciliation is
-serialized and latest-run/attempt owned, while production promotion and rollback
-remain human-only. Autofix separates untrusted pull-request execution from Git,
-Actions, and PR write capabilities. See [ADR-019](adr/ADR-019-release-safety.md) and
-the [release checklist](release-checklist.md).
+serialized and latest-run/attempt owned. A successful exact-SHA `main` run then
+performs a read-only check of the matching GitHub Production deployment, canonical
+alias SHA header, route inventory, route shells, recursively referenced same-origin
+assets, retired routes, confidentiality policy, and complete browser headers before
+reconciling the same health incident. A later successful Production deployment event
+rechecks the current green `main` SHA so a delayed release can recover without a new
+commit. Production promotion and rollback remain human-only. Autofix separates untrusted pull-request
+execution from Git, Actions, and PR write capabilities. See
+[ADR-019](adr/ADR-019-release-safety.md) and the [release checklist](release-checklist.md).
 
 ## Extension rules
 

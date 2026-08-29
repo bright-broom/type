@@ -4,6 +4,7 @@ on:
   workflow_run:
     workflows: [CI]
     types: [completed]
+  deployment_status:
 
 permissions:
   contents: read
@@ -77,8 +78,12 @@ jobs:
   production-health:
     name: Reconcile production health
     if: >-
-      github.event.workflow_run.event == 'push' &&
-      github.event.workflow_run.head_branch == github.event.repository.default_branch
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == github.event.repository.default_branch) ||
+      (github.event_name == 'deployment_status' &&
+       github.event.deployment.environment == 'Production' &&
+       github.event.deployment_status.state == 'success')
     concurrency:
       group: production-health-${{ github.repository }}-${{ github.event.repository.default_branch }}
       cancel-in-progress: false
@@ -87,6 +92,7 @@ jobs:
     permissions:
       actions: read
       contents: read
+      deployments: read
       issues: write
     steps:
       - name: Checkout the trusted health reconciler
@@ -101,8 +107,9 @@ jobs:
       - name: Ignore stale workflow completion events
         id: owner
         env:
+          EVENT_NAME: ${{ github.event_name }}
           CURRENT_RUN_ID: ${{ github.event.workflow_run.id }}
-          CURRENT_SHA: ${{ github.event.workflow_run.head_sha }}
+          CURRENT_SHA: ${{ github.event.workflow_run.head_sha || github.event.deployment.sha }}
           CURRENT_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
           CURRENT_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
@@ -111,11 +118,41 @@ jobs:
           latest=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml \
             --branch "$DEFAULT_BRANCH" --event push --limit 1 \
             --json databaseId,headSha,attempt,status,conclusion --jq '.[0]')
-          owns=$(node scripts/ci-triage-contract.mjs latest-run \
-            "$CURRENT_RUN_ID" "$CURRENT_SHA" "$CURRENT_ATTEMPT" "$CURRENT_CONCLUSION" "$latest")
+          if [ "$EVENT_NAME" = workflow_run ]; then
+            owns=$(node scripts/ci-triage-contract.mjs latest-run \
+              "$CURRENT_RUN_ID" "$CURRENT_SHA" "$CURRENT_ATTEMPT" "$CURRENT_CONCLUSION" "$latest")
+          else
+            owns=$(node scripts/ci-triage-contract.mjs deployment-recovery "$CURRENT_SHA" "$latest")
+          fi
           echo "owns=$owns" >> "$GITHUB_OUTPUT"
+      - name: Verify the exact Production release
+        id: release
+        if: >-
+          steps.owner.outputs.owns == 'true' &&
+          (github.event_name == 'deployment_status' || github.event.workflow_run.conclusion == 'success')
+        env:
+          EXPECTED_SHA: ${{ github.event.workflow_run.head_sha || github.event.deployment.sha }}
+          GH_TOKEN: ${{ github.token }}
+          PRODUCTION_ORIGIN: https://type-tau.vercel.app
+        run: |
+          set +e
+          node scripts/verify-production-release.mjs \
+            --repository "$GITHUB_REPOSITORY" \
+            --origin "$PRODUCTION_ORIGIN" \
+            --expected-sha "$EXPECTED_SHA" \
+            --output production-release.md
+          status=$?
+          set -e
+          if [ "$status" -eq 0 ]; then
+            echo "healthy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "healthy=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Classify the latest failure
-        if: steps.owner.outputs.owns == 'true' && github.event.workflow_run.conclusion != 'success'
+        if: >-
+          steps.owner.outputs.owns == 'true' &&
+          github.event_name == 'workflow_run' &&
+          github.event.workflow_run.conclusion != 'success'
         env:
           CURRENT_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
           GH_TOKEN: ${{ github.token }}
@@ -131,42 +168,54 @@ jobs:
       - name: Reconcile the single production health issue
         if: steps.owner.outputs.owns == 'true'
         env:
-          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion || 'success' }}
           CURRENT_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
           CURRENT_RUN_ID: ${{ github.event.workflow_run.id }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          EVENT_NAME: ${{ github.event_name }}
           GH_TOKEN: ${{ github.token }}
-          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha || github.event.deployment.sha }}
+          RELEASE_HEALTHY: ${{ steps.release.outputs.healthy }}
+          RUN_URL: ${{ github.event.workflow_run.html_url || github.event.deployment_status.target_url }}
         run: |
           latest=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml \
             --branch "$DEFAULT_BRANCH" --event push --limit 1 \
             --json databaseId,headSha,attempt,status,conclusion --jq '.[0]')
-          owns=$(node scripts/ci-triage-contract.mjs latest-run \
-            "$CURRENT_RUN_ID" "$HEAD_SHA" "$CURRENT_ATTEMPT" "$CONCLUSION" "$latest")
+          if [ "$EVENT_NAME" = workflow_run ]; then
+            owns=$(node scripts/ci-triage-contract.mjs latest-run \
+              "$CURRENT_RUN_ID" "$HEAD_SHA" "$CURRENT_ATTEMPT" "$CONCLUSION" "$latest")
+          else
+            owns=$(node scripts/ci-triage-contract.mjs deployment-recovery "$HEAD_SHA" "$latest")
+          fi
           if [ "$owns" != true ]; then
             echo "A newer main CI run owns production health reconciliation."
             exit 0
           fi
           number=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
             --json number,body | node scripts/ci-triage-contract.mjs production-issue)
-          if [ "$CONCLUSION" = success ]; then
+          release_healthy=$(node scripts/ci-triage-contract.mjs release-health \
+            "$CONCLUSION" "$RELEASE_HEALTHY")
+          if [ "$release_healthy" = true ]; then
             if [ -n "$number" ]; then
               gh issue close "$number" --repo "$GITHUB_REPOSITORY" \
-                --comment "main の品質ゲートが復旧しました: $RUN_URL"
+                --comment "main CI と Production release が復旧しました: $RUN_URL"
             fi
             exit 0
           fi
           {
             node scripts/ci-triage-contract.mjs marker
-            echo '## main の品質ゲートが失敗しています'
+            echo '## main release の健全性を確認できません'
             echo
             echo "対象コミット: \`$HEAD_SHA\`"
             echo "失敗した実行: $RUN_URL"
             echo
-            cat triage.md
+            if [ "$CONCLUSION" = success ]; then
+              cat production-release.md
+            else
+              cat triage.md
+            fi
           } > issue.md
-          title='[Production Health] main CI is failing'
+          title='[Production Health] main release is unhealthy'
           if [ -n "$number" ]; then
             gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --title "$title" --body-file issue.md
           else

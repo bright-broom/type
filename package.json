@@ -36,6 +36,7 @@
     "check:tokens": "node scripts/check-design-tokens.mjs",
     "check:bundle": "node scripts/check-bundle-budget.mjs",
     "check:static": "node scripts/check-static-routes.mjs",
+    "verify:production": "node scripts/verify-production-release.mjs",
     "check:security": "npm run check:secrets && npm run audit:dependencies",
     "audit:dependencies": "npm audit --audit-level=high",
     "check:quick": "npm run format:check && npm run check:generated && npm run check:content && npm run check:privacy && npm run check:tokens && npm run lint && npm run typecheck && npm run test",

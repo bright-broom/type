@@ -3,9 +3,11 @@ import test from "node:test";
 import {
   PRODUCTION_HEALTH_MARKER,
   classifierExitIsBlocking,
+  deploymentRecoveryOwnsHealthMutation,
   latestRunOwnsHealthMutation,
   openPullRequestsForCommit,
   productionHealthIssue,
+  releaseHealthIsHealthy,
 } from "./ci-triage-contract.mjs";
 
 test("classifier exit statuses fail closed", () => {
@@ -35,6 +37,14 @@ test("only the latest completed main run may mutate health", () => {
   );
 });
 
+test("a successful Production deployment may recover only the current green main SHA", () => {
+  const latest = { headSha: "sha-b", status: "completed", conclusion: "success" };
+  assert.equal(deploymentRecoveryOwnsHealthMutation("sha-b", latest), true);
+  assert.equal(deploymentRecoveryOwnsHealthMutation("sha-a", latest), false);
+  assert.equal(deploymentRecoveryOwnsHealthMutation("sha-b", { ...latest, conclusion: "failure" }), false);
+  assert.equal(deploymentRecoveryOwnsHealthMutation("sha-b", { ...latest, status: "in_progress" }), false);
+});
+
 test("workflow-dispatched validation resolves every open pull request", () => {
   assert.deepEqual(
     openPullRequestsForCommit([
@@ -57,4 +67,11 @@ test("production incident identity is the durable marker, not its title", () => 
     8,
   );
   assert.equal(productionHealthIssue([]), undefined);
+});
+
+test("release health requires both main CI and the exact production verification", () => {
+  assert.equal(releaseHealthIsHealthy("success", "true"), true);
+  assert.equal(releaseHealthIsHealthy("success", "false"), false);
+  assert.equal(releaseHealthIsHealthy("success", ""), false);
+  assert.equal(releaseHealthIsHealthy("failure", "true"), false);
 });

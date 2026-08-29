@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const isDevelopment = process.env.NODE_ENV === "development";
+export function resolveReleaseCommit(vercelSha: string | undefined, githubSha: string | undefined) {
+  const candidate = vercelSha ?? githubSha ?? "";
+  return /^[0-9a-f]{40}$/.test(candidate) ? candidate : "unavailable";
+}
+export const RELEASE_COMMIT = resolveReleaseCommit(process.env.VERCEL_GIT_COMMIT_SHA, process.env.GITHUB_SHA);
 const contentSecurityPolicy = [
   "default-src 'self'",
   "base-uri 'none'",
@@ -33,11 +38,13 @@ export const SECURITY_HEADERS = [
   { key: "Strict-Transport-Security", value: "max-age=63072000" },
 ] as const;
 
+export const RELEASE_HEADER = { key: "X-TypeLoop-Release", value: RELEASE_COMMIT } as const;
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   async headers() {
     return [
-      { source: "/:path*", headers: [...SECURITY_HEADERS] },
+      { source: "/:path*", headers: [...SECURITY_HEADERS, RELEASE_HEADER] },
       {
         source: "/sw.js",
         headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }],
