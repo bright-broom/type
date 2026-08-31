@@ -1,0 +1,33 @@
+[
+  { "name": "一橋学園駅", "category": "鉄道駅", "reading": "ひとつばしがくえんえき", "basis": "manual-reviewed" },
+  { "name": "中野坂上駅", "category": "鉄道駅", "reading": "なかのさかうええき", "basis": "manual-reviewed" },
+  { "name": "馬喰横山駅", "category": "鉄道駅", "reading": "ばくろよこやまえき", "basis": "manual-reviewed" },
+  { "name": "垳川", "category": "河川", "reading": "がけがわ", "basis": "manual-reviewed" },
+  { "name": "多摩川", "category": "河川", "reading": "たまがわ", "basis": "manual-reviewed" },
+  { "name": "栃寄沢", "category": "河川", "reading": "とちよりさわ", "basis": "manual-reviewed" },
+  { "name": "神田川", "category": "河川", "reading": "かんだがわ", "basis": "manual-reviewed" },
+  {
+    "name": "タワ-ふれあい公園",
+    "category": "都市公園",
+    "reading": "たわーふれあいこうえん",
+    "basis": "official-municipality"
+  },
+  {
+    "name": "世田谷城阯公園",
+    "category": "都市公園",
+    "reading": "せたがやじょうしこうえん",
+    "basis": "manual-reviewed"
+  },
+  { "name": "圦妻公園", "category": "都市公園", "reading": "いりづまこうえん", "basis": "official-municipality" },
+  { "name": "大岱公園", "category": "都市公園", "reading": "おんたこうえん", "basis": "manual-reviewed" },
+  { "name": "奚疑公園", "category": "都市公園", "reading": "けいぎこうえん", "basis": "manual-reviewed" },
+  {
+    "name": "新五フラワ-児童公園",
+    "category": "都市公園",
+    "reading": "しんごふらわーじどうこうえん",
+    "basis": "official-municipality"
+  },
+  { "name": "片倉町臺公園", "category": "都市公園", "reading": "かたくらまちだいこうえん", "basis": "manual-reviewed" },
+  { "name": "鎗ヶ崎公園", "category": "都市公園", "reading": "やりがさきこうえん", "basis": "manual-reviewed" },
+  { "name": "馬駈公園", "category": "都市公園", "reading": "まがけこうえん", "basis": "manual-reviewed" }
+]

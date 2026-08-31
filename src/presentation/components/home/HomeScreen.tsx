@@ -7,6 +7,9 @@ type HomeScreenProps = {
   selectedMode: TrainingSet;
   onSelectMode: (mode: TrainingSet) => void;
   onStart: () => void;
+  startPending: boolean;
+  startError: string | null;
+  persistenceWarning?: string | null;
   onShowPlaybook: () => void;
   onShowTakkenGlossary: () => void;
   onShowAisGlossary: () => void;
@@ -16,14 +19,17 @@ type HomeScreenProps = {
 
 const MODES: ReadonlyArray<{
   id: TrainingSet;
+  index: string;
+  category: string;
   label: string;
   detail: string;
 }> = [
-  { id: "japanese", label: "日本語", detail: "基礎と日常語" },
-  { id: "consulting", label: "コンサル", detail: "実務用語" },
-  { id: "takken", label: "宅建", detail: "試験用語" },
-  { id: "ais", label: "会議", detail: "定例会議用語" },
-  { id: "git", label: "Git", detail: "公式コマンド" },
+  { id: "japanese", index: "01", category: "BASIC", label: "日本語", detail: "基礎と日常語" },
+  { id: "consulting", index: "02", category: "WORK", label: "コンサル", detail: "実務用語" },
+  { id: "takken", index: "03", category: "LICENSE", label: "宅建", detail: "試験用語" },
+  { id: "ais", index: "04", category: "MEETING", label: "会議", detail: "定例会議用語" },
+  { id: "git", index: "05", category: "DEV", label: "Git", detail: "公式コマンド" },
+  { id: "tokyo", index: "06", category: "TOKYO", label: "東京地名", detail: "7,254件・読み補完あり" },
 ];
 
 const MODE_LABELS: Record<TrainingSet, string> = {
@@ -32,6 +38,7 @@ const MODE_LABELS: Record<TrainingSet, string> = {
   takken: "宅建用語",
   ais: "会議用語",
   git: "Gitコマンド",
+  tokyo: "東京地名",
 };
 
 export function HomeScreen({
@@ -40,13 +47,17 @@ export function HomeScreen({
   selectedMode,
   onSelectMode,
   onStart,
+  startPending,
+  startError,
+  persistenceWarning,
   onShowPlaybook,
   onShowTakkenGlossary,
   onShowAisGlossary,
   onShowHistory,
   aborted,
 }: HomeScreenProps) {
-  const latest = history[0];
+  const latest = history.find((session) => session.metricsAvailable !== false);
+  const selectedModeDetail = MODES.find((mode) => mode.id === selectedMode)?.detail ?? "";
 
   const nextFocus = latest
     ? latest.metrics.accuracy >= 97
@@ -77,9 +88,9 @@ export function HomeScreen({
           <div className="quick-start-head">
             <div>
               <span className="section-index">QUICK START</span>
-              <h2 id="mode-title">練習モードを選ぶ</h2>
+              <h2 id="mode-title">今日は、何を鍛える？</h2>
             </div>
-            <span>各60秒</span>
+            <span>6 MODES / 60 SEC</span>
           </div>
           <fieldset className="mode-picker" aria-label="練習モード">
             {MODES.map((mode) => (
@@ -90,22 +101,50 @@ export function HomeScreen({
                   value={mode.id}
                   checked={selectedMode === mode.id}
                   data-start-shortcut="true"
+                  disabled={startPending}
                   onChange={() => onSelectMode(mode.id)}
                 />
-                <span>{mode.label}</span>
+                <span className="mode-option__meta" aria-hidden="true">
+                  <b>{mode.index}</b>
+                  <i>{mode.category}</i>
+                </span>
+                <span className="mode-option__label">{mode.label}</span>
                 <small>{mode.detail}</small>
+                <span className="mode-option__state" aria-hidden="true">
+                  {selectedMode === mode.id ? "選択中" : ""}
+                </span>
+                {selectedMode === mode.id ? (
+                  <span className="mode-option__check" aria-hidden="true">
+                    ✓
+                  </span>
+                ) : null}
               </label>
             ))}
           </fieldset>
           <div className="start-row">
-            <button className="primary-button start-button" type="button" onClick={onStart}>
-              <span>60秒トレーニングを始める</span>
+            <div className="mode-selection-summary">
+              <span>SELECTED MODE</span>
+              <strong>{MODE_LABELS[selectedMode]}</strong>
+              <small>{selectedModeDetail} · 記録は端末内に保存</small>
+            </div>
+            <button className="primary-button start-button" type="button" onClick={onStart} disabled={startPending}>
+              <span>{startPending ? "地名データを読み込んでいます…" : "60秒トレーニングを始める"}</span>
               <kbd>Enter</kbd>
             </button>
-            <p>
-              {MODE_LABELS[selectedMode]}を選択中 <i aria-hidden="true" /> 記録は端末内に保存
-            </p>
           </div>
+          <span className="mode-loading-status" role="status">
+            {startPending ? "地名データを読み込んでいます" : ""}
+          </span>
+          {startError ? (
+            <p className="notice" role="alert">
+              {startError}
+            </p>
+          ) : null}
+          {persistenceWarning ? (
+            <p className="notice" role="alert">
+              {persistenceWarning}
+            </p>
+          ) : null}
         </section>
 
         <section className="resource-hub" aria-labelledby="resource-title">
@@ -178,7 +217,7 @@ export function HomeScreen({
               </div>
               <div>
                 <span>日本語 BEST</span>
-                <strong>{best?.metrics.wpm ?? "—"}</strong>
+                <strong>{best?.metricsAvailable === false ? "—" : (best?.metrics.wpm ?? "—")}</strong>
               </div>
               <div>
                 <span>最近の記録</span>

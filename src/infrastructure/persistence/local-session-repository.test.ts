@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
 import type { CompletedSession } from "../../application/session/session-types.ts";
 import type { TrainingSet } from "../../domain/prompts/prompt-types.ts";
-import { LocalSessionRepository, STORAGE_KEY } from "./local-session-repository.ts";
+import { LocalSessionRepository, MAX_STORED_SESSIONS, STORAGE_KEY } from "./local-session-repository.ts";
 
 class MemoryStorage {
   values = new Map<string, string>();
@@ -103,6 +103,79 @@ test("persists settings and treats unavailable storage as non-fatal", async () =
       throw new Error("full");
     },
   });
-  await assert.doesNotReject(repository.save(session("safe", 1)));
+  assert.equal(await repository.save(session("safe", 1)), false);
   assert.deepEqual(await repository.getRecent(10), []);
+});
+
+test("display normalization never overwrites unknown persisted session fields", async () => {
+  const storage = new MemoryStorage();
+  const repository = new LocalSessionRepository();
+  useStorage(storage);
+  const futureSession = session("future", 700) as CompletedSession & { futureField: string };
+  futureSession.mode = "120s" as "60s";
+  futureSession.futureField = "keep";
+  futureSession.metrics = { ...futureSession.metrics, futureMetric: 7 } as CompletedSession["metrics"];
+  storage.values.set(
+    STORAGE_KEY,
+    JSON.stringify({
+      version: 2,
+      sessions: [futureSession, { id: "partial", score: 10, endedAt: 20 }],
+      settings: { soundEnabled: true },
+    }),
+  );
+
+  const displaySession = (await repository.getAll())[0];
+  assert.equal(displaySession?.metrics.wpm, 0);
+  await repository.saveSettings({ soundEnabled: false });
+
+  const persisted = JSON.parse(storage.values.get(STORAGE_KEY) ?? "{}") as {
+    sessions: Array<{ mode?: string; futureField?: string; metrics?: { futureMetric: number } }>;
+  };
+  assert.equal(persisted.sessions[0]?.mode, "120s");
+  assert.equal(persisted.sessions[0]?.futureField, "keep");
+  assert.equal(persisted.sessions[0]?.metrics?.futureMetric, 7);
+  assert.equal("metrics" in (persisted.sessions[1] ?? {}), false);
+});
+
+test("daily summaries outlive the capped detailed session list", async () => {
+  const storage = new MemoryStorage();
+  const repository = new LocalSessionRepository();
+  useStorage(storage);
+  const firstEndedAt = new Date(2025, 0, 1, 12).getTime();
+
+  for (let index = 0; index <= MAX_STORED_SESSIONS; index += 1) {
+    const entry = session(`daily-${index}`, index);
+    entry.endedAt = new Date(2025, 0, index + 1, 12).getTime();
+    await repository.save(entry);
+  }
+
+  assert.equal(
+    (await repository.getAll()).some((entry) => entry.endedAt === firstEndedAt),
+    false,
+  );
+  assert.equal(
+    (await repository.getDailyScores()).some((score) => score.dateKey === "2025-01-01"),
+    true,
+  );
+});
+
+test("saving settings preserves fields written by a newer envelope", async () => {
+  const storage = new MemoryStorage();
+  const repository = new LocalSessionRepository();
+  useStorage(storage);
+  storage.values.set(
+    STORAGE_KEY,
+    JSON.stringify({
+      version: 2,
+      sessions: [],
+      dailyScores: [],
+      settings: { soundEnabled: true, futureSetting: "keep" },
+      futureEnvelope: { streak: 4 },
+    }),
+  );
+
+  await repository.saveSettings({ soundEnabled: false });
+  const persisted = JSON.parse(storage.values.get(STORAGE_KEY) ?? "{}") as Record<string, unknown>;
+  assert.deepEqual(persisted.futureEnvelope, { streak: 4 });
+  assert.deepEqual(persisted.settings, { soundEnabled: false, futureSetting: "keep" });
 });

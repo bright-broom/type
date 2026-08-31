@@ -67,6 +67,25 @@
   --content-game: 1120px;
   --content-settings: 760px;
   --tap-target: 44px;
+  /* Golden-ratio layout contract: primary content leads supporting content. */
+  --golden-grid-primary: minmax(0, 1.618fr) minmax(0, 1fr);
+  --golden-grid-secondary: minmax(220px, 0.618fr) minmax(0, 1.618fr);
+  --golden-grid-heading: minmax(96px, 0.382fr) minmax(0, 1.618fr) minmax(180px, 0.618fr);
+  --golden-grid-meta: minmax(96px, 0.618fr) minmax(0, 1.618fr) minmax(96px, 0.618fr);
+  --golden-grid-feature: minmax(0, 1.618fr) repeat(3, minmax(0, 1fr));
+  --golden-grid-metrics: minmax(0, 1.618fr) repeat(4, minmax(0, 1fr));
+  --golden-grid-record: minmax(0, 1.618fr) repeat(3, minmax(0, 1fr));
+  --golden-grid-filter: minmax(260px, 1.618fr) repeat(3, minmax(130px, 1fr)) auto;
+  --golden-grid-filter-extended: minmax(230px, 1.618fr) repeat(3, minmax(118px, 1fr)) auto auto;
+  --golden-grid-filter-compact: minmax(240px, 1.618fr) minmax(130px, 1fr);
+  --golden-grid-supporting-copy: minmax(0, 0.618fr) minmax(0, 1.618fr);
+  --golden-grid-settings: minmax(0, 0.618fr) minmax(0, 1.618fr);
+  --golden-grid-gap: clamp(24px, 4.5vw, 72px);
+  --calendar-columns: repeat(7, minmax(0, 1fr));
+  --calendar-day-min-height: 94px;
+  --calendar-day-min-height-compact: 68px;
+  --calendar-weekday-height: 34px;
+  --calendar-score-size: clamp(0.72rem, 1.5vw, 1rem);
   --font-display-settings: clamp(2.4rem, 6vw, 4.5rem);
   --font-label: 0.78rem;
   --tracking-tight: -0.06em;
@@ -106,7 +125,7 @@
   --modern-copy-max-width: 600px;
   --modern-copy-leading: 1.75;
   --modern-section-heading-size: 1.05rem;
-  --modern-mode-min-height: 76px;
+  --modern-mode-min-height: 116px;
   --modern-primary-min-height: 56px;
   --modern-resource-min-height: 64px;
   --modern-progress-min-height: 0;
@@ -119,6 +138,7 @@
   --modern-home-gap: clamp(32px, 6vw, 88px);
   --modern-home-padding: clamp(36px, 6vw, 76px) 0 clamp(52px, 8vw, 96px);
   --modern-hero-size: clamp(2.75rem, 6.2vw, 4.9rem);
+  --modern-landscape-hero-size: 0.9rem;
   --modern-heading-size: clamp(2.4rem, 5vw, 4.4rem);
   --modern-shadow-card: 0 16px 48px rgb(var(--ink-deep-rgb) / 7%);
   --modern-shadow-control: 0 8px 24px rgb(var(--ink-deep-rgb) / 6%);
@@ -126,9 +146,10 @@
   --modern-transition: 160ms ease;
   --modern-home-column-min: 320px;
   --modern-option-column-min: 110px;
+  --modern-option-mobile-width: 148px;
   --modern-resource-column-min: 180px;
-  --modern-progress-columns: repeat(auto-fit, minmax(min(100%, var(--modern-home-column-min)), 1fr));
-  --modern-option-columns: repeat(auto-fit, minmax(min(100%, var(--modern-option-column-min)), 1fr));
+  --modern-progress-columns: var(--golden-grid-primary);
+  --modern-option-columns: repeat(3, minmax(0, 1fr));
   --modern-resource-columns: repeat(auto-fit, minmax(min(100%, var(--modern-resource-column-min)), 1fr));
   --modern-game-stage-height: clamp(225px, 48dvh, 420px);
   --modern-input-border: 1px solid var(--line);
@@ -160,5 +181,24 @@
   --space-4: 1.5rem;
   --space-5: 2.25rem;
   --page-gutter: clamp(14px, 3vw, 24px);
+}
+
+@media (max-width: 900px) {
+  :root {
+    --modern-progress-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 680px) {
+  :root {
+    --modern-mode-min-height: 96px;
+    --modern-option-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-height: 620px) and (orientation: landscape) {
+  :root {
+    --modern-mode-min-height: 64px;
+  }
 }
 /* @tokens-end */

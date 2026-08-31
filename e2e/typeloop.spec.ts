@@ -10,6 +10,7 @@ const viewports = [
 ] as const;
 
 const criticalViewports = [viewports[0], viewports[2], viewports[4]];
+const layoutBoundaryWidths = [900, 901, 1100, 1101] as const;
 
 function observeFailures(page: Page) {
   const failures: string[] = [];
@@ -35,6 +36,22 @@ async function expectNoFailures(page: Page, failures: string[]) {
   expect(failures).toEqual([]);
 }
 
+async function gridColumnWidths(page: Page, selector: string) {
+  return page.locator(selector).evaluate((element) =>
+    getComputedStyle(element)
+      .gridTemplateColumns.split(" ")
+      .map((value) => Number.parseFloat(value)),
+  );
+}
+
+function expectGoldenRatio(major: number, minor: number) {
+  expect(major / minor).toBeCloseTo(1.618, 1);
+}
+
+function expectGoldenExpansion(major: number, minor: number) {
+  expect(major / minor).toBeCloseTo(2.618, 1);
+}
+
 test("home remains operable across layout equivalence classes", async ({ browser }) => {
   for (const viewport of viewports) {
     const context = await browser.newContext({ viewport });
@@ -49,10 +66,77 @@ test("home remains operable across layout equivalence classes", async ({ browser
     await page.locator("label.mode-option").filter({ hasText: "コンサル" }).click();
     await expect(consultingMode).toBeChecked();
     await expect(japaneseMode).not.toBeChecked();
-    await expect(page.getByRole("button", { name: /60秒トレーニングを始める/ })).toBeVisible();
+    const startButton = page.getByRole("button", { name: /60秒トレーニングを始める/ });
+    await expect(startButton).toBeVisible();
+    expect(
+      await startButton.evaluate((element) => element.getBoundingClientRect().bottom <= window.innerHeight),
+      `${viewport.name} keeps the start action inside the initial viewport`,
+    ).toBe(true);
     await expectNoHorizontalOverflow(page);
     await expectNoFailures(page, failures);
 
+    await context.close();
+  }
+});
+
+test("golden-ratio layouts preserve hierarchy and collapse safely", async ({ browser }) => {
+  for (const viewport of criticalViewports) {
+    const context = await browser.newContext({ viewport });
+    const page = await context.newPage();
+    const failures = observeFailures(page);
+    await page.goto("/");
+
+    const homeColumns = await gridColumnWidths(page, ".home-shell");
+    if (viewport.name === "desktop") {
+      expect(homeColumns).toHaveLength(2);
+      expectGoldenRatio(homeColumns[0], homeColumns[1]);
+    } else {
+      expect(homeColumns).toHaveLength(1);
+    }
+    await expectNoHorizontalOverflow(page);
+
+    await page.getByRole("button", { name: "表示設定" }).click();
+    await expect(page.getByRole("heading", { name: "表示設定" })).toBeVisible();
+    const settingsColumns = await gridColumnWidths(page, ".settings-shell");
+    if (viewport.name === "desktop") {
+      expect(settingsColumns).toHaveLength(2);
+      expectGoldenExpansion(settingsColumns[1], settingsColumns[0]);
+    } else {
+      expect(settingsColumns).toHaveLength(1);
+    }
+    await expectNoHorizontalOverflow(page);
+    await page.getByRole("button", { name: /戻る/ }).click();
+
+    await page.getByRole("button", { name: /コンサル実務辞典を開く/ }).click();
+    await expect(page.getByRole("heading", { name: "コンサル実務辞典" })).toBeVisible();
+    const playbookColumns = await gridColumnWidths(page, ".playbook-layout");
+    if (viewport.name === "desktop") {
+      expect(playbookColumns).toHaveLength(2);
+      expectGoldenExpansion(playbookColumns[1], playbookColumns[0]);
+    } else {
+      expect(playbookColumns).toHaveLength(1);
+    }
+    await expectNoHorizontalOverflow(page);
+    await expectNoFailures(page, failures);
+    await context.close();
+  }
+});
+
+test("layout breakpoints keep golden hierarchy or collapse deliberately", async ({ browser }) => {
+  for (const width of layoutBoundaryWidths) {
+    const context = await browser.newContext({ viewport: { width, height: 900 } });
+    const page = await context.newPage();
+    await page.goto("/");
+
+    const homeColumns = await gridColumnWidths(page, ".home-shell");
+    expect(homeColumns).toHaveLength(width <= 900 ? 1 : 2);
+    if (width > 900) expectGoldenRatio(homeColumns[0], homeColumns[1]);
+
+    await page.getByRole("button", { name: /宅建試験 完全用語一覧を開く/ }).click();
+    const filterColumns = await gridColumnWidths(page, ".glossary-filters");
+    expect(filterColumns).toHaveLength(width <= 1100 ? 2 : 5);
+    if (width > 900) expectGoldenRatio(filterColumns[0], filterColumns[1]);
+    await expectNoHorizontalOverflow(page);
     await context.close();
   }
 });
@@ -68,6 +152,44 @@ test("Enter starts the mode selected in quick start", async ({ page }) => {
   await page.clock.fastForward(4_000);
 
   await expect(page.locator(".prompt-reading")).toHaveText("CONSULTING TERM");
+});
+
+test("calendar keeps all stored days and safely renders partial legacy records", async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const augustSessions = Array.from({ length: 20 }, (_, index) => ({
+    id: `august-${index}`,
+    score: 2_000 + index,
+    endedAt: new Date(2026, 7, 31, 12, index).getTime(),
+  }));
+  const julySession = {
+    id: "july-legacy",
+    score: 1_500,
+    endedAt: new Date(2026, 6, 15, 9, 0).getTime(),
+  };
+  const retainedDailyScore = {
+    dateKey: "2026-06-10",
+    day: 10,
+    bestScore: 1_250,
+    sessionCount: 3,
+  };
+  await context.addInitScript(
+    ({ sessions, dailyScores }) => {
+      window.localStorage.setItem("typeloop:data", JSON.stringify({ version: 1, sessions, dailyScores, settings: {} }));
+    },
+    { sessions: [...augustSessions, julySession], dailyScores: [retainedDailyScore] },
+  );
+  const page = await context.newPage();
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "記録" }).click();
+  await expect(page.getByRole("heading", { name: "日々のスコア" })).toBeVisible();
+  await expect(page.getByText("計測不可").first()).toBeVisible();
+  await page.getByRole("button", { name: "前の月" }).click();
+  await page.getByRole("button", { name: "前の月" }).click();
+  await page.getByRole("button", { name: /6月10日 最高スコア 1,250 3回/ }).click();
+  await expect(page.getByText(/セッション詳細の保存期間は終了/)).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+  await context.close();
 });
 
 test("critical flow stays operable from compact portrait through landscape and desktop", async ({ browser }) => {
@@ -87,6 +209,14 @@ test("critical flow stays operable from compact portrait through landscape and d
     await page.keyboard.type(fullInput[0]);
     await expect(page.locator(".roman-typed")).not.toHaveText("");
     await expectNoHorizontalOverflow(page);
+    if (viewport.name === "desktop") {
+      const gameMetaColumns = await gridColumnWidths(page, ".game-meta");
+      expect(gameMetaColumns).toHaveLength(3);
+      expectGoldenExpansion(gameMetaColumns[1], gameMetaColumns[0]);
+      const liveStatColumns = await gridColumnWidths(page, ".live-stats");
+      expect(liveStatColumns).toHaveLength(4);
+      expectGoldenRatio(liveStatColumns[0], liveStatColumns[1]);
+    }
     if (viewport.name === "phone-landscape") {
       const minimumStageHeight = await page
         .locator(".prompt-stage")
@@ -102,6 +232,11 @@ test("critical flow stays operable from compact portrait through landscape and d
     await expect(page.getByRole("heading", { name: "おつかれさまでした。" })).toBeVisible();
     await expect(page.locator(".result-shell")).toBeFocused();
     await expect(page.getByRole("button", { name: /同じモードでもう1回/ })).toBeVisible();
+    if (viewport.name === "desktop") {
+      const metricColumns = await gridColumnWidths(page, ".metric-grid");
+      expect(metricColumns).toHaveLength(5);
+      expectGoldenRatio(metricColumns[0], metricColumns[1]);
+    }
     await expectNoHorizontalOverflow(page);
     const historyButton = page.getByRole("button", { name: viewport.name === "desktop" ? "記録" : /練習履歴/ });
     if (viewport.name === "desktop") {
@@ -111,6 +246,29 @@ test("critical flow stays operable from compact portrait through landscape and d
     await expect(page.getByRole("heading", { name: "練習の記録" })).toBeVisible();
     await expect(page.locator(".history-shell")).toBeFocused();
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+    const scoredDay = page.locator(".history-calendar__day[data-has-score]");
+    await expect(scoredDay).toHaveCount(1);
+    if (viewport.name === "compact-phone") {
+      expect(await scoredDay.evaluate((element) => element.getBoundingClientRect().width)).toBeGreaterThanOrEqual(44);
+    }
+    await scoredDay.click();
+    await expect(scoredDay).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByRole("heading", { name: /月\d+日の記録/ })).toBeVisible();
+    await expect(page.locator(".history-row:not(.history-labels)")).toHaveCount(1);
+    await page.getByRole("button", { name: "絞り込みを解除" }).click();
+    await expect(page.getByRole("heading", { name: "すべての練習" })).toBeVisible();
+    await page.getByRole("button", { name: "次の月" }).click();
+    await expect(page.locator(".history-calendar__day[data-has-score]")).toHaveCount(0);
+    await page.getByRole("button", { name: "前の月" }).click();
+    await expect(page.locator(".history-calendar__day[data-has-score]")).toHaveCount(1);
+    if (viewport.name === "desktop") {
+      const historyColumns = await gridColumnWidths(page, ".history-row:not(.history-labels)");
+      expect(historyColumns).toHaveLength(4);
+      expectGoldenRatio(historyColumns[0], historyColumns[1]);
+      const overviewColumns = await gridColumnWidths(page, ".history-overview");
+      expect(overviewColumns).toHaveLength(4);
+      expectGoldenRatio(overviewColumns[0], overviewColumns[1]);
+    }
     const saveButton = page.getByRole("button", { name: "JSONで保存" });
     await expect(saveButton).toBeVisible();
     const downloadPromise = page.waitForEvent("download");
@@ -135,6 +293,60 @@ test("critical flow stays operable from compact portrait through landscape and d
     await expectNoFailures(page, failures);
     await context.close();
   }
+});
+
+test("a session that local storage rejects remains recoverable through JSON", async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await context.addInitScript(() => {
+    const originalSetItem = Storage.prototype.setItem;
+    Storage.prototype.setItem = function setItem(key: string, value: string) {
+      if (key === "typeloop:data") throw new DOMException("Storage full", "QuotaExceededError");
+      return originalSetItem.call(this, key, value);
+    };
+  });
+  const page = await context.newPage();
+  await page.clock.install();
+  await page.goto("/");
+  await page.getByRole("button", { name: /60秒トレーニングを始める/ }).click();
+  await page.clock.fastForward(65_000);
+
+  await expect(page.locator(".notice[role='alert']")).toContainText("ページを閉じる前に");
+  await page.getByRole("button", { name: "サウンド ON" }).click();
+  await expect(page.locator(".notice[role='alert']")).toContainText("ページを閉じる前に");
+  await page.getByRole("button", { name: /練習履歴/ }).click();
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "JSONで保存" }).click();
+  const download = await downloadPromise;
+  const downloadPath = await download.path();
+  const archive = JSON.parse(await readFile(downloadPath as string, "utf8")) as {
+    sessions: Array<{ id: string }>;
+  };
+  expect(archive.sessions).toHaveLength(1);
+  await context.close();
+});
+
+test("a later session save does not erase an unresolved settings warning", async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await context.addInitScript(() => {
+    const originalSetItem = Storage.prototype.setItem;
+    let rejectedTypeloopWrite = false;
+    Storage.prototype.setItem = function setItem(key: string, value: string) {
+      if (key === "typeloop:data" && !rejectedTypeloopWrite) {
+        rejectedTypeloopWrite = true;
+        throw new DOMException("Storage full", "QuotaExceededError");
+      }
+      return originalSetItem.call(this, key, value);
+    };
+  });
+  const page = await context.newPage();
+  await page.clock.install();
+  await page.goto("/");
+  await page.getByRole("button", { name: "サウンド ON" }).click();
+  await expect(page.locator(".notice[role='alert']")).toContainText("設定を端末に保存できませんでした");
+  await page.getByRole("button", { name: /60秒トレーニングを始める/ }).click();
+  await page.clock.fastForward(65_000);
+  await expect(page.locator(".notice[role='alert']")).toContainText("設定を端末に保存できませんでした");
+  await context.close();
 });
 
 test("touch controls meet the minimum tap target on every phone size", async ({ browser }) => {
@@ -280,6 +492,11 @@ test("local dictionaries filter accurately across responsive layout classes", as
 
     await page.getByRole("button", { name: /宅建試験 完全用語一覧を開く/ }).click();
     await expect(page.getByRole("heading", { name: "宅建試験 完全用語一覧" })).toBeVisible();
+    if (viewport.name === "desktop") {
+      const takkenFilterColumns = await gridColumnWidths(page, ".glossary-filters");
+      expect(takkenFilterColumns).toHaveLength(5);
+      expectGoldenRatio(takkenFilterColumns[0], takkenFilterColumns[1]);
+    }
     const takkenSearch = page.getByRole("searchbox", { name: /キーワード検索/ });
     await takkenSearch.fill("抵当権");
     await expect(page.locator(".glossary-entry").first()).toContainText("抵当権");
@@ -290,6 +507,11 @@ test("local dictionaries filter accurately across responsive layout classes", as
 
     await page.getByRole("button", { name: /週次定例会議 用語辞典を開く/ }).click();
     await expect(page.getByRole("heading", { name: "AIS週次定例会議 用語辞典" })).toBeVisible();
+    if (viewport.name === "desktop") {
+      const aisFilterColumns = await gridColumnWidths(page, ".ais-filters");
+      expect(aisFilterColumns).toHaveLength(6);
+      expectGoldenRatio(aisFilterColumns[0], aisFilterColumns[1]);
+    }
     const aisSearch = page.getByRole("searchbox", { name: /キーワード検索/ });
     await aisSearch.fill("パイプライン");
     await expect(page.locator(".glossary-entry").first()).toContainText("パイプライン");

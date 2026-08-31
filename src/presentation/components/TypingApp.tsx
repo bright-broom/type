@@ -2,11 +2,10 @@
 
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
-import { saveSessionArchive } from "../../application/session/session-archive.ts";
+import { createSessionArchiveFile } from "../../application/session/session-archive.ts";
 import type { CompletedSession } from "../../application/session/session-types.ts";
 import type { TrainingSet } from "../../domain/prompts/prompt-types.ts";
 import { BrowserSessionArchiveSink } from "../../infrastructure/persistence/browser-session-archive-sink.ts";
-import { LocalSessionRepository } from "../../infrastructure/persistence/local-session-repository.ts";
 import type { AppearanceSettings } from "../../application/settings/app-settings.ts";
 import { writeAppearanceCookie } from "../../infrastructure/persistence/browser-appearance-cookie.ts";
 import { useKeyboardInput } from "../hooks/useKeyboardInput.ts";
@@ -114,11 +113,12 @@ export function TypingApp({ initialAppearance }: { initialAppearance: Appearance
   const focusTypingField = useCallback(() => typingFieldRef.current?.focus(), []);
 
   const start = (trainingSet: TrainingSet = "japanese") => {
+    if (session.startPending) return;
     focusTypingField();
     setSelectedTrainingSet(trainingSet);
     setPreviousBest(session.bests[trainingSet]);
     navigateOverlay("none");
-    session.start(trainingSet);
+    void session.start(trainingSet);
   };
 
   const resume = () => {
@@ -134,12 +134,12 @@ export function TypingApp({ initialAppearance }: { initialAppearance: Appearance
 
   const saveHistory = useCallback(async () => {
     try {
-      await saveSessionArchive(new LocalSessionRepository(), new BrowserSessionArchiveSink(), Date.now());
+      new BrowserSessionArchiveSink().save(createSessionArchiveFile(session.history, Date.now()));
       return true;
     } catch {
       return false;
     }
-  }, []);
+  }, [session.history]);
 
   /**
    * Recovery path: tapping the play area re-opens a dismissed software keyboard.
@@ -158,6 +158,7 @@ export function TypingApp({ initialAppearance }: { initialAppearance: Appearance
   useKeyboardInput({
     onKey: session.typeText,
     onEnter: () => {
+      if (session.startPending) return;
       if (overlay === "playbook") start("consulting");
       else if (overlay === "takken") start("takken");
       else if (overlay === "ais") start("ais");
@@ -222,7 +223,12 @@ export function TypingApp({ initialAppearance }: { initialAppearance: Appearance
           <ConsultingPlaybook onBack={() => navigateOverlay("none")} onStart={() => start("consulting")} />
         </Suspense>
       ) : overlay === "history" ? (
-        <HistoryScreen sessions={session.history} onBack={() => navigateOverlay("none")} onSave={saveHistory} />
+        <HistoryScreen
+          sessions={session.history}
+          dailyScores={session.dailyScores}
+          onBack={() => navigateOverlay("none")}
+          onSave={saveHistory}
+        />
       ) : session.clock.status === "countdown" ? (
         <CountdownScreen value={session.countdown} />
       ) : session.clock.status === "playing" || session.clock.status === "paused" ? (
@@ -247,6 +253,7 @@ export function TypingApp({ initialAppearance }: { initialAppearance: Appearance
           onRetry={() => start(session.trainingSet)}
           onHistory={() => navigateOverlay("history")}
           onHome={goHome}
+          persistenceWarning={session.persistenceWarning}
         />
       ) : (
         <HomeScreen
@@ -255,6 +262,9 @@ export function TypingApp({ initialAppearance }: { initialAppearance: Appearance
           selectedMode={selectedTrainingSet}
           onSelectMode={setSelectedTrainingSet}
           onStart={() => start(selectedTrainingSet)}
+          startPending={session.startPending}
+          startError={session.startError}
+          persistenceWarning={session.persistenceWarning}
           onShowPlaybook={() => navigateOverlay("playbook")}
           onShowTakkenGlossary={() => navigateOverlay("takken")}
           onShowAisGlossary={() => navigateOverlay("ais")}

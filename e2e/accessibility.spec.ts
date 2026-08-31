@@ -15,6 +15,15 @@ const GATED_IMPACTS = new Set(["critical", "serious"]);
 const screens: ReadonlyArray<{ name: string; open: (page: Page) => Promise<void> }> = [
   { name: "home", open: async () => {} },
   {
+    name: "classic home",
+    open: async (page) => {
+      await page.getByRole("button", { name: "表示設定" }).click();
+      await page.getByRole("radio", { name: /テーマ：\s*クラシック/ }).check();
+      await page.getByRole("button", { name: /戻る/ }).click();
+      await page.getByRole("heading", { name: /60秒で、.*昨日より軽く。/ }).waitFor();
+    },
+  },
+  {
     name: "appearance settings",
     open: async (page) => {
       await page.getByRole("button", { name: "表示設定" }).click();
@@ -58,6 +67,17 @@ const screens: ReadonlyArray<{ name: string; open: (page: Page) => Promise<void>
       await page.keyboard.type("a");
       await page.clock.fastForward(61_000);
       await page.getByRole("heading", { name: "おつかれさまでした。" }).waitFor();
+    },
+  },
+  {
+    name: "history calendar",
+    open: async (page) => {
+      await page.getByRole("button", { name: /60秒トレーニング/ }).click();
+      await page.clock.fastForward(4_000);
+      await page.keyboard.type("a");
+      await page.clock.fastForward(61_000);
+      await page.getByRole("button", { name: /練習履歴/ }).click();
+      await page.getByRole("heading", { name: "日々のスコア" }).waitFor();
     },
   },
 ];

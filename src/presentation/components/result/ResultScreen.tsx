@@ -6,9 +6,17 @@ type ResultScreenProps = {
   onRetry: () => void;
   onHome: () => void;
   onHistory: () => void;
+  persistenceWarning?: string | null;
 };
 
-export function ResultScreen({ result, previousBest, onRetry, onHome, onHistory }: ResultScreenProps) {
+export function ResultScreen({
+  result,
+  previousBest,
+  onRetry,
+  onHome,
+  onHistory,
+  persistenceWarning,
+}: ResultScreenProps) {
   const isBest = !previousBest || result.score > previousBest.score;
   const delta = previousBest ? result.metrics.wpm - previousBest.metrics.wpm : 0;
   const nextFocus =
@@ -73,6 +81,12 @@ export function ResultScreen({ result, previousBest, onRetry, onHome, onHistory 
           </div>
         </div>
       </section>
+
+      {persistenceWarning ? (
+        <p className="notice" role="alert">
+          {persistenceWarning}
+        </p>
+      ) : null}
 
       {result.weakKeys.length > 0 && (
         <section className="weak-keys" aria-labelledby="weak-title">

@@ -14,15 +14,29 @@ import { GIT_COMMAND_PROMPTS } from "./git/git-commands.ts";
  * entry here — selectors, personal bests, and persistence lookups all derive from
  * this map, so no other wiring changes.
  */
-export const TRAINING_SET_PROMPTS: Record<TrainingSet, ReadonlyArray<TypingPrompt>> = {
+export const EAGER_TRAINING_SET_PROMPTS = {
   japanese: JAPANESE_PROMPTS,
   consulting: CONSULTING_PROMPTS,
   takken: TAKKEN_PROMPTS,
   ais: AIS_PROMPTS,
   git: GIT_COMMAND_PROMPTS,
-};
+} satisfies Partial<Record<TrainingSet, ReadonlyArray<TypingPrompt>>>;
 
-export const TRAINING_SETS = Object.keys(TRAINING_SET_PROMPTS) as ReadonlyArray<TrainingSet>;
+export const TRAINING_SETS = [
+  "japanese",
+  "consulting",
+  "takken",
+  "ais",
+  "git",
+  "tokyo",
+] as const satisfies ReadonlyArray<TrainingSet>;
+
+export async function loadTrainingSetPrompts(trainingSet: TrainingSet): Promise<ReadonlyArray<TypingPrompt>> {
+  if (trainingSet === "tokyo") {
+    return (await import("./tokyo/tokyo-place-prompts.ts")).TOKYO_PLACE_PROMPTS;
+  }
+  return EAGER_TRAINING_SET_PROMPTS[trainingSet];
+}
 
 /** Build a record keyed by every catalogued training set. */
 export function byTrainingSet<Value>(create: (trainingSet: TrainingSet) => Value): Record<TrainingSet, Value> {

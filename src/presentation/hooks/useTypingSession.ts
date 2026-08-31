@@ -2,16 +2,18 @@
 
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { analyzeWeakKeys } from "../../domain/analytics/weak-key-analyzer.ts";
-import { createPromptSelector } from "../../domain/prompts/prompt-selector.ts";
-import type { PromptSelector } from "../../domain/prompts/prompt-selector.ts";
+import { addDailyScore, type DailyScore } from "../../domain/analytics/daily-score-calendar.ts";
 import type { TrainingSet, TypingPrompt } from "../../domain/prompts/prompt-types.ts";
 import { calculateMetrics } from "../../domain/scoring/metrics.ts";
 import { createTypingState, getTypingGuide } from "../../domain/typing/romanization-engine.ts";
 import { normalizeTypedText } from "../../domain/typing/typed-text.ts";
 import type { TypingState } from "../../domain/typing/typing-types.ts";
 import { JAPANESE_PROMPTS } from "../../content/japanese/japanese-prompts.ts";
-import { byTrainingSet, TRAINING_SET_PROMPTS, TRAINING_SETS } from "../../content/training-set-catalog.ts";
-import { LocalSessionRepository } from "../../infrastructure/persistence/local-session-repository.ts";
+import { byTrainingSet, TRAINING_SETS } from "../../content/training-set-catalog.ts";
+import {
+  LocalSessionRepository,
+  MAX_STORED_SESSIONS,
+} from "../../infrastructure/persistence/local-session-repository.ts";
 import { WebAudioService } from "../../infrastructure/audio/audio-service.ts";
 import { createSessionId } from "../../infrastructure/identity/browser-session-id.ts";
 import * as sessionClock from "../../application/session/session-reducer.ts";
@@ -20,19 +22,15 @@ import { completeSession } from "../../application/session/complete-session.ts";
 import { tallyTypingSteps } from "../../application/session/tally-typing-steps.ts";
 import { DEFAULT_APP_SETTINGS, type AppSettings } from "../../application/settings/app-settings.ts";
 import type * as Session from "../../application/session/session-types.ts";
+import { useTrainingSetSelectors } from "./useTrainingSetSelectors.ts";
 
 const repository = new LocalSessionRepository();
-
-/** How many recent sessions the history screen shows. Storage keeps more. */
-const RECENT_SESSIONS_SHOWN = 20;
 
 export function useTypingSession() {
   const [clock, dispatch] = useReducer(sessionClock.sessionTransition, undefined, () =>
     sessionClock.createSessionState(),
   );
-  const [selectors] = useState<Record<TrainingSet, PromptSelector>>(() =>
-    byTrainingSet((set) => createPromptSelector(TRAINING_SET_PROMPTS[set])),
-  );
+  const selectorLoader = useTrainingSetSelectors();
   const [trainingSet, setTrainingSet] = useState<TrainingSet>("japanese");
   const firstPrompt = JAPANESE_PROMPTS[0] as TypingPrompt;
   const [prompt, setPrompt] = useState<TypingPrompt>(firstPrompt);
@@ -45,11 +43,14 @@ export function useTypingSession() {
   const [feedback, setFeedback] = useState<Session.TypingFeedback>(null);
   const [result, setResult] = useState<Session.CompletedSession | null>(null);
   const [history, setHistory] = useState<Session.CompletedSession[]>([]);
+  const [dailyScores, setDailyScores] = useState<DailyScore[]>([]);
   const [bests, setBests] = useState<Record<TrainingSet, Session.CompletedSession | null>>(() =>
     byTrainingSet(() => null),
   );
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_APP_SETTINGS);
   const [settingsReady, setSettingsReady] = useState(false);
+  const [sessionPersistenceWarning, setSessionPersistenceWarning] = useState<string | null>(null);
+  const [settingsPersistenceWarning, setSettingsPersistenceWarning] = useState<string | null>(null);
   const [now, setNow] = useState(0);
   const keystrokesRef = useRef<Session.KeystrokeEvent[]>([]);
   const attemptsRef = useRef<Session.PromptAttempt[]>([]);
@@ -59,12 +60,14 @@ export function useTypingSession() {
 
   useEffect(() => {
     Promise.all([
-      repository.getRecent(RECENT_SESSIONS_SHOWN),
+      repository.getAll(),
+      repository.getDailyScores(),
       Promise.all(TRAINING_SETS.map(async (set) => [set, await repository.getBest(set)] as const)),
       repository.getSettings(),
     ])
-      .then(([recent, bestPerSet, storedSettings]) => {
-        setHistory(recent);
+      .then(([allSessions, storedDailyScores, bestPerSet, storedSettings]) => {
+        setHistory(allSessions);
+        setDailyScores(storedDailyScores);
         setBests(Object.fromEntries(bestPerSet) as Record<TrainingSet, Session.CompletedSession | null>);
         setSettings(storedSettings);
         audioRef.current.setEnabled(storedSettings.soundEnabled);
@@ -98,8 +101,9 @@ export function useTypingSession() {
   }, []);
 
   const start = useCallback(
-    (requestedSet: TrainingSet = "japanese") => {
-      const selector = selectors[requestedSet];
+    async (requestedSet: TrainingSet = "japanese") => {
+      const selector = await selectorLoader.load(requestedSet);
+      if (!selector) return;
       selector.reset();
       const next = selector.next();
       const time = performance.now();
@@ -126,7 +130,7 @@ export function useTypingSession() {
       setNow(time);
       dispatch({ type: "START", now: time });
     },
-    [selectors],
+    [selectorLoader],
   );
 
   useEffect(() => {
@@ -157,13 +161,18 @@ export function useTypingSession() {
       weakKeys,
     });
     setResult(session);
-    setHistory((current) => [session, ...current].slice(0, RECENT_SESSIONS_SHOWN));
+    setHistory((current) => [session, ...current].slice(0, MAX_STORED_SESSIONS));
+    setDailyScores((current) => addDailyScore(current, session));
     setBests((current) => ({
       ...current,
       [trainingSet]:
         !current[trainingSet] || session.score > current[trainingSet].score ? session : current[trainingSet],
     }));
-    void repository.save(session);
+    void repository.save(session).then((saved) => {
+      setSessionPersistenceWarning(
+        saved ? null : "この記録を端末に保存できませんでした。ページを閉じる前に、履歴から JSON を保存してください。",
+      );
+    });
   }, [clock.status, clock.durationMs, completedPrompts, correct, maxCombo, misses, trainingSet]);
 
   useEffect(() => {
@@ -181,7 +190,7 @@ export function useTypingSession() {
         if (rejected) setFeedback("unsupported");
         return;
       }
-      const applied = applyTypingText(prompt, typing, keys, () => selectors[trainingSet].next());
+      const applied = applyTypingText(prompt, typing, keys, () => selectorLoader.selectors.get(trainingSet)!.next());
       const tally = tallyTypingSteps({
         steps: applied.steps,
         attempt: attemptRef.current,
@@ -208,7 +217,7 @@ export function useTypingSession() {
       setPrompt(applied.prompt);
       setTyping(applied.typing);
     },
-    [clock.status, combo, maxCombo, prompt, selectors, trainingSet, typing],
+    [clock.status, combo, maxCombo, prompt, selectorLoader.selectors, trainingSet, typing],
   );
 
   const pause = useCallback(() => dispatch({ type: "PAUSE", now: performance.now() }), []);
@@ -220,14 +229,16 @@ export function useTypingSession() {
     else if (clock.status === "paused") resume();
   }, [clock.status, pause, resume]);
   const enter = useCallback(() => {
-    if (["idle", "finished", "aborted"].includes(clock.status)) start(trainingSet);
+    if (["idle", "finished", "aborted"].includes(clock.status)) void start(trainingSet);
     else if (clock.status === "paused") resume();
   }, [clock.status, resume, start, trainingSet]);
   const toggleSound = useCallback(() => {
     setSettings((current) => {
       const next = { ...current, soundEnabled: !current.soundEnabled };
       audioRef.current.setEnabled(next.soundEnabled);
-      void repository.saveSettings(next);
+      void repository.saveSettings(next).then((saved) => {
+        setSettingsPersistenceWarning(saved ? null : "設定を端末に保存できませんでした。");
+      });
       return next;
     });
   }, []);
@@ -252,10 +263,14 @@ export function useTypingSession() {
     liveMetrics,
     result,
     history,
+    dailyScores,
     best: bests[trainingSet],
     bests,
     settings,
     settingsReady,
+    persistenceWarning: sessionPersistenceWarning ?? settingsPersistenceWarning,
+    startPending: selectorLoader.pending,
+    startError: selectorLoader.error,
     trainingSet,
     start,
     typeText,

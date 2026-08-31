@@ -144,7 +144,7 @@
 }
 
 :root[data-theme="modern"] .quick-start-panel {
-  padding: var(--modern-card-padding);
+  padding: 0;
 }
 
 :root[data-theme="modern"] .quick-start-head h2,
@@ -152,10 +152,14 @@
   font-size: var(--modern-section-heading-size);
 }
 
+:root[data-theme="modern"] .quick-start-head .section-index,
+:root[data-theme="modern"] .quick-start-head > span {
+  color: var(--text-on-dark);
+}
+
 :root[data-theme="modern"] .mode-picker {
   grid-template-columns: var(--modern-option-columns);
   gap: var(--space-1);
-  margin-top: var(--space-2);
 }
 
 :root[data-theme="modern"] .mode-option {
@@ -178,7 +182,7 @@
 }
 
 :root[data-theme="modern"] .start-row {
-  margin-top: var(--space-2);
+  margin-top: 0;
 }
 
 :root[data-theme="modern"] .primary-button {

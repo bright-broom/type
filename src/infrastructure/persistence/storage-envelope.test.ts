@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { emptyEnvelope, isSession, migrateEnvelope, STORAGE_VERSION } from "./storage-envelope.ts";
+import { emptyEnvelope, isSession, migrateEnvelope, normalizeSession, STORAGE_VERSION } from "./storage-envelope.ts";
 
 function session(id: string, overrides: Record<string, unknown> = {}) {
   return { id, score: 1200, endedAt: 1_700_000_000_000, trainingSet: "japanese", ...overrides };
@@ -19,6 +19,7 @@ test("reads the current envelope unchanged", () => {
     ["a", "b"],
   );
   assert.equal(envelope.settings.soundEnabled, false);
+  assert.deepEqual(envelope.dailyScores, [{ dateKey: "2023-11-15", day: 15, bestScore: 1200, sessionCount: 2 }]);
 });
 
 test("an envelope from a newer build keeps its sessions instead of wiping them", () => {
@@ -34,6 +35,13 @@ test("an envelope from a newer build keeps its sessions instead of wiping them",
   assert.equal(envelope.sessions.length, 2);
   assert.equal(envelope.version, STORAGE_VERSION);
   assert.equal(envelope.settings.soundEnabled, false);
+  assert.deepEqual(envelope.somethingNew, { streak: 4 });
+});
+
+test("derives daily summaries when upgrading an envelope that predates the calendar", () => {
+  const endedAt = new Date(2026, 7, 12, 12).getTime();
+  const envelope = migrateEnvelope({ sessions: [session("a", { endedAt, score: 900 })] });
+  assert.deepEqual(envelope.dailyScores, [{ dateKey: "2026-08-12", day: 12, bestScore: 900, sessionCount: 1 }]);
 });
 
 test("a payload without a version is still read", () => {
@@ -44,10 +52,27 @@ test("a payload without a version is still read", () => {
 test("sessions carrying unknown extra fields survive", () => {
   const envelope = migrateEnvelope({
     version: STORAGE_VERSION,
-    sessions: [session("a", { streak: 3, mode: "120s" })],
+    sessions: [session("a", { streak: 3, mode: "120s", metrics: { wpm: 4, accuracy: 90, futureMetric: 7 } })],
   });
   assert.equal(envelope.sessions.length, 1);
   assert.equal(envelope.sessions[0]?.id, "a");
+  assert.equal((envelope.sessions[0] as unknown as { mode: string }).mode, "120s");
+  assert.equal((envelope.sessions[0]?.metrics as unknown as { futureMetric: number }).futureMetric, 7);
+});
+
+test("normalizes a salvageable partial session for safe rendering", () => {
+  const normalized = normalizeSession(session("legacy"));
+  assert.equal(normalized?.metricsAvailable, false);
+  assert.deepEqual(normalized?.metrics, {
+    wpm: 0,
+    cpm: 0,
+    accuracy: 0,
+    correctKeystrokes: 0,
+    totalKeystrokes: 0,
+    elapsedMs: 0,
+  });
+  assert.deepEqual(normalized?.prompts, []);
+  assert.deepEqual(normalized?.keystrokes, []);
 });
 
 test("only records missing the keys history depends on are dropped", () => {
@@ -94,5 +119,6 @@ test("an empty envelope is fresh each time so callers cannot share its arrays", 
 test("isSession guards the fields personal bests are computed from", () => {
   assert.equal(isSession(session("a")), true);
   assert.equal(isSession({ id: "a", score: 1, endedAt: "not-a-number" }), false);
+  assert.equal(isSession({ id: "a", score: Number.NaN, endedAt: 1 }), false);
   assert.equal(isSession(undefined), false);
 });

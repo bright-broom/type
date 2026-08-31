@@ -29,6 +29,8 @@ export type CompletedSession = {
   prompts: ReadonlyArray<PromptAttempt>;
   keystrokes: ReadonlyArray<KeystrokeEvent>;
   metrics: SessionMetrics;
+  /** False only when an older salvaged record did not contain usable metrics. */
+  metricsAvailable?: boolean;
   score: number;
   completedPrompts: number;
   maxCombo: number;

@@ -11,9 +11,13 @@
 
 .settings-shell {
   flex: 1;
-  width: min(var(--content-settings), calc(100% - (var(--page-gutter) * 2)));
+  width: min(var(--content-wide), calc(100% - (var(--page-gutter) * 2)));
   margin: 0 auto;
   padding: var(--settings-page-top) 0 var(--space-5);
+  display: grid;
+  grid-template-columns: var(--golden-grid-settings);
+  gap: var(--golden-grid-gap);
+  align-items: start;
 }
 
 .settings-shell button {
@@ -40,7 +44,18 @@
 .settings-groups {
   display: grid;
   gap: var(--space-3);
-  margin-top: var(--space-4);
+  margin-top: 0;
+}
+
+@media (max-width: 900px) {
+  .settings-shell {
+    width: min(var(--content-settings), calc(100% - (var(--page-gutter) * 2)));
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .settings-groups {
+    margin-top: var(--space-2);
+  }
 }
 
 .settings-group,
