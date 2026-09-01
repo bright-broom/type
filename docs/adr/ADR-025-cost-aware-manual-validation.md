@@ -32,6 +32,8 @@ server.
   or failed CI run. Autofix never starts Full CI automatically.
 - Vercel Git deployment is enabled for `main` and disabled for every other Branch.
   Exceptional Preview deployment uses the Vercel Dashboard Git-reference flow.
+- The deny pattern is `**`, not `*`, because Vercel uses minimatch syntax and agent
+  Branch names contain `/`. A matching `main: true` rule still permits Production.
 - Vercel's Ignored Build Step stays `Automatic`; repository Git policy prevents
   automatic feature-branch deployment without also suppressing manual Preview.
 - Vercel CLI remains blocked because the isolated `59.10.0` dependency audit has

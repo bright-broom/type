@@ -102,9 +102,10 @@ only after a pinned isolated graph passes `npm audit --audit-level=high`.
 - **Autofix advances the Branch:** the previous Full CI is stale; run it again on
   the new SHA.
 - **Vercel Preview is unexpectedly created:** verify the deployed revision contains
-  the `vercel.json` rule that disables `*` while enabling `main`. Keep the Project's
-  Ignored Build Step `Automatic`; changing it to `Only build production` also skips
-  an explicitly requested Dashboard Preview.
+  the `vercel.json` rule that disables `**` while enabling `main`. `**` is required
+  because feature Branch names can contain `/`. Keep the Project's Ignored Build
+  Step `Automatic`; changing it to `Only build production` also skips an explicitly
+  requested Dashboard Preview.
 - **Production fails:** do not auto-Promote or auto-Rollback. Inspect the exact
   `main` SHA, Full CI, Vercel deployment, and Production Health evidence, then let
   the human owner choose Rollback or a corrective PR.

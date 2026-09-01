@@ -99,7 +99,7 @@ test("Vercel automatically deploys only main", async () => {
   const config = JSON.parse(await readFile(resolve(root, "vercel.json"), "utf8"));
   assert.deepEqual(config.git?.deploymentEnabled, {
     main: true,
-    "*": false,
+    "**": false,
   });
 });
 
