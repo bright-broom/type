@@ -49,13 +49,15 @@ PRレビューはCodeRabbitなどの外部レビューボットに依存しま�
 2. `.agents/skills/review-typeloop` を使い、コードを編集しない独立レビュアーに差分を確認させる
 3. [`AGENTS.md`](AGENTS.md) のCode Review Rulesに沿って、互換性・依存境界・local-first制約を確認する
 4. Critical / High finding を修正し、初回レビュー後は最大2回まで修正・再レビューを行う
-5. feature branchだけをGitHubへpushしてPRを作成し、全CI成功後もマージせず、人間の最終判断へ引き渡す
+5. feature branch だけを GitHub へ push して PR を作成する。PR 更新では Full CI は自動実行されない
+6. Merge 前に Actions の `CI` から `Run workflow` を選び、最新 Commit SHA を入力して `Full CI` を 1 回実行する
+7. `Full CI` が同じ最新 SHA で成功したことを確認しても Merge せず、人間の最終判断へ引き渡す
 
 AIレビューは、CIで判定できないリポジトリ固有のリスクを補完するために使います。自動生成された指摘だけをマージ判断の根拠にはしません。
 
 ## Deployment
 
-This is a standard Next.js App Router application and can be deployed to Vercel with the framework preset set to **Next.js**. No output directory override is required.
+This is a standard Next.js App Router application and can be deployed to Vercel with the framework preset set to **Next.js**. No output directory override is required. Git-connected automatic deployment is limited to `main`; create a Preview only when needed from the Vercel Dashboard using an exact Git reference. See [`docs/manual-ci-cd.md`](docs/manual-ci-cd.md).
 
 ## Architecture
 

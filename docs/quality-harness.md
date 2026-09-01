@@ -68,8 +68,8 @@ The app has no backend, database, authentication, runtime environment variables,
 guard against accidental direct browser, Node network, and common HTTP-client access. They are a regression guardrail, not
 an adversarial-code sandbox; review and an ADR remain required for any boundary change. The tracked-secret scan covers the
 current tracked/untracked snapshot, including generated content and the lockfile, but does not replace GitHub history
-scanning or push protection. `npm audit` is registry-backed and may fail for operational reasons; CI keeps it in a separate
-security job so the failure is explicit.
+scanning or push protection. `npm audit` is registry-backed and may fail for operational reasons; Full CI keeps the
+security step explicit inside the single fail-closed runner.
 
 `check:privacy` is a confidentiality boundary for the current delivery tree. It rejects
 known restricted meeting markers and personal email addresses from runtime source and
@@ -125,8 +125,9 @@ misrepresenting a shared VM as field INP. A 200 ms end-to-end target belongs to 
 is introduced later; this local-first product does not currently send telemetry. Fluid-layout cases are isolated by screen,
 so a slow or stateful route cannot consume the timeout budget or browser state of the rest of the viewport matrix.
 
-CI runs the browser job inside the version-matched, digest-pinned Playwright
-`noble` image. The image owns Chromium, WebKit, and their OS packages; do not add
+Full CI runs the entire gate inside the version-matched, digest-pinned Playwright
+`noble` image. One runner performs checkout, install, build, Security, and E2E so
+GitHub Actions does not bill repeated setup work. The image owns Chromium, WebKit, and their OS packages; do not add
 `playwright install-deps` or a browser cache to the job. Linux OS packages are not
 cacheable, and downloading them from the runner's APT mirror caused both timeout
 exit `124` and an orphaned APT lock. The repository convention test keeps the npm
@@ -177,7 +178,7 @@ default branch and never checks out the branch whose CI failed. That keeps it sa
 to run for forks and for dependabot, which is precisely where the reporting matters.
 
 `scripts/triage-ci-failure.mjs` maps the failed job log onto a known cause and states
-whether it is mechanically fixable. Pull-request and Autofix-dispatched failures
+whether it is mechanically fixable. Manually dispatched feature-branch failures
 receive a PR comment. `scripts/ci-triage-contract.mjs` fails closed on unexpected
 classifier exits and owns incident identity. A repository-scoped serial reconciler
 re-reads the latest `main` CI run before it opens, updates, or closes the one marked
@@ -194,18 +195,16 @@ tests are both part of the coverage-mode CI discovery set.
 
 ### Autofix (`.github/workflows/autofix.yml`)
 
-The trusted `pull_request_target` workflow has three capability-separated jobs. A
-read-only prepare job checks out the exact PR SHA without credentials, applies
+The trusted default-branch `workflow_dispatch` accepts a PR number and exact SHA.
+A read-only prepare job checks out that exact PR SHA without credentials, applies
 `npm run format` and `eslint --fix`, verifies `npm run check:quick`, and uploads only
 a short-lived patch. A writer job executes no PR code: it rechecks the SHA, applies
-the patch only to files already changed by the PR, and pushes an `[autofix]` commit.
-A final job owns only Actions dispatch and PR notification.
+the patch only to files already changed by the PR, pushes an `[autofix]` commit, and
+asks the owner to run Full CI manually on the resulting SHA.
 
-A `GITHUB_TOKEN` push does not start a new workflow run, so Autofix dispatches CI
-explicitly with the new commit SHA. CI rejects a dispatched run if GitHub resolves
-the branch to a different SHA, preventing a stale green check from being mistaken
-for validation of the Autofix commit. Add `[skip autofix]` to a pull request title
-to opt out.
+Autofix never dispatches CI automatically. CI rejects a dispatched run if GitHub
+resolves the branch to a different SHA, preventing a stale green check from being
+mistaken for validation of the Autofix commit.
 
 ### What the automation deliberately does not do
 
@@ -221,12 +220,12 @@ comment marks the pull request unmergeable — the decision stays with a person.
 API mutation, or any Vercel CLI invocation while that tool's dependency audit is blocked. It complements GitHub rules; it
 does not replace them and cannot govern other clients. Review repository hooks with `/hooks` before trusting a checkout.
 
-`Codex CI advisory` is an optional second opinion after the deterministic classifier. It reads only the default branch and
-failed-job artifact, runs with `contents: read` and the `:read-only` permission profile, and writes only a 14-day artifact.
-It cannot change or comment on a pull request. The owner must explicitly set both `CODEX_CI_ADVISORY_ENABLED=true` and the
-`OPENAI_API_KEY` Actions secret; otherwise no model call occurs. ADR-020's external Actions baseline must also be narrowed
-to the single `openai/codex-action@*` pattern while full-SHA pinning remains required; `docs/agent-control-checklist.md`
-records that prerequisite and keeps the switch disabled until it is verified.
+`Codex CI advisory` is a manually dispatched second opinion for one selected failed CI run. It verifies the workflow name,
+failure conclusion, and attempt before reading logs, then runs with `actions: read`, `contents: read`, and the `:read-only`
+permission profile and writes only a 14-day artifact. It cannot change or comment on a pull request. The owner must
+configure the `OPENAI_API_KEY` Actions secret; otherwise no model call occurs. ADR-022's external Actions baseline must also
+be narrowed to the single `openai/codex-action@*` pattern while full-SHA pinning remains required;
+`docs/agent-control-checklist.md` records that prerequisite.
 
 `Quality metrics` runs weekly and can also be dispatched manually. Its 28-day artifact defines each denominator and reports
 `n/a` instead of manufacturing a zero. The signals are initial CI success, median time to first green run, distinct reviewed
@@ -237,7 +236,8 @@ All merged PRs remain in the initial-CI denominator; an unassociated run is show
 attempt 1 is recovered from its jobs endpoint, and failure detection counts a workflow run when any observed attempt failed.
 API queries are date-bounded before pagination so report cost does not grow with repository age.
 
-No Vercel CLI runner is exposed while the evaluated `59.1.4` dependency graph fails the High/Critical audit. `npm exec`
+No Vercel CLI runner is exposed while the evaluated `59.10.0` dependency graph fails the High/Critical audit. `npm exec`
 would not solve that problem because it re-resolves an unaudited transitive graph. Repository hooks deny every Vercel CLI
-command; previews continue through the GitHub integration, and production remains human-owned. Revisit only with an isolated
-lockfile or digest-pinned image and a dedicated audit gate. No repository workflow may merge or weaken a required gate.
+command. Automatic Git deployment is limited to `main`; a human can create an exceptional Preview from a Git reference in
+the Vercel Dashboard without installing the CLI. Revisit CLI use only with an isolated lockfile or digest-pinned image and
+a dedicated audit gate. No repository workflow may merge or weaken a required gate.

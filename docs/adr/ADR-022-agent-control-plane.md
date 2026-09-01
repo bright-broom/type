@@ -18,20 +18,21 @@ This ADR follows ADR-019 through ADR-021 and is carried only in branch ancestry 
   it, and is a guardrail rather than a security boundary.
 - Add an opt-in Codex CI advisory after deterministic failure classification. It checks out only the default branch,
   receives untrusted logs as data, has read-only GitHub/filesystem permissions, cannot comment or push, and stores its
-  output as a short-lived artifact for a human. It remains disabled until an owner configures the repository variable
-  `CODEX_CI_ADVISORY_ENABLED=true` and the `OPENAI_API_KEY` Actions secret.
+  output as a short-lived artifact for a human. It is dispatched manually for an exact failed CI run and cannot call the
+  model until an owner configures the `OPENAI_API_KEY` Actions secret.
 - Apply ADR-020's documented exception mechanism by allowing only `openai/codex-action@*` while retaining the repository-wide
   full-SHA requirement. This owner-managed exception must be recorded in the agent control checklist before
-  the advisory switch is enabled; verified Marketplace actions and broader patterns remain disabled.
+  the advisory is used; verified Marketplace actions and broader patterns remain disabled.
 - Continue to reserve mechanical formatter/linter changes for the existing constrained autofix workflow. Codex does not
   generate or apply patches, merge PRs, or deploy production.
 - Generate a read-only weekly 28-day report for initial CI success, time to green, review revisions, post-merge failures,
   pre-production failure detection, and completion of `codex/*` pull requests. These are process signals, never developer
   performance scores.
-- Do not expose a repository Vercel CLI runner yet. The evaluated exact release (`59.1.4`) introduces High/Critical audit
+- Do not expose a repository Vercel CLI runner yet. The reevaluated exact release (`59.10.0`) retains High/Critical audit
   findings and `npm exec` would re-resolve its transitive graph outside the root audit. Repository hooks therefore deny every
-  Vercel CLI command. The existing GitHub/Vercel preview integration remains the deployment path; production remains a
-  human decision. A future clean release may add an isolated lockfile or digest-pinned image plus its own audit gate.
+  Vercel CLI command. Automatic Git deployment is restricted to `main`; exceptional Preview deployment uses the Vercel
+  Dashboard Git-reference flow. Production remains a human decision. A future clean release may add an isolated lockfile
+  or digest-pinned image plus its own audit gate.
 
 ## Alternatives
 
@@ -45,6 +46,6 @@ This ADR follows ADR-019 through ADR-021 and is carried only in branch ancestry 
 
 Owners must review and trust repository hooks in each Codex client. External contributors and other tools remain governed
 by GitHub rules rather than the local hook. Enabling the advisory sends the selected CI context to the configured OpenAI
-API account; the default disabled state makes that data boundary explicit. Metrics may be `n/a` in quiet windows and must
+API account; manual dispatch and the absent credential make that data boundary explicit. Metrics may be `n/a` in quiet windows and must
 not be interpreted as zero. PRs for this ADR must not be merged before ADR-019 through ADR-021 are present on `main`.
 The Vercel CLI deferral is a security blocker, not an invitation to use a mutable global installation.

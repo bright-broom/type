@@ -28,5 +28,6 @@ ADRs capture durable decisions that constrain future implementation. They do not
 | [022](ADR-022-agent-control-plane.md)                  | Human-owned agent control plane                       |
 | [023](ADR-023-static-route-shell.md)                   | CDN-prerendered shell and URL-owned reference screens |
 | [024](ADR-024-public-release-privacy-boundary.md)      | Public privacy and restricted-content boundary        |
+| [025](ADR-025-cost-aware-manual-validation.md)         | Manual Full CI and production-only Vercel deployment  |
 
 Add an ADR only for a decision with meaningful alternatives and long-lived consequences. Use the next number and include Context, Decision, Alternatives, and Consequences.

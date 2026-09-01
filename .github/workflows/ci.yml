@@ -1,14 +1,16 @@
 name: CI
 
+# Feature-branch validation is intentionally explicit. A human starts Full CI
+# once the pull request is ready to merge and supplies the exact head SHA.
+# main still runs once after merge so Production is verified against its exact SHA.
 on:
-  pull_request:
   push:
     branches: [main]
   workflow_dispatch:
     inputs:
       expected_sha:
-        description: Commit SHA that requested this validation
-        required: false
+        description: Exact commit SHA to validate
+        required: true
         type: string
 
 permissions:
@@ -19,17 +21,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  pr-policy:
-    name: PR-only policy
+  full-ci:
+    name: Full CI
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    container:
+      # The version-matched image contains Chromium, WebKit, and their OS
+      # packages. A single runner avoids repeated checkout, install, and build.
+      image: mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
+      options: --user 1001 --ipc=host
+    timeout-minutes: 45
     permissions:
       contents: read
       pull-requests: read
     steps:
-      - name: Accept pull request validation
-        if: github.event_name == 'pull_request'
-        run: echo "Changes are being validated through a pull request."
+      - name: Verify the requested revision
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          ACTUAL_SHA: ${{ github.sha }}
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: |
+          if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
+            echo "::error::Requested $EXPECTED_SHA, but workflow_dispatch resolved to $ACTUAL_SHA."
+            exit 1
+          fi
+          echo "Validating explicitly dispatched commit $ACTUAL_SHA."
+
       - name: Reject a direct push to main
         if: github.event_name == 'push'
         env:
@@ -44,8 +60,12 @@ jobs:
               --header "Accept: application/vnd.github+json" \
               --header "X-GitHub-Api-Version: 2022-11-28" \
               "https://api.github.com/repos/${REPOSITORY}/commits/${SHA}/pulls")"
-            if jq --exit-status --arg base "${BASE_BRANCH}" \
-              'any(.[]; .merged_at != null and .base.ref == $base)' <<<"${pulls}" >/dev/null; then
+            if node -e '
+              const fs = require("node:fs");
+              const pulls = JSON.parse(fs.readFileSync(0, "utf8"));
+              const base = process.argv[1];
+              process.exit(pulls.some((pull) => pull.merged_at && pull.base?.ref === base) ? 0 : 1);
+            ' "${BASE_BRANCH}" <<<"${pulls}"; then
               echo "The main update is associated with a merged pull request."
               exit 0
             fi
@@ -53,135 +73,44 @@ jobs:
           done
           echo "::error::Direct pushes to ${BASE_BRANCH} are prohibited. Submit a pull request and let a human owner merge it."
           exit 1
-      - name: Verify a dispatched run targets the requesting commit
-        if: github.event_name == 'workflow_dispatch' && inputs.expected_sha != ''
-        env:
-          ACTUAL_SHA: ${{ github.sha }}
-          EXPECTED_SHA: ${{ inputs.expected_sha }}
-        run: |
-          if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
-            echo "::error::Requested $EXPECTED_SHA, but workflow_dispatch resolved to $ACTUAL_SHA."
-            exit 1
-          fi
-          echo "Validating explicitly dispatched commit $ACTUAL_SHA."
 
-  deps:
-    name: Dependency compatibility
-    needs: pr-policy
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
-      # Runs before any install: an unsatisfiable peer range is exactly what makes
-      # installing fail, so this must not depend on it succeeding.
-      - name: Verify peer ranges are satisfiable
+          cache: npm
+
+      - name: Restore the Next.js build cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-next-${{ hashFiles('package-lock.json') }}-${{ hashFiles('app/**', 'src/**', 'public/**', 'next.config.*') }}
+          restore-keys: |
+            ${{ runner.os }}-next-${{ hashFiles('package-lock.json') }}-
+
+      - name: Verify peer ranges before installation
         run: npm run check:deps
 
-  quality:
-    name: Quality gates
-    needs: deps
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version-file: .nvmrc
-          cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Verify generated content
-        run: npm run check:generated
-      - name: Verify Takken content governance
+
+      - name: Run the complete local-equivalent gate
         env:
           TAKKEN_REVIEWER_KEYS_JSON: ${{ vars.TAKKEN_REVIEWER_KEYS_JSON }}
-        run: npm run check:content
-      - name: Verify public-content confidentiality
-        run: npm run check:privacy
-      - name: Verify design token boundary
-        run: npm run check:tokens
-      - name: Check formatting
-        run: npm run format:check
-      - name: Lint
-        run: npm run lint
-      - name: Typecheck
-        run: npm run typecheck
-      - name: Test with coverage thresholds
-        run: npm run test:coverage
-      - name: Detect dead code
-        run: npm run check:dead-code
-      - name: Build production application
-        run: npm run build
-      - name: Verify immutable static application routes
-        run: npm run check:static
-      - name: Hold shipped JavaScript to its budget
-        run: npm run check:bundle
+        run: npm run check:ci
 
-  e2e:
-    name: Browser E2E
-    needs: deps
-    runs-on: ubuntu-latest
-    container:
-      # Playwright's version-matched image already contains Chromium, WebKit,
-      # and their OS packages. Pinning the digest avoids mutable CI infrastructure.
-      image: mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
-      options: --user 1001 --ipc=host
-    timeout-minutes: 30
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - name: Install dependencies
-        run: npm ci
-      # The E2E suite runs against the production server, so it needs a build first.
-      - name: Build production application
-        run: npm run build
-      - name: Verify critical browser flows
-        run: npm run test:e2e
       - name: Upload browser failure evidence
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: playwright-failure-evidence
+          name: playwright-failure-evidence-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             playwright-report/
             test-results/
           if-no-files-found: ignore
           retention-days: 7
-
-  security:
-    name: Security
-    needs: deps
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - name: Install dependencies without lifecycle scripts
-        run: npm ci --ignore-scripts
-      - name: Scan tracked files and dependencies
-        run: npm run check:security

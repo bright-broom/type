@@ -25,30 +25,41 @@ function jobBlock(source, name) {
   return jobs.slice(start, end < 0 ? undefined : end).join("\n");
 }
 
-test("CI accepts an explicit dispatch only for the requested commit", async () => {
+test("CI runs manually for pull requests and once for the merged main revision", async () => {
   const source = await workflow("ci.yml");
-  assert.match(topLevelBlock(source, "on:"), /workflow_dispatch:\s+inputs:\s+expected_sha:/);
-  const policy = jobBlock(source, "pr-policy");
-  assert.match(policy, /ACTUAL_SHA: \$\{\{ github\.sha \}\}/);
-  assert.match(policy, /if \[ "\$ACTUAL_SHA" != "\$EXPECTED_SHA" \]/);
-  const quality = jobBlock(source, "quality");
-  const privacyIndex = quality.indexOf("run: npm run check:privacy");
-  const buildIndex = quality.indexOf("run: npm run build");
-  const staticIndex = quality.indexOf("run: npm run check:static");
-  const bundleIndex = quality.indexOf("run: npm run check:bundle");
-  assert.ok(privacyIndex >= 0 && privacyIndex < buildIndex);
-  assert.ok(buildIndex >= 0 && buildIndex < staticIndex && staticIndex < bundleIndex);
+  const trigger = topLevelBlock(source, "on:");
+  assert.doesNotMatch(trigger, /pull_request:/);
+  assert.match(trigger, /push:\s+branches: \[main\]/);
+  assert.match(trigger, /workflow_dispatch:\s+inputs:\s+expected_sha:/);
+  assert.match(trigger, /expected_sha:[\s\S]*required: true/);
+
+  const fullCi = jobBlock(source, "full-ci");
+  assert.match(fullCi, /name: Full CI/);
+  assert.match(fullCi, /ACTUAL_SHA: \$\{\{ github\.sha \}\}/);
+  assert.match(fullCi, /if \[ "\$ACTUAL_SHA" != "\$EXPECTED_SHA" \]/);
+  assert.match(fullCi, /commits\/\$\{SHA\}\/pulls/);
+  assert.match(fullCi, /persist-credentials: false/);
+  assert.match(fullCi, /cache: npm/);
+  assert.match(fullCi, /run: npm ci/);
+  assert.match(fullCi, /run: npm run check:ci/);
+  assert.match(fullCi, /mcr\.microsoft\.com\/playwright:/);
+  assert.equal(source.split("runs-on: ubuntu-latest").length - 1, 1);
 });
 
-test("Autofix isolates pull request execution from write capabilities", async () => {
+test("Autofix is manually dispatched and isolates pull request execution from write capabilities", async () => {
   const source = await workflow("autofix.yml");
-  assert.match(topLevelBlock(source, "on:"), /pull_request_target:/);
+  const trigger = topLevelBlock(source, "on:");
+  assert.doesNotMatch(trigger, /pull_request_target:/);
+  assert.match(trigger, /workflow_dispatch:\s+inputs:\s+pull_request_number:/);
+  assert.match(trigger, /expected_sha:/);
   const prepare = jobBlock(source, "prepare");
   const write = jobBlock(source, "write");
-  const validate = jobBlock(source, "validate");
-  const artifactBinding = "autofix-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}";
+  const artifactBinding = "autofix-${{ inputs.pull_request_number }}-${{ inputs.expected_sha }}";
   assert.equal(source.split(artifactBinding).length - 1, 2);
   assert.match(prepare, /permissions:\s+contents: read/);
+  assert.match(prepare, /pull-requests: read/);
+  assert.match(prepare, /pulls\/\$NUMBER/);
+  assert.match(prepare, /EXPECTED_SHA/);
   assert.match(prepare, /persist-credentials: false/);
   assert.match(prepare, /npm run check:quick/);
   assert.doesNotMatch(prepare, /contents: write|actions: write|pull-requests: write/);
@@ -58,17 +69,38 @@ test("Autofix isolates pull request execution from write capabilities", async ()
   assert.equal(write.split("autofix-contract.mjs head").length - 1, 2);
   assert.match(write, /\[\.head\.sha, \.state\] \| @tsv/);
   assert.match(write, /path: source/);
-  assert.match(write, /name: autofix-\$\{\{ github\.event\.pull_request\.number \}\}-\$\{\{/);
+  assert.match(write, /name: autofix-\$\{\{ inputs\.pull_request_number \}\}-\$\{\{/);
   assert.match(write, /--slurp .*pulls\/\$NUMBER\/files/);
   assert.match(write, /git apply --index/);
   assert.match(write, /git diff --cached --name-status -z/);
   assert.match(write, /autofix-contract\.mjs patch/);
   assert.doesNotMatch(write, /npm (?:ci|run)|npx eslint/);
-  assert.match(validate, /actions: write/);
-  assert.match(validate, /\[ "\$current" != "\$AUTOFIX_SHA" \]/);
-  assert.match(validate, /"\$state" != open/);
-  assert.match(validate, /gh workflow run ci\.yml/);
-  assert.doesNotMatch(validate, /actions\/checkout|npm (?:ci|run)/);
+  assert.match(write, /pull-requests: write/);
+  assert.match(write, /Full CI/);
+  assert.doesNotMatch(source, /gh workflow run ci\.yml/);
+  assert.equal(jobBlock(source, "validate"), "");
+});
+
+test("Codex CI advisory runs only for an explicitly selected failed CI run", async () => {
+  const source = await workflow("codex-ci-advisory.yml");
+  const trigger = topLevelBlock(source, "on:");
+  assert.doesNotMatch(trigger, /workflow_run:/);
+  assert.match(trigger, /workflow_dispatch:\s+inputs:\s+run_id:/);
+  assert.match(source, /jq -r '\.name'/);
+  assert.match(source, /!= "CI"/);
+  assert.match(source, /jq -r '\.path'/);
+  assert.match(source, /!= "\.github\/workflows\/ci\.yml"/);
+  assert.match(source, /jq -r '\.conclusion'/);
+  assert.match(source, /!= "failure"/);
+  assert.doesNotMatch(source, /path:\s*\|\s*\n\s*failure\.log/);
+});
+
+test("Vercel automatically deploys only main", async () => {
+  const config = JSON.parse(await readFile(resolve(root, "vercel.json"), "utf8"));
+  assert.deepEqual(config.git?.deploymentEnabled, {
+    main: true,
+    "*": false,
+  });
 });
 
 test("main health is serial, latest-run owned, and marker deduplicated", async () => {

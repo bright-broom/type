@@ -140,8 +140,10 @@ delivery tree and the emitted build for known restricted markers. See
 ## Release flow
 
 Release automation is a control plane outside the runtime modular monolith. A
-feature branch produces CI evidence and a Vercel Preview; a human performs the
-merge. Vercel Deployment Checks **must be configured and owner-verified** before
+feature branch produces local evidence and receives one explicit Full CI run when
+it is Ready for review; ordinary Pushes produce neither automatic CI nor Vercel
+Preview. A human performs the Merge. Vercel Deployment Checks **must be configured
+and owner-verified** before
 the exact `main` SHA validation can be treated as a production-domain prerequisite;
 repository code alone does not provide that guarantee. CI failure reconciliation is
 serialized and latest-run/attempt owned. A successful exact-SHA `main` run then
@@ -152,7 +154,9 @@ reconciling the same health incident. A later successful Production deployment e
 rechecks the current green `main` SHA so a delayed release can recover without a new
 commit. Production promotion and rollback remain human-only. Autofix separates untrusted pull-request
 execution from Git, Actions, and PR write capabilities. See
-[ADR-019](adr/ADR-019-release-safety.md) and the [release checklist](release-checklist.md).
+[ADR-019](adr/ADR-019-release-safety.md),
+[ADR-025](adr/ADR-025-cost-aware-manual-validation.md), and the
+[release checklist](release-checklist.md).
 
 ## Extension rules
 

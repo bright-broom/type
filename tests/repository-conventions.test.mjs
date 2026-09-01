@@ -215,7 +215,7 @@ test("Playwright CI uses a version-matched image with browser dependencies", asy
   const workflow = await readFile(resolve(repositoryRoot, ".github/workflows/ci.yml"), "utf8");
   const manifest = JSON.parse(await readFile(resolve(repositoryRoot, "package.json"), "utf8"));
   const playwrightVersion = manifest.devDependencies?.["@playwright/test"];
-  const e2eJob = workflow.split("  e2e:")[1]?.split("  security:")[0] ?? "";
+  const e2eJob = workflow.split("  full-ci:")[1] ?? "";
 
   assert.equal(typeof playwrightVersion, "string");
   assert.match(
@@ -230,11 +230,13 @@ test("Playwright CI uses a version-matched image with browser dependencies", asy
 
 test("CI keeps a visible backstop against direct default-branch pushes", async () => {
   const workflow = await readFile(resolve(repositoryRoot, ".github/workflows/ci.yml"), "utf8");
-  const policyJob = workflow.split("  pr-policy:")[1]?.split("  deps:")[0] ?? "";
+  const policyJob = workflow.split("  full-ci:")[1] ?? "";
 
-  assert.match(policyJob, /name: PR-only policy/);
+  assert.match(policyJob, /name: Full CI/);
   assert.match(policyJob, /if: github\.event_name == 'push'/);
   assert.match(policyJob, /commits\/\$\{SHA\}\/pulls/);
+  assert.match(policyJob, /pulls\.some/);
+  assert.doesNotMatch(policyJob, /jq --exit-status/);
   assert.match(policyJob, /Direct pushes to \$\{BASE_BRANCH\} are prohibited/);
 });
 

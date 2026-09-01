@@ -1,5 +1,9 @@
 # ADR-019: Release safety and capability-separated automation
 
+> Feature-branch triggering, Job topology, Autofix, AI advisory, and Vercel
+> Preview decisions are superseded by [ADR-025](ADR-025-cost-aware-manual-validation.md).
+> The exact-`main` validation and human-only release authority remain active.
+
 ## Context
 
 TypeLoop's Vercel Git integration can finish assigning a production domain before
