@@ -4,15 +4,17 @@ Repository code can verify workflow behavior but cannot prove GitHub or Vercel
 owner settings. Re-check this table after a plan, repository visibility, GitHub job
 name, Vercel project, or production-domain change.
 
-## Current evidence (2026-08-23 JST)
+## Current evidence (2026-09-01 JST)
 
-| Control                  | Required state                                   | Observed state                                          | Evidence / next action                                                                                                           |
-| ------------------------ | ------------------------------------------------ | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| GitHub merge protection  | Ruleset requires PR and named checks             | **Unavailable** for the current private-repository plan | GitHub Rulesets API returned 403 requiring GitHub Pro or public visibility. Owner must choose a plan/visibility change.          |
-| Vercel Git integration   | `bright-broom/type`, production branch `main`    | Connected                                               | Vercel project API reports the GitHub repository and branch.                                                                     |
-| Vercel automatic aliases | On, so Deployment Checks can gate assignment     | On                                                      | Project API reports `autoAssignCustomDomains: true`.                                                                             |
-| Vercel Deployment Checks | All five unique `main` CI jobs selected          | **Not owner-verified**                                  | In Vercel → type → Settings → Environments → Production, add the checks below and record the confirming owner/date in this file. |
-| Human release authority  | No workflow merge, forced promotion, or rollback | Enforced in repository workflow and agent policy        | Human owner performs merge/promotion/rollback.                                                                                   |
+| Control                  | Required state                                   | Observed state                                          | Evidence / next action                                                                                                            |
+| ------------------------ | ------------------------------------------------ | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| GitHub merge protection  | Ruleset requires PR and `Full CI`                | **Unavailable** for the current private-repository plan | GitHub Rulesets API returned 403 requiring GitHub Pro or Public visibility. Keep Private and upgrade to Pro before enforcement.   |
+| Vercel Git integration   | `bright-broom/type`, production branch `main`    | Connected                                               | Vercel project API reports the GitHub repository and branch.                                                                      |
+| Vercel automatic Preview | Feature branches do not deploy automatically     | Repository policy prepared                              | `vercel.json` disables `**` and enables `main`; verify with the next feature Branch Push. `**` also matches names containing `/`. |
+| Vercel manual Preview    | Exact Git reference can be built on demand       | Project setting `Automatic`                             | Verified in Vercel Project Settings on 2026-09-01. Do not select `Only build production`; it also skips manual Preview builds.    |
+| Vercel automatic aliases | On, so Deployment Checks can gate assignment     | On                                                      | Project API reports `autoAssignCustomDomains: true`.                                                                              |
+| Vercel Deployment Checks | Unique `Full CI` job selected                    | **Not owner-verified**                                  | After this workflow reaches `main`, select `Full CI` for Production and prove a deployment waits while the check is pending.      |
+| Human release authority  | No workflow merge, forced promotion, or rollback | Enforced in repository workflow and agent policy        | Human owner performs merge/promotion/rollback.                                                                                    |
 
 ## Public distribution gates
 
@@ -25,16 +27,12 @@ name, Vercel project, or production-domain change.
 | Native GitHub security        | CodeQL, secret scanning, push protection, Dependabot            | Dependabot enabled; other native scanners absent                                                                                              | Enable and record after plan/visibility permits; do not infer from repository files.                         |
 | Content redistribution rights | Every generated dataset and asset approved for public republish | **Not yet recorded**                                                                                                                          | Owner records provenance/license acceptance before changing repository visibility.                           |
 
-## Checks to select in Vercel
+## Check to select in Vercel
 
-Select these exact GitHub Actions job names; changing a name requires updating
-Vercel and this checklist in the same release operation:
-
-1. `PR-only policy`
-2. `Dependency compatibility`
-3. `Quality gates`
-4. `Browser E2E`
-5. `Security`
+Select the exact GitHub Actions job name `Full CI`. The single Runner executes the
+same complete `npm run check:ci` gate, including Security and Chromium／WebKit E2E.
+Changing this name requires updating Vercel and this checklist in the same release
+operation.
 
 Deployment Checks are not considered active until the Vercel production deployment
 shows each check as required and a new `main` deployment remains staged while one is

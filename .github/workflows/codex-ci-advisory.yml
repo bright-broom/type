@@ -1,43 +1,76 @@
 name: Codex CI advisory
 
+# AI diagnosis is an explicit, read-only follow-up for a selected failed CI run.
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Failed CI run ID to diagnose
+        required: true
+        type: string
+      run_attempt:
+        description: Run attempt number
+        required: true
+        default: "1"
+        type: string
 
 permissions:
+  actions: read
   contents: read
 
 concurrency:
-  group: codex-ci-advisory-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
+  group: codex-ci-advisory-${{ inputs.run_id }}-${{ inputs.run_attempt }}
   cancel-in-progress: true
 
 jobs:
-  classify:
-    name: Prepare deterministic failure context
-    if: github.event.workflow_run.conclusion == 'failure'
+  advise:
+    name: Read-only Codex advisory
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      actions: read
-      contents: read
+    timeout-minutes: 15
     steps:
-      - name: Checkout the trusted classifier
+      - name: Verify the selected run is a failed CI run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ATTEMPT: ${{ inputs.run_attempt }}
+          RUN_ID: ${{ inputs.run_id }}
+        run: |
+          metadata="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID")"
+          if [ "$(jq -r '.name' <<<"$metadata")" != "CI" ]; then
+            echo "::error::Run $RUN_ID is not a CI workflow run."
+            exit 1
+          fi
+          if [ "$(jq -r '.path' <<<"$metadata")" != ".github/workflows/ci.yml" ]; then
+            echo "::error::Run $RUN_ID does not belong to the trusted CI workflow path."
+            exit 1
+          fi
+          if [ "$(jq -r '.conclusion' <<<"$metadata")" != "failure" ]; then
+            echo "::error::Run $RUN_ID is not failed."
+            exit 1
+          fi
+          if [ "$(jq -r '.run_attempt' <<<"$metadata")" != "$RUN_ATTEMPT" ]; then
+            echo "::error::Run attempt does not match the selected CI evidence."
+            exit 1
+          fi
+
+      - name: Checkout the trusted default branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
+
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
+
       - name: Download failed-job logs and classify them
         env:
           GH_TOKEN: ${{ github.token }}
-          RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
-          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_ATTEMPT: ${{ inputs.run_attempt }}
+          RUN_ID: ${{ inputs.run_id }}
         run: |
-          gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --attempt "$RUN_ATTEMPT" --log-failed > failure.log || true
+          gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --attempt "$RUN_ATTEMPT" \
+            --log-failed > failure.log || true
           set +e
           node scripts/triage-ci-failure.mjs failure.log > triage.md
           status=$?
@@ -47,34 +80,7 @@ jobs:
             2) echo "The deterministic classifier marked this failure as blocking." ;;
             *) echo "Classifier failed with status $status" >&2; exit "$status" ;;
           esac
-      - name: Preserve the untrusted diagnostic context
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: ci-advisory-context-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
-          path: |
-            failure.log
-            triage.md
-          retention-days: 14
 
-  advise:
-    name: Read-only Codex advisory
-    needs: classify
-    if: vars.CODEX_CI_ADVISORY_ENABLED == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      actions: read
-      contents: read
-    steps:
-      - name: Checkout the default branch
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.event.repository.default_branch }}
-          persist-credentials: false
-      - name: Download the classified context
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: ci-advisory-context-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
       - name: Check whether the owner configured an API key
         id: api-key
         env:
@@ -84,8 +90,9 @@ jobs:
             echo "available=true" >> "$GITHUB_OUTPUT"
           else
             echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "Codex advisory is enabled, but OPENAI_API_KEY is not configured."
+            echo "OPENAI_API_KEY is not configured; preserving deterministic triage only."
           fi
+
       - name: Produce a read-only advisory
         id: codex
         if: steps.api-key.outputs.available == 'true'
@@ -98,10 +105,18 @@ jobs:
           codex-version: "0.148.0"
           codex-args: '["--ephemeral"]'
           safety-strategy: drop-sudo
+
+      - name: Preserve the minimized diagnostic context
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-advisory-context-${{ inputs.run_id }}-${{ inputs.run_attempt }}
+          path: triage.md
+          retention-days: 14
+
       - name: Preserve the advisory for human review
         if: steps.codex.outcome == 'success'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: codex-ci-advisory-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
+          name: codex-ci-advisory-${{ inputs.run_id }}-${{ inputs.run_attempt }}
           path: codex-ci-advisory.md
           retention-days: 14
