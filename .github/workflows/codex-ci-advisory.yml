@@ -59,7 +59,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
 
@@ -96,7 +96,7 @@ jobs:
       - name: Produce a read-only advisory
         id: codex
         if: steps.api-key.outputs.available == 'true'
-        uses: openai/codex-action@c385816875cc2fc8e033ed9d1cba96f8c331210e # v1
+        uses: openai/codex-action@13e9c17417b29e9a276f73ec6ed7fb574137d3c3 # v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           permission-profile: ":read-only"
@@ -107,7 +107,7 @@ jobs:
           safety-strategy: drop-sudo
 
       - name: Preserve the minimized diagnostic context
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ci-advisory-context-${{ inputs.run_id }}-${{ inputs.run_attempt }}
           path: triage.md
@@ -115,7 +115,7 @@ jobs:
 
       - name: Preserve the advisory for human review
         if: steps.codex.outcome == 'success'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: codex-ci-advisory-${{ inputs.run_id }}-${{ inputs.run_attempt }}
           path: codex-ci-advisory.md
