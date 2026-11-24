@@ -44,9 +44,9 @@
     "check:ci": "npm run check:deps && npm run check && npm run check:security"
   },
   "dependencies": {
-    "next": "^16.4.3",
-    "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "next": "16.4.6",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
@@ -68,8 +68,14 @@
     "react-server-dom-webpack": "19.3.1",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.72.0",
+    "typescript-eslint": "8.74.0",
     "yaml": "2.9.1"
   },
-  "type": "module"
+  "type": "module",
+  "overrides": {
+    "test-exclude": {
+      "glob": "^14.0.2",
+      "minimatch": "^11.0.1"
+    }
+  }
 }
