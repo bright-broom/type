@@ -22,24 +22,43 @@ export function assertOfficialMonitorUrl(rawUrl) {
   return url;
 }
 
-/** Applies the replacements repeatedly until nothing changes, so nested or split markup cannot survive one pass. */
-function stripUntilStable(text, rules) {
-  let current = text;
-  for (let previous = ""; previous !== current; ) {
-    previous = current;
-    for (const [pattern, replacement] of rules) current = current.replace(pattern, replacement);
+/**
+ * Turns HTML into plain text with a character scan (no regex replacement): comments and script/style
+ * bodies are dropped, every other tag becomes a space. Unterminated blocks are dropped to the end.
+ */
+function htmlToText(html) {
+  const lower = html.toLowerCase();
+  let out = "";
+  let i = 0;
+  while (i < html.length) {
+    if (lower.startsWith("<!--", i)) {
+      const end = lower.indexOf("-->", i + 4);
+      i = end === -1 ? html.length : end + 3;
+      continue;
+    }
+    const block = lower.startsWith("<script", i) ? "script" : lower.startsWith("<style", i) ? "style" : null;
+    if (block) {
+      const close = lower.indexOf(`</${block}`, i);
+      const gt = close === -1 ? -1 : lower.indexOf(">", close);
+      i = gt === -1 ? html.length : gt + 1;
+      continue;
+    }
+    if (html[i] === "<") {
+      const gt = html.indexOf(">", i);
+      if (gt === -1) break;
+      out += " ";
+      i = gt + 1;
+      continue;
+    }
+    out += html[i];
+    i += 1;
   }
-  return current;
+  return out;
 }
 
 export function normalizeOfficialContent(format, raw) {
   if (format === "egov-json") return stableSerialize(JSON.parse(raw));
-  return stripUntilStable(raw, [
-    [/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, ""],
-    [/<style\b[^>]*>[\s\S]*?<\/style\b[^>]*>/gi, ""],
-    [/<!--[\s\S]*?--!?>/g, ""],
-    [/<[^<>]*>/g, " "],
-  ])
+  return htmlToText(raw)
     .replace(/&nbsp;|&#160;/gi, " ")
     .replace(/&amp;/gi, "&")
     .replace(/\s+/g, " ")

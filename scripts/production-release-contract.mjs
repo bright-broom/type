@@ -78,19 +78,39 @@ function routeHeaderViolations(headers, scope, expectedSha) {
   return violations;
 }
 
+/**
+ * Drops comments and script/style element bodies with a plain scan (no regex replacement), so the
+ * structural checks below only look at markup. Unterminated blocks are dropped to the end of the text.
+ */
+function withoutCommentsAndScripts(html) {
+  const lower = html.toLowerCase();
+  let out = "";
+  let i = 0;
+  while (i < html.length) {
+    if (lower.startsWith("<!--", i)) {
+      const end = lower.indexOf("-->", i + 4);
+      i = end === -1 ? html.length : end + 3;
+      continue;
+    }
+    const tag = lower.startsWith("<script", i) ? "script" : lower.startsWith("<style", i) ? "style" : null;
+    if (tag) {
+      const close = lower.indexOf(`</${tag}`, i);
+      const gt = close === -1 ? -1 : lower.indexOf(">", close);
+      i = gt === -1 ? html.length : gt + 1;
+      continue;
+    }
+    out += html[i];
+    i += 1;
+  }
+  return out;
+}
+
 function documentShapeViolations(document) {
   if (document.status !== 200 || document.redirected) return [];
   const contentType = headerValue(document.headers, "content-type").toLowerCase();
   if (document.kind === "route") {
     const html = document.text ?? "";
-    let structuralHtml = html;
-    // Remove comments and script/style bodies until nothing changes, so nested markup cannot survive one pass.
-    for (let previous = ""; previous !== structuralHtml; ) {
-      previous = structuralHtml;
-      structuralHtml = structuralHtml
-        .replace(/<!--[\s\S]*?--!?>/g, "")
-        .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\b[^>]*>/gi, "");
-    }
+    const structuralHtml = withoutCommentsAndScripts(html);
     const hasShell =
       /<!doctype html>/i.test(structuralHtml) &&
       /<html(?:\s|>)/i.test(structuralHtml) &&
