@@ -83,9 +83,14 @@ function documentShapeViolations(document) {
   const contentType = headerValue(document.headers, "content-type").toLowerCase();
   if (document.kind === "route") {
     const html = document.text ?? "";
-    const structuralHtml = html
-      .replace(/<!--[\s\S]*?-->/g, "")
-      .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "");
+    let structuralHtml = html;
+    // Remove comments and script/style bodies until nothing changes, so nested markup cannot survive one pass.
+    for (let previous = ""; previous !== structuralHtml; ) {
+      previous = structuralHtml;
+      structuralHtml = structuralHtml
+        .replace(/<!--[\s\S]*?--!?>/g, "")
+        .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\b[^>]*>/gi, "");
+    }
     const hasShell =
       /<!doctype html>/i.test(structuralHtml) &&
       /<html(?:\s|>)/i.test(structuralHtml) &&

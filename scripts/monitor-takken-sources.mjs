@@ -22,13 +22,24 @@ export function assertOfficialMonitorUrl(rawUrl) {
   return url;
 }
 
+/** Applies the replacements repeatedly until nothing changes, so nested or split markup cannot survive one pass. */
+function stripUntilStable(text, rules) {
+  let current = text;
+  for (let previous = ""; previous !== current; ) {
+    previous = current;
+    for (const [pattern, replacement] of rules) current = current.replace(pattern, replacement);
+  }
+  return current;
+}
+
 export function normalizeOfficialContent(format, raw) {
   if (format === "egov-json") return stableSerialize(JSON.parse(raw));
-  return raw
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "")
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "")
-    .replace(/<!--[\s\S]*?-->/g, "")
-    .replace(/<[^>]+>/g, " ")
+  return stripUntilStable(raw, [
+    [/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, ""],
+    [/<style\b[^>]*>[\s\S]*?<\/style\b[^>]*>/gi, ""],
+    [/<!--[\s\S]*?--!?>/g, ""],
+    [/<[^<>]*>/g, " "],
+  ])
     .replace(/&nbsp;|&#160;/gi, " ")
     .replace(/&amp;/gi, "&")
     .replace(/\s+/g, " ")
